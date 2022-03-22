@@ -1,0 +1,11 @@
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        require-authentication="true" default-menu-title="Find Account">
+
+    <!-- Get list of parties with role = SalesAccount -->
+    <!-- Dialog box to create a new account, creates Party of type = organization with role = SalesAccount, Customer (default moqui behavior) -->
+    <!-- Predefined filter role with tabs for "My Accounts", etc. Use Moqui saved finds functionality. -->
+    <!-- Display table of accounts -->
+    <widgets>
+        <label text="It worked!" type="h4"/>
+    </widgets>
+</screen>
