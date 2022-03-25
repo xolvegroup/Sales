@@ -1,11 +1,49 @@
-<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         require-authentication="true" default-menu-title="Find Account">
 
-    <!-- Get list of parties with role = SalesAccount -->
+    <transition name="createAccount"><service-call name="mantle.sales.AccountServices.create#Account"/>
+        <default-response url="../EditCustomer"/></transition>
+    <!-- Get list of parties with role = Sales Account [Account] from PartyRole -->
+    <pre-actions><set field="roleTypeId" value="Account"/></pre-actions>
+    <actions>
+        <service-call name="mantle.party.PartyServices.search#Party" in-map="context" out-map="context"/>
+    </actions>
     <!-- Dialog box to create a new account, creates Party of type = organization with role = SalesAccount, Customer (default moqui behavior) -->
     <!-- Predefined filter role with tabs for "My Accounts", etc. Use Moqui saved finds functionality. -->
-    <!-- Display table of accounts -->
     <widgets>
-        <label text="It worked!" type="h4"/>
+        <container-dialog id="CreateAccountDialog" button-text="New Sales Account">
+            <form-single name="CreateAccountForm" transition="createAccount"
+                         extends="component://SimpleScreens/screen/SimpleScreens/Party/FindParty.xml#CreateAccountForm"/>
+        </container-dialog>
+        <!-- Display table of accounts -->
+        <form-list name="AccountListForm" list="documentList" skip-form="true" header-dialog="true" saved-finds="true"
+                   show-xlsx-button="true" show-csv-button="true" show-page-size="true">
+            <row-actions>
+                <!-- Get sales person(s) for each sales account. -->
+                <entity-find entity-name="mantle.party.PartyFromAndRelationship" list="prList">
+                    <econdition field-name="toPartyId" from="partyId"/>
+                    <econdition field-name="fromRoleTypeId" value="SalesRepresentative"/>
+                </entity-find>
+            </row-actions>
+            <!-- The simplest way to display a field
+            <field name="organizationName"><default-field><display/></default-field></field>
+            -->
+            <!-- TODO: make this a link to detail screen -->
+            <field name="organizationName">
+                <header-field title="Account Name" show-order-by="true"><text-line size="20"/></header-field>
+                <default-field><label text="${organizationName}"/></default-field>
+            </field>
+            <!-- Get the sales representative assigned to the account (if any) -->
+
+            <field name="salesPerson">
+                <header-field title="Sales Person" show-order-by="true"><text-line size="20"/></header-field>
+                <default-field>
+                <section-iterate name="PrList" list="prList" entry="partyRel"><widgets>
+                    <label text="${partyRel.firstName} ${partyRel.lastName}"/>
+                </widgets></section-iterate>
+                </default-field>
+            </field>
+        </form-list>
     </widgets>
 </screen>
