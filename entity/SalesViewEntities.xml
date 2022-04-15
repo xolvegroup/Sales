@@ -32,7 +32,7 @@ along with this software (see the LICENSE.md file). If not, see
         <alias-all entity-alias="ORG"><exclude field="partyId"/></alias-all>
     </view-entity>
     -->
-    <view-entity entity-name="PartyRoleAndRelationship" package="mantle.party">
+    <view-entity entity-name="AccountAndRelationship" package="mantle.party">
         <member-entity entity-alias="PTRL" entity-name="mantle.party.PartyRole"/>
         <member-entity entity-alias="PREL" entity-name="mantle.party.PartyRelationship" join-from-alias="PTRL" join-optional="true">
             <key-map field-name="partyId" related="toPartyId"/>
@@ -40,14 +40,36 @@ along with this software (see the LICENSE.md file). If not, see
         <member-entity entity-alias="PTY" entity-name="mantle.party.Party" join-from-alias="PTRL">
             <key-map field-name="partyId"/>
         </member-entity>
-        <member-entity entity-alias="PER" entity-name="mantle.party.Person" join-from-alias="PTY" join-optional="true">
-            <key-map field-name="partyId"/></member-entity>
         <member-entity entity-alias="ORG" entity-name="mantle.party.Organization" join-from-alias="PTY" join-optional="true">
             <key-map field-name="partyId"/></member-entity>
         <alias-all entity-alias="PTRL"/>
         <alias-all entity-alias="PREL"/>
         <alias-all entity-alias="PTY"><exclude field="partyId"/><exclude field="comments"/></alias-all>
-        <alias-all entity-alias="PER"><exclude field="partyId"/></alias-all>
         <alias-all entity-alias="ORG"><exclude field="partyId"/></alias-all>
+    </view-entity>
+
+    <view-entity entity-name="ContactAndRelationship" package="mantle.party">
+        <member-entity entity-alias="PTRL" entity-name="mantle.party.PartyRole"/>
+        <member-entity entity-alias="PREL" entity-name="mantle.party.PartyRelationship" join-from-alias="PTRL" join-optional="true">
+            <key-map field-name="partyId" related="fromPartyId"/>
+        </member-entity>
+        <member-entity entity-alias="PTY" entity-name="mantle.party.Party" join-from-alias="PTRL">
+            <key-map field-name="partyId"/>
+        </member-entity>
+        <member-entity entity-alias="PER" entity-name="mantle.party.Person" join-from-alias="PTY" join-optional="true">
+            <key-map field-name="partyId"/></member-entity>
+        <alias-all entity-alias="PTRL"/>
+        <alias-all entity-alias="PREL"/>
+        <alias-all entity-alias="PTY"><exclude field="partyId"/><exclude field="comments"/></alias-all>
+        <alias-all entity-alias="PER"><exclude field="partyId"/></alias-all>
+    </view-entity>
+
+    <view-entity entity-name="SalesOpportunityAndParty" package="mantle.sales.opportunity">
+        <member-entity entity-alias="OPPY" entity-name="mantle.sales.opportunity.SalesOpportunity"/>
+        <member-entity entity-alias="SPTY" entity-name="mantle.sales.opportunity.SalesOpportunityParty" join-from-alias="OPPY" join-optional="true">
+            <key-map field-name="salesOpportunityId"/>
+        </member-entity>
+        <alias-all entity-alias="OPPY"/>
+        <alias-all entity-alias="SPTY"/>
     </view-entity>
 </entities>

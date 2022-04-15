@@ -5,11 +5,7 @@
     <transition name="createAccount"><service-call name="mantle.sales.AccountServices.create#Account"/>
         <default-response url="../EditCustomer"/></transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
-    <!-- Get list of parties with role = Sales Account [Account] from PartyRole -->
-    <pre-actions><set field="roleTypeId" value="Account"/></pre-actions>
-    <actions>
-        <service-call name="mantle.party.PartyServices.search#Party" in-map="context" out-map="context"/>
-    </actions>
+
     <!-- Dialog box to create a new account, creates Party of type = organization and role = SalesAccount, Customer (default moqui behavior) -->
     <!-- Predefined filter role with tabs for "My Accounts", etc. Use Moqui saved finds functionality. -->
     <widgets>
@@ -17,42 +13,10 @@
             <form-single name="CreateAccountForm" transition="createAccount"
                          extends="component://SimpleScreens/screen/SimpleScreens/Party/FindParty.xml#CreateAccountForm"/>
         </container-dialog>
-        <!-- Display table of accounts -->
-        <form-list name="AccountListForm" list="documentList" skip-form="true" header-dialog="true" saved-finds="true"
-                   show-xlsx-button="true" show-csv-button="true" show-page-size="true">
-            <row-actions>
-                <!-- Get sales person(s) for each sales account. -->
-                <entity-find entity-name="mantle.party.PartyFromAndRelationship" list="prList">
-                    <econdition field-name="toPartyId" from="partyId"/>
-                    <econdition field-name="fromRoleTypeId" value="SalesRepresentative"/>
-                </entity-find>
-            </row-actions>
-            <!-- The simplest way to display a field
-            <field name="organizationName"><default-field><display/></default-field></field>
-            -->
-            <!-- TODO: make this a link to account detail screen. -->
-            <field name="organizationName">
-                <header-field title="Account Name" show-order-by="true"><text-line size="20"/></header-field>
-                <default-field><label text="${organizationName}"/></default-field>
-            </field>
-            <!-- Get the sales representative assigned to the account (if any) -->
-            <!-- TODO: figure out how to search on sales person name. Not currently working. -->
-            <field name="salesPerson">
-                <header-field title="Sales Person" show-order-by="true"><text-line size="20"/></header-field>
-                <default-field title="Sales Person">
-                <section-iterate name="PrList" list="prList" entry="partyRel"><widgets>
-                    <label text="${partyRel.firstName} ${partyRel.lastName}"/>
-                </widgets></section-iterate>
-                </default-field>
-            </field>
-            <!-- This field adds the "Find" submit button to the bottom of the search ('Find Options") dialog box -->
-            <field name="submitButton">
-                <header-field title="Find"><submit/></header-field>
-            </field>
-        </form-list>
-        <form-list name="accountList2" list="accountList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
+
+        <form-list name="AccountList" list="accountList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
                    show-csv-button="true" show-xlsx-button="true" show-all-button="true">
-            <entity-find entity-name="mantle.party.PartyRoleAndRelationship" list="accountList">
+            <entity-find entity-name="mantle.party.AccountAndRelationship" list="accountList">
                 <econdition field-name="roleTypeId" value="Account"/>
                 <econdition field-name="fromRoleTypeId" value="SalesRepresentative" or-null="true"/>
                 <econdition field-name="fromPartyId" ignore-if-empty="true"/>

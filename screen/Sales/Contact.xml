@@ -1,7 +1,7 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-title="Contacts" default-menu-index="20" menu-image="/ssstatic/images/Customer.png">
 
-    <subscreens default-item="ContactAccount"/>
+    <subscreens default-item="FindContact"/>
 
     <widgets>
         <subscreens-panel id="contact-panel" type="popup"/>
