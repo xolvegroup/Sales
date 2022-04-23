@@ -5,6 +5,7 @@
     <transition name="createAccount"><service-call name="mantle.sales.AccountServices.create#Account"/>
         <default-response url="../EditCustomer"/></transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
+    <transition name="viewAccount"><default-response url="../ViewAccount"/></transition>
 
     <!-- Dialog box to create a new account, creates Party of type = organization and role = SalesAccount, Customer (default moqui behavior) -->
     <!-- Predefined filter role with tabs for "My Accounts", etc. Use Moqui saved finds functionality. -->
@@ -20,9 +21,12 @@
                 <econdition field-name="roleTypeId" value="Account"/>
                 <econdition field-name="fromRoleTypeId" value="SalesRepresentative" or-null="true"/>
                 <econdition field-name="fromPartyId" ignore-if-empty="true"/>
+                <select-field field-name="partyId"/>
             </entity-find>
-            <field name="partyId"><default-field title="Account Name"><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
-                </default-field>
+
+            <field name="organizationName">
+                <header-field title="Sales Account" show-order-by="true"><text-line size="40"/></header-field>
+                <default-field><link url="viewAccount" text="${organizationName}" link-type="anchor"/></default-field>
             </field>
             <field name="fromPartyId">
                 <header-field title="Sales Person">

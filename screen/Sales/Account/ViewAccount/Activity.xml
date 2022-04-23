@@ -1,0 +1,7 @@
+
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        default-menu-title="Activities" default-menu-index="0">
+<widgets>
+    <label text="Activity 1" type="h4"/>
+</widgets>
+</screen>

@@ -1,9 +1,11 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-title="Accounts" default-menu-index="10" menu-image="/ssstatic/images/Customer.png">
 
-    <subscreens default-item="FindAccount"/>
-
+    <subscreens default-item="FindAccount">
+        <!--<subscreens-item name="ViewAccount" location="component://Sales/screen/Sales/Account/ViewAccount.xml"/>-->
+    </subscreens>
     <widgets>
+        <!-- popup will list all subscreens in the menu, tab does not -->
         <subscreens-panel id="account-panel" type="popup"/>
     </widgets>
 </screen>

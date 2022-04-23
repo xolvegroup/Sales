@@ -1,0 +1,17 @@
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        default-menu-title="View Contact">
+    <widgets>
+        <label text="It worked!" type="h4"/>
+        <container-row>
+            <row-col lg="3">
+                <label text="It Worked" type="p"/>
+            </row-col>
+            <row-col lg="6">
+                <label text="It Worked" type="p"/>
+            </row-col>
+            <row-col lg="3">
+                <label text="It Worked" type="p"/>
+            </row-col>
+        </container-row>
+    </widgets>
+</screen>
