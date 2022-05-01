@@ -2,16 +2,12 @@
         default-menu-title="View Account">
     <parameter name="partyId" required="true"/>
     <subscreens default-item="Activity"/>
-    <pre-actions><set field="partyId" from="partyId"/></pre-actions>
     <actions>
-        <!-- this approach is the same as what is used in EditParty screen -->
+        <!-- This approach is the same as what is used in EditParty screen -->
         <entity-find-one entity-name="mantle.party.PartyDetail" value-field="party"/>
         <if condition="party == null"><return error="true" message="Party not found with ID ${partyId}"/></if>
-        <!-- This approach uses Elastic and is the way FindParty and FindCustomer screens work. Use one or the other, not both.-->
-        <service-call name="mantle.party.PartyServices.search#Party" in-map="context" out-map="context"/>
     </actions>
     <widgets>
-        <label text="It worked!" type="h4"/>
         <container-row>
             <row-col lg="3">
                 <section name="PartySummarySection">
@@ -21,15 +17,20 @@
                                       in-map="[partyId:partyId, getAll:true]"/>
                     </actions>
                     <widgets>
-                        <container-box type="default"><box-header title="Account Summary"/>
+                        <container-box type="default"><box-header title="${party.organizationName}"/>
                             <box-body>
                                 <!-- Display primary website and phone -->
-                                <label text="${party.organizationName}" type="p"/>
-                                <label text="${documentList?.size()}"/>
-                                <form-list name="AccountSummary" list="documentList">
-                                    <field name="partyId"><default-field><display text="organizationName"/>
-                                    </default-field></field>
-                                </form-list>
+                                <section-iterate name="WebInfoSection" list="contactOut.webAddressList" entry="contactInfo">
+                                    <widgets>
+                                        <!--<link url="${contactInfo.webAddress}" text="${contactInfo.webAddress}" link-type="anchor"/> -->
+                                        <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
+                                    </widgets>
+                                </section-iterate>
+                                <section-iterate name="PhoneInfoSection" list="contactOut.telecomNumberList" entry="contactInfo">
+                                    <widgets>
+                                        <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
+                                    </widgets>
+                                </section-iterate>
                             </box-body>
                         </container-box>
                     </widgets>
@@ -40,8 +41,39 @@
             </row-col>
             <row-col lg="3">
                 <section name="ContactSection">
+
+                    <actions>
+                        <entity-find entity-name="mantle.party.PartyRelationship" list="contactList">
+                            <econdition field-name="toPartyId" from="partyId"/>
+                        </entity-find>
+                        <entity-find-count entity-name="mantle.party.PartyRelationship" count-field="relationshipCount">
+                            <econdition field-name="toPartyId" from="partyId"/></entity-find-count>
+                    </actions>
+
                     <widgets>
                         <container-box type="default"><box-header title="Contacts"/>
+                            <box-body>
+                                <label text="Sales Account Contacts: ${relationshipCount}"/>
+                                <!-- Display contacts associated with sales account.
+                                 How to do this simply with section-iterate and just display simple text?
+                                <section-iterate name="ContactIterateSection" list="contactList" entry="contact">
+                                    <widgets>
+                                        <label text="From Party: ${contact.fromPartyId}" type="p"/>
+                                        <label text="PartyNameOnlyTemplate" text-map="contact" type="p"/>
+                                        <display text="PartyNameOnlyTemplate" text-map="contact"/>
+                                        <display-entity entity-name="mantle.party.PartyDetail" key-field-name="fromPartyId" text="PartyNameOnlyTemplate"/>
+                                    </widgets>
+                                </section-iterate>
+                                -->
+                                <!-- Using form list until I figure out the above approach. -->
+                                <form-list name="ContactList" list="contactList" skip-header="true">
+                                    <field name="fromPartyId">
+                                        <default-field title="Contact Name">
+                                            <display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
+                                        </default-field>
+                                    </field>
+                                </form-list>
+                            </box-body>
                         </container-box>
                     </widgets>
                 </section>
