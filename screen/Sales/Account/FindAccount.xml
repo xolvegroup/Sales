@@ -2,8 +2,10 @@
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         require-authentication="true" default-menu-title="Find Account">
 
-    <transition name="createAccount"><service-call name="mantle.sales.AccountServices.create#Account"/>
-        <default-response url="../EditCustomer"/></transition>
+    <transition name="createAccount">
+        <service-call name="mantle.sales.AccountServices.create#Account"/>
+        <default-response url="../EditCustomer"/>
+    </transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
     <transition name="viewAccount"><default-response url="../ViewAccount"/></transition>
 
