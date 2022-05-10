@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+
+<!-- General Guideline Verbs: GET=find, POST=create, PUT=store (create or update), PATCH=update, DELETE=delete -->
+
+<!-- curl -X POST -u john.doe:moqui -i http://localhost:8080/rest/s1/sales/requests?requestTypeEnumId=RqtContact
+    Getting an authentication error with "require-authentication="true"
+    Using "anonymous-all for now and it is working. Also does not require the -u parameter in the call.-->
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/rest-api-2.1.xsd"
+        name="sales" displayName="Sales REST API" version="1.0.0">
+    <resource name="requests" require-authentication="anonymous-all">
+        <method type="post"><service name="mantle.request.RequestServices.create#Request"/></method>
+    </resource>
+</resource>

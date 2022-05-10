@@ -2,10 +2,18 @@
 <!-- TODO -->
 <entity-facade-xml type="seed-initial">
     <!-- Sales App -->
-    <moqui.security.ArtifactGroup artifactGroupId="Sales" description="Sales (via root screen)"/>
-    <moqui.security.ArtifactGroupMember artifactGroupId="Sales" artifactName="component://Sales/screen/Sales.xml"
+    <moqui.security.ArtifactGroup artifactGroupId="SALES" description="Sales (via root screen)"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="SALES" artifactName="component://Sales/screen/Sales.xml"
                                         artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
     <!-- authz/permission for ADMIN users -->
-    <moqui.security.ArtifactAuthz artifactAuthzId="Sales" userGroupId="ADMIN" artifactGroupId="Sales"
+    <moqui.security.ArtifactAuthz artifactAuthzId="SALES" userGroupId="ADMIN" artifactGroupId="SALES"
+                                  authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+
+    <!-- Artifact group for all of the Example REST API via the example resource (the root resource) -->
+    <moqui.security.ArtifactGroup artifactGroupId="SALES_API" description="Sales REST API (via root resource)"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="SALES_API" artifactTypeEnumId="AT_REST_PATH"
+                                        inheritAuthz="Y" artifactName="/Sales"/>
+    <!-- Full permissions for the ADMIN user group -->
+    <moqui.security.ArtifactAuthz artifactAuthzId="SALESAPI_AUTHZ_ALL" userGroupId="ADMIN" artifactGroupId="SALES_API"
                                   authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 </entity-facade-xml>

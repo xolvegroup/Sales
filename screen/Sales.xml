@@ -1,17 +1,6 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd" menu-image="fa fa-flash" menu-image-type="icon">
 
-    <!-- To test this try something like: (change username / pw for your instance)
-
-curl -X POST -u john.doe:moqui -H "Content-Type: application/json" \
-     -d '{ "description":"REST Test 1","requestTypeEnumId":"RqtContact" }' \
-     http://localhost:8080/apps/Sales/createRequest
--->
-    <transition name="createRequest" method="post">
-        <service-call name="mantle.request.RequestServices.createRequest" in-map="ec.web.parameters"
-                      web-send-json-response="true"/>
-        <default-response type="none"/>
-    </transition>
     <subscreens default-item="Account"/>
     <widgets>
         <subscreens-panel id="SalesPanel" type="popup"/>
