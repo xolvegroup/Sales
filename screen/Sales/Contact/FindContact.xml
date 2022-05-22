@@ -6,18 +6,20 @@
         <default-response url="../EditCustomer"/></transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
 
+    <actions>
+        <entity-find entity-name="mantle.party.ContactAndRelationship" list="contactList">
+            <econdition field-name="roleTypeId" value="Contact"/>
+            <econdition field-name="toPartyId" ignore-if-empty="true"/>
+        </entity-find>
+    </actions>
     <widgets>
         <container-dialog id="CreateContactDialog" button-text="New Sales Contact">
             <form-single name="CreateContactForm" transition="createContact"
                          extends="component://SimpleScreens/screen/SimpleScreens/Party/FindParty.xml#CreateContactForm"/>
         </container-dialog>
         <form-list name="ContactList" list="contactList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
-                   show-csv-button="true" show-xlsx-button="true" show-all-button="true">
-            <entity-find entity-name="mantle.party.ContactAndRelationship" list="contactList">
-                <econdition field-name="roleTypeId" value="Contact"/>
-                <econdition field-name="toRoleTypeId" value="Account" or-null="true"/>
-                <econdition field-name="toPartyId" ignore-if-empty="true"/>
-            </entity-find>
+                   show-csv-button="true" show-xlsx-button="true" show-page-size="true" show-all-button="true">
+
             <row-actions>
                 <!-- Get contact email address -->
                 <entity-find entity-name="mantle.party.contact.PartyContactMechInfo" list="emailList">

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<entity-facade-xml type="seed-initial">
+    <!-- NOTE: when updating these it's best to delete the indexes through ElasticSearch, then reindex the MantleSalesOppy feed:
+
+        curl http://localhost:9200/_cat/indices?v
+
+        curl -X DELETE http://localhost:9200/mantle_sales_opportunity?pretty
+
+    -->
+
+    <!-- Sales Opportunity -->
+    <dataDocuments dataDocumentId="MantleSalesOpportunity" indexName="mantle_sales_oppy" documentName="Sales Opportunity"
+            primaryEntityName="mantle.sales.opportunity.SalesOpportunity" documentTitle="${salesOpportunityId}:${name}">
+        <fields fieldSeqId="01" fieldPath="salesOpportunityId"/>
+        <fields fieldSeqId="02" fieldPath="typeEnumId"/>
+        <fields fieldSeqId="03" fieldPath="accountPartyId"/>
+        <fields fieldSeqId="04" fieldPath="opportunityName" fieldNameAlias="name"/>
+        <fields fieldSeqId="05" fieldPath="description"/>
+        <fields fieldSeqId="08" fieldPath="nextStep"/>
+        <fields fieldSeqId="09" fieldPath="estimatedAmount"/>
+        <fields fieldSeqId="10" fieldPath="currencyUomId"/>
+        <fields fieldSeqId="11" fieldPath="marketingCampaignId"/>
+        <fields fieldSeqId="12" fieldPath="dataSourceId"/>
+        <fields fieldSeqId="13" fieldPath="opportunityStageId"/>
+        <!-- SalesOpportunity entities are not defined with relationship aliases so use entity names and full path of relationship -->
+        <fields fieldSeqId="20" fieldPath="SalesOpportunityParty:partyId"/>
+        <fields fieldSeqId="21" fieldPath="SalesOpportunityParty:roleTypeId"/>
+        <fields fieldSeqId="22" fieldPath="SalesOpportunityParty:RoleType:description" fieldNameAlias="role"/>
+        <fields fieldSeqId="23" fieldPath="SalesOpportunityParty:Party:Person:firstName"/>
+        <fields fieldSeqId="24" fieldPath="SalesOpportunityParty:Party:Person:lastName"/>
+        <fields fieldSeqId="25" fieldPath="SalesOpportunityParty:Party:UserAccount:userId"/>
+    </dataDocuments>
+
+    <!-- =============== -->
+    <!-- Index Data Feed -->
+    <moqui.entity.feed.DataFeed dataFeedId="MantleSalesOppy" dataFeedTypeEnumId="DTFDTP_RT_PUSH"
+            feedName="Mantle Sales Opportunity Data" feedReceiveServiceName="org.moqui.search.SearchServices.index#DataDocuments"
+            feedDeleteServiceName="org.moqui.search.SearchServices.delete#DataDocument">
+        <documents dataDocumentId="MantleSalesOpportunity"/>
+    </moqui.entity.feed.DataFeed>
+</entity-facade-xml>

@@ -23,4 +23,12 @@ along with this software (see the LICENSE.md file). If not, see
     <resource name="requests" require-authentication="anonymous-all">
         <method type="post"><service name="mantle.request.RequestServices.create#Request"/></method>
     </resource>
+    <!-- Use this to get a list of all blog posts -->
+    <resource name="blogPosts" require-authentication="anonymous-view">
+        <method type="get"><entity name="moqui.resource.wiki.WikiBlog" operation="list"/></method>
+        <!-- TODO: Change this to use WikiServices to get pageText -->
+        <id name="wikiPageId">
+            <method type="get"><entity name="moqui.resource.wiki.WikiPage" operation="one"/></method>
+        </id>
+    </resource>
 </resource>

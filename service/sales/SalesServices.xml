@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-2.1.xsd">
+
+    <service verb="create" noun="Task">
+        <in-parameters>
+            <parameter name="workEffortId"><matches regexp="[A-Za-z0-9]{1,8}"
+                    message="Project ID must be only letters and digits and between 1 and 8 characters long"/></parameter>
+            <auto-parameters entity-name="mantle.work.effort.WorkEffort" include="nonpk"/>
+            <parameter name="workEffortName" required="true"/>
+            <parameter name="estimatedStartDate" type="Timestamp" format="yyyy-MM-dd"/>
+            <parameter name="estimatedCompletionDate" type="Timestamp" format="yyyy-MM-dd"/>
+            <parameter name="workEffortTypeEnumId" default-value="WetTask"/>
+            <parameter name="statusId" default-value="WeInPlanning"/>
+
+            <parameter name="accountPartyId" required="true"/>
+
+            <parameter name="assignToPartyId"/>
+            <parameter name="assignRoleTypeId" default-value="Assignee"/>
+            <parameter name="assignStatusId" default-value="WeptAssigned"/>
+        </in-parameters>
+        <out-parameters><parameter name="workEffortId"/></out-parameters>
+        <actions>
+            <if condition="estimatedStartDate != null &amp;&amp; estimatedCompletionDate != null &amp;&amp;
+                           estimatedCompletionDate &lt; estimatedStartDate">
+                <return error="true" message="Date range is not valid."/>
+            </if>
+            <service-call name="create#mantle.work.effort.WorkEffort" out-map="context" in-map="context"/>
+            <if condition="ec.user.userAccount?.partyId">
+                <service-call name="create#mantle.work.effort.WorkEffortParty"
+                              in-map="[workEffortId:workEffortId, partyId:ec.user.userAccount.partyId,
+                            roleTypeId:'Assignee', fromDate:ec.user.nowTimestamp, statusId:'WeptAssigned']"/>
+            </if>
+            <service-call name="create#mantle.work.effort.WorkEffortParty" in-map="[workEffortId:workEffortId,
+                        partyId:accountPartyId, roleTypeId:'Customer', fromDate:ec.user.nowTimestamp]"/>
+            <if condition="assignToPartyId">
+                <service-call name="create#mantle.work.effort.WorkEffortParty" in-map="[workEffortId:workEffortId, partyId:assignToPartyId,
+                        roleTypeId:'assignRoleTypeId', fromDate:ec.user.nowTimestamp, statusId:assignStatusId]"/>
+            </if>
+        </actions>
+    </service>
+    <service verb="update" noun="Task">
+        <in-parameters>
+            <parameter name="workEffortId" required="true"/>
+            <auto-parameters entity-name="mantle.work.effort.WorkEffort" include="nonpk">
+                <exclude field-name="rootWorkEffortId"/></auto-parameters>
+            <parameter name="estimatedStartDate" type="Timestamp" format="yyyy-MM-dd"/>
+            <parameter name="estimatedCompletionDate" type="Timestamp" format="yyyy-MM-dd"/>
+
+            <parameter name="clientPartyId"/>
+            <parameter name="clientBillingPartyId"/>
+            <parameter name="clientManagerPartyId"/>
+            <parameter name="vendorPartyId"/>
+            <parameter name="managerPartyId"/>
+        </in-parameters>
+        <actions>
+            <entity-find entity-name="mantle.work.effort.WorkEffort" list="tasksList">
+                <econdition field-name="rootWorkEffortId" from="workEffortId"/>
+            </entity-find>
+            <if condition="estimatedStartDate != null &amp;&amp; estimatedCompletionDate != null &amp;&amp;
+                           estimatedCompletionDate &lt; estimatedStartDate">
+                <return error="true" message="Project date range is not valid."/>
+            </if>
+            <iterate list="tasksList" entry="task">
+                <if condition="estimatedStartDate &amp;&amp; task.actualStartDate &amp;&amp; estimatedStartDate &gt; task.actualStartDate">
+                    <return error="true" message="Project's new start date puts one or more tasks out of date range."/>
+                </if>
+                <if condition="estimatedCompletionDate &amp;&amp; task.actualStartDate &amp;&amp; estimatedCompletionDate &lt; task.actualStartDate">
+                    <return error="true" message="Project's new end date puts one or more tasks out of date range."/>
+                </if>
+            </iterate>
+            <if condition="!taskList">
+                <entity-find entity-name="mantle.work.time.TimeEntry" list="timeEntryList">
+                    <econdition field-name="workEffortId"/>
+                </entity-find>
+                <iterate list="timeEntryList" entry="timeEntry">
+                    <if condition="estimatedStartDate &amp;&amp; timeEntry.fromDate &amp;&amp; estimatedStartDate &gt; timeEntry.fromDate">
+                        <return error="true" message="Project's new start date puts one or more time entries out of date range."/>
+                    </if>
+                    <if condition="estimatedCompletionDate &amp;&amp; timeEntry.fromDate &amp;&amp; estimatedCompletionDate &lt; timeEntry.fromDate">
+                        <return error="true" message="Project's new end date puts one or more time entries out of date range."/>
+                    </if>
+                </iterate>
+            </if>
+            <service-call name="update#mantle.work.effort.WorkEffort" out-map="context" in-map="context"/>
+
+            <if condition="clientPartyId">
+                <service-call name="mantle.work.WorkEffortServices.replace#WorkEffortParty"
+                        in-map="[workEffortId:workEffortId, roleTypeId:'Customer', newPartyId:clientPartyId]"/>
+            </if>
+            <if condition="clientBillingPartyId">
+                <service-call name="mantle.work.WorkEffortServices.replace#WorkEffortParty"
+                        in-map="[workEffortId:workEffortId, roleTypeId:'ClientBilling',newPartyId:clientBillingPartyId, statusId:'WeptAssigned']"/>
+            </if>
+            <if condition="clientManagerPartyId">
+                <service-call name="mantle.work.WorkEffortServices.replace#WorkEffortParty"
+                        in-map="[workEffortId:workEffortId, roleTypeId:'ClientManager', newPartyId:clientManagerPartyId, statusId:'WeptAssigned']"/>
+            </if>
+            <if condition="vendorPartyId">
+                <service-call name="mantle.work.WorkEffortServices.replace#WorkEffortParty"
+                        in-map="[workEffortId:workEffortId, roleTypeId:'Vendor', newPartyId:vendorPartyId, statusId:'WeptAssigned']"/>
+            </if>
+            <if condition="managerPartyId">
+                <service-call name="mantle.work.WorkEffortServices.replace#WorkEffortParty"
+                        in-map="[workEffortId:workEffortId, roleTypeId:'Manager', newPartyId:managerPartyId, statusId:'WeptAssigned']"/>
+            </if>
+        </actions>
+    </service>
+</services>

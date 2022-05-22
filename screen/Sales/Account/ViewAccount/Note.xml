@@ -1,6 +1,43 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-title="Notes" default-menu-index="1">
+
+    <transition name="createPartyNote"><service-call name="create#mantle.party.PartyNote"/>
+        <default-response url="."/></transition>
+    <transition name="updatePartyNote"><service-call name="update#mantle.party.PartyNote"/>
+        <default-response url="."/></transition>
+    <actions>
+        <entity-find entity-name="mantle.party.PartyNote" list="partyNoteList">
+            <econdition field-name="partyId"/><order-by field-name="-noteDate"/></entity-find>
+    </actions>
     <widgets>
-        <label text="Notes Tab" type="h4"/>
+        <section name="NotesSection"><widgets>
+            <container-box><box-header title="Notes"/><box-toolbar>
+                <container-dialog id="NewNoteDialog" button-text="Add Note">
+                    <form-single name="NewNoteForm" transition="createPartyNote">
+                        <field name="partyId"><default-field><hidden/></default-field></field>
+                        <field name="noteText"><default-field title="Note"><text-area cols="60" rows="6"/></default-field></field>
+                        <field name="submitButton"><default-field title="Add Note"><submit/></default-field></field>
+                    </form-single>
+                </container-dialog>
+            </box-toolbar><box-body>
+                <section-iterate name="NoteIterateSection" list="partyNoteList" entry="partyNote"><actions>
+                    <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
+                        <field-map field-name="userId" from="partyNote.userId"/></entity-find-one>
+                </actions><widgets>
+                    <label text="By ${paua?.firstName?:''} ${paua?.lastName?:''} at ${ec.l10n.format(partyNote.noteDate, 'yyyy-MM-dd HH:mm')}" type="i"/>
+                    <section name="UpdateNoteSection" condition="partyNote.userId == ec.user.userId || ec.user.isInGroup('ADMIN')"><widgets>
+                        <container-dialog id="UpdateNoteContainer" button-text="Edit Note">
+                            <form-single name="UpdateNoteForm" transition="updatePartyNote" map="partyNote">
+                                <field name="partyId"><default-field><hidden/></default-field></field>
+                                <field name="noteDate"><default-field><hidden/></default-field></field>
+                                <field name="noteText"><default-field title="Note"><text-area cols="60" rows="6"/></default-field></field>
+                                <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                    </widgets></section>
+                    <label text="${partyNote.noteText}" type="p"/>
+                </widgets></section-iterate>
+            </box-body></container-box>
+        </widgets></section>
     </widgets>
 </screen>
