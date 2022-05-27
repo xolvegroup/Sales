@@ -35,6 +35,7 @@ along with this software (see the LICENSE.md file). If not, see
         <fields fieldSeqId="11" fieldPath="marketingCampaignId"/>
         <fields fieldSeqId="12" fieldPath="dataSourceId"/>
         <fields fieldSeqId="13" fieldPath="opportunityStageId"/>
+        <!--SalesOpportunityParty -->
         <!-- SalesOpportunity entities are not defined with relationship aliases so use entity names and full path of relationship -->
         <fields fieldSeqId="20" fieldPath="SalesOpportunityParty:partyId"/>
         <fields fieldSeqId="21" fieldPath="SalesOpportunityParty:roleTypeId"/>
@@ -42,6 +43,11 @@ along with this software (see the LICENSE.md file). If not, see
         <fields fieldSeqId="23" fieldPath="SalesOpportunityParty:Party:Person:firstName"/>
         <fields fieldSeqId="24" fieldPath="SalesOpportunityParty:Party:Person:lastName"/>
         <fields fieldSeqId="25" fieldPath="SalesOpportunityParty:Party:UserAccount:userId"/>
+        <!--SalesOpportunityCompetitor -->
+        <fields fieldSeqId="30" fieldPath="SalesOpportunityCompetitor:competitorPartyId"/>
+        <fields fieldSeqId="31" fieldPath="SalesOpportunityCompetitor:positionEnumId"/>
+        <fields fieldSeqId="32" fieldPath="SalesOpportunityCompetitor:strengths"/>
+        <fields fieldSeqId="33" fieldPath="SalesOpportunityCompetitor:weaknesses"/>
     </dataDocuments>
 
     <!-- =============== -->

@@ -25,10 +25,34 @@ along with this software (see the LICENSE.md file). If not, see
     </resource>
     <!-- Use this to get a list of all blog posts -->
     <resource name="blogPosts" require-authentication="anonymous-view">
-        <method type="get"><entity name="moqui.resource.wiki.WikiBlog" operation="list"/></method>
-        <!-- TODO: Change this to use WikiServices to get pageText -->
+        <method type="get"><service name="sales.SalesServices.get#BlogPosts"/></method>
+        <id name="wikiSpaceId">
+            <method type="get">
+                <service name="sales.SalesServices.get#BlogPosts"/>
+            </method>
+            <id name="pagePath">
+                <method type="get">
+                    <service name="org.moqui.impl.WikiServices.get#PublishedWikiPageText"/>
+                </method>
+            </id>
+        </id>
+        <!-- TODO: Change this to use WikiServices to get pageText
         <id name="wikiPageId">
             <method type="get"><entity name="moqui.resource.wiki.WikiPage" operation="one"/></method>
+        </id>
+        -->
+    </resource>
+    <resource name="blogPage" require-authentication="anonymous-view">
+        <method type="get"><service name="org.moqui.impl.WikiServices.get#PublishedWikiPageText"/></method>
+            <id name="wikiSpaceId">
+                <method type="get">
+                    <service name="moqui.impl.WikiServices.get#PublishedWikiPageText"/>
+                </method>
+                <id name="pagePath">
+                    <method type="get">
+                        <service name="moqui.impl.WikiServices.get#PublishedWikiPageText"/>
+                    </method>
+                </id>
         </id>
     </resource>
 </resource>

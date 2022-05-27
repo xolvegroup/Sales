@@ -118,4 +118,18 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
+    <service verb="get" noun="BlogPosts">
+        <in-parameters>
+            <parameter name="wikiSpaceId"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="blogList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.resource.wiki.WikiBlogFindView" list="blogList">
+                <search-form-inputs default-order-by="-publishDate"/>
+                <select-field field-name="wikiBlogId,wikiPageId,wikiSpaceId,pagePath,author,publishDate,title,summary"/>
+            </entity-find>
+        </actions>
+    </service>
 </services>
