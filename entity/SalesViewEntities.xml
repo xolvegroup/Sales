@@ -72,4 +72,55 @@ along with this software (see the LICENSE.md file). If not, see
         <alias-all entity-alias="OPPY"/>
         <alias-all entity-alias="SPTY"/>
     </view-entity>
+    <view-entity entity-name="ProductSalesSummary" package="mantle.order">
+        <member-entity entity-alias="PROD" entity-name="mantle.product.Product"/>
+        <member-entity entity-alias="OITM" entity-name="mantle.order.OrderItem" join-from-alias="PROD" join-optional="true">
+            <key-map field-name="productId"/></member-entity>
+        <member-entity entity-alias="OHDR" entity-name="mantle.order.OrderHeader" join-from-alias="OITM" join-optional="true">
+            <key-map field-name="orderId"/></member-entity>
+        <member-entity entity-alias="OPRT" entity-name="mantle.order.OrderPart" join-from-alias="OITM" join-optional="true">
+            <key-map field-name="orderId"/><key-map field-name="orderPartSeqId"/></member-entity>
+        <alias entity-alias="PROD" name="pseudoId"/>
+        <alias entity-alias="PROD" name="productName"/>
+        <alias entity-alias="PROD" name="amountUomId"/>
+        <alias entity-alias="PROD" name="amountFixed"/>
+        <alias entity-alias="PROD" name="productTypeEnumId"/>
+        <alias entity-alias="PROD" name="assetClassEnumId"/>
+        <alias entity-alias="PROD" name="ownerPartyId"/>
+        <alias entity-alias="OHDR" name="currencyUomId"/>
+        <alias entity-alias="OITM" name="orderId"/><!-- for a summary report this shouldn't be selected -->
+        <alias entity-alias="OITM" name="productId"/>
+        <alias entity-alias="OITM" name="itemTypeEnumId"/>
+        <alias name="quantity" function="sum">
+            <case><when expression="OITM.ITEM_TYPE_ENUM_ID != 'ItemDiscount'">
+                <complex-alias expression="OITM.QUANTITY"/>
+            </when></case>
+        </alias>
+        <alias name="sales" function="sum" type="currency-amount">
+            <case><when expression="OITM.ITEM_TYPE_ENUM_ID != 'ItemDiscount'">
+                <complex-alias operator="*">
+                    <complex-alias-field entity-alias="OITM" field="quantity"/>
+                    <complex-alias-field entity-alias="OITM" field="unitAmount"/>
+                </complex-alias>
+            </when></case>
+        </alias>
+        <alias name="discounts" function="sum" type="currency-amount">
+            <case><when expression="OITM.ITEM_TYPE_ENUM_ID = 'ItemDiscount'">
+                <complex-alias operator="*">
+                    <complex-alias-field entity-alias="OITM" field="quantity"/>
+                    <complex-alias-field entity-alias="OITM" field="unitAmount"/>
+                </complex-alias>
+            </when></case>
+        </alias>
+        <alias name="netSales" function="sum"><complex-alias operator="*">
+            <complex-alias-field entity-alias="OITM" field="quantity"/>
+            <complex-alias-field entity-alias="OITM" field="unitAmount"/>
+        </complex-alias></alias>
+        <alias name="partStatusId" entity-alias="OPRT" field="statusId"/>
+        <alias name="vendorPartyId" entity-alias="OPRT"/>
+        <alias name="customerPartyId" entity-alias="OPRT"/>
+        <alias name="orderStatusId" entity-alias="OHDR" field="statusId"/>
+        <alias name="placedDate" entity-alias="OHDR"/>
+        <alias name="productStoreId" entity-alias="OHDR"/>
+    </view-entity>
 </entities>

@@ -18,7 +18,7 @@
                                       in-map="[partyId:partyId, getAll:true]"/>
                     </actions>
                     <widgets>
-                        <label text="${party.organizationName}" type="h1"/>
+                        <label text="${party.organizationName}" type="h3"/>
                         <container-box type="default"><box-header title="Sales Account Summary"/>
                             <box-body-nopad>
                                 <!-- Display primary website and phone -->
@@ -69,6 +69,7 @@
                     <actions>
                         <entity-find entity-name="mantle.party.PartyRelationship" list="contactList">
                             <econdition field-name="toPartyId" from="partyId"/>
+                            <econdition field-name="fromRoleTypeId" value="Contact"/>
                         </entity-find>
                         <entity-find-count entity-name="mantle.party.PartyRelationship" count-field="relationshipCount">
                             <econdition field-name="toPartyId" from="partyId"/></entity-find-count>

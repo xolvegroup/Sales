@@ -57,4 +57,41 @@ along with this software (see the LICENSE.md file). If not, see
             feedDeleteServiceName="org.moqui.search.SearchServices.delete#DataDocument">
         <documents dataDocumentId="MantleSalesOpportunity"/>
     </moqui.entity.feed.DataFeed>
+
+    <!-- Add PartyRelationship to MantleParty  -->
+    <dataDocuments dataDocumentId="MantleParty" indexName="mantle" documentName="Party"
+                   primaryEntityName="mantle.party.Party" documentTitle="PartyNameTemplate">
+        <!-- fromRelationships
+        Only using toRelationships for now. To index both (from and to) the aliases on the role fields must be unique or an error is thrown when indexing.
+        Note the "f" in front of the alias names on the role fields.
+        <fields fieldSeqId="1001" fieldPath="fromRelationships:partyRelationshipId"/>
+        <fields fieldSeqId="1002" fieldPath="fromRelationships:relationshipTypeEnumId"/>
+        <fields fieldSeqId="1003" fieldPath="fromRelationships:fromPartyId"/>
+        <fields fieldSeqId="1004" fieldPath="fromRelationships:fromRoleTypeId" fieldNameAlias"ffromroleTypeId"/>
+        <fields fieldSeqId="1005" fieldPath="fromRelationships:fromRole:description" fieldNameAlias="ffromRole"/>
+        <fields fieldSeqId="1006" fieldPath="fromRelationships:toPartyId"/>
+        <fields fieldSeqId="1007" fieldPath="fromRelationships:toRoleTypeId" fieldNameAlias="ftoRoleTypeId"/>
+        <fields fieldSeqId="1008" fieldPath="fromRelationships:toRole:description" fieldNameAlias="ftoRole"/>
+        <fields fieldSeqId="1009" fieldPath="fromRelationships:fromDate"/>
+        <fields fieldSeqId="1010" fieldPath="fromRelationships:thruDate"/>
+        <fields fieldSeqId="1011" fieldPath="fromRelationships:statusId"/>
+        <fields fieldSeqId="1012" fieldPath="fromRelationships:comments"/>
+        <fields fieldSeqId="1013" fieldPath="fromRelationships:relationshipName"/>
+        -->
+        <!-- toRelationships-
+        Alias is required on the role fields or an error is thrown when indexing. Not sure why.-->
+        <fields fieldSeqId="1021" fieldPath="toRelationships:partyRelationshipId"/>
+        <fields fieldSeqId="1022" fieldPath="toRelationships:relationshipTypeEnumId"/>
+        <fields fieldSeqId="1023" fieldPath="toRelationships:fromPartyId"/>
+        <fields fieldSeqId="1024" fieldPath="toRelationships:fromRoleTypeId"/>
+        <fields fieldSeqId="1025" fieldPath="toRelationships:fromRole:description" fieldNameAlias="fromRole"/>
+        <fields fieldSeqId="1026" fieldPath="toRelationships:toPartyId"/>
+        <fields fieldSeqId="1027" fieldPath="toRelationships:toRoleTypeId"/>
+        <fields fieldSeqId="1028" fieldPath="toRelationships:toRole:description" fieldNameAlias="toRole"/>
+        <fields fieldSeqId="1029" fieldPath="toRelationships:fromDate"/>
+        <fields fieldSeqId="1030" fieldPath="toRelationships:thruDate"/>
+        <fields fieldSeqId="1031" fieldPath="toRelationships:statusId"/>
+        <fields fieldSeqId="1032" fieldPath="toRelationships:comments"/>
+        <fields fieldSeqId="1033" fieldPath="toRelationships:relationshipName"/>
+    </dataDocuments>
 </entity-facade-xml>
