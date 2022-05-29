@@ -132,4 +132,84 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
+    <service verb="get" noun="PublishedWikiPageText">
+        <in-parameters>
+            <parameter name="wikiSpaceId" required="true"/>
+            <parameter name="pagePath" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="pageText"/>
+        </out-parameters>
+        <actions>
+            <service-call name="org.moqui.impl.WikiServices.get#PublishedWikiPageText" out-map="wikiPage">
+                <field-map field-name="wikiSpaceId" from="wikiSpaceId"/>
+                <field-map field-name="pagePath" from="pagePath"/>
+            </service-call>
+            <set field="pageText" from="wikiPage.pageText"/>
+        </actions>
+    </service>
+    <service verb="search" noun="Opportunity">
+        <in-parameters>
+            <parameter name="anyField"/>
+            <parameter name="accountPartyId"/>
+            <parameter name="name"/>
+            <parameter name="partyId"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="queryString"/>
+            <parameter name="documentList" type="List"><parameter name="document" type="Map"/></parameter>
+            <parameter name="documentListCount" type="Integer"/>
+            <parameter name="documentListPageIndex" type="Integer"/>
+            <parameter name="documentListPageSize" type="Integer"/>
+            <parameter name="documentListPageMaxIndex" type="Integer"/>
+            <parameter name="documentListPageRangeLow" type="Integer"/>
+            <parameter name="documentListPageRangeHigh" type="Integer"/>
+        </out-parameters>
+        <actions>
+            <set field="indexName" value="mantle_sales_oppy"/>
+            <set field="documentType" value="MantleSalesOpportunity"/>
+            <!-- Build the query string based on input parameters -->
+            <if condition="accountPartyId">
+                    <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'accountPartyId:' + accountPartyId"/>
+            </if>
+            <if condition="name">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'name:' + name"/>
+            </if>
+            <if condition="partyId">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'partyId:' + partyId"/>
+            </if>
+            <!--<set field="queryString" value="*"/>-->
+            <!-- The following is taken from search#Party to enforce org security -->
+            <!-- if we have activeOrgId or filterOrgIds see if user has active org or user org filters -->
+            <set field="activeOrgId" from="ec.user.context?.activeOrgId"/>
+            <set field="filterOrgIds" from="ec.user.context?.filterOrgIds"/>
+            <!-- NOTE: using entityFilterSetId is a hack that only works for these 'standard' filter sets, would be
+                better to pick apart filterMap to see what's used, but this is specific to activeOrgId and filterOrgIds anyway -->
+            <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.party.Party')"/>
+            <if condition="findFilters"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
+            <!-- <log level="warn" message="Doing party search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
+            <script><![CDATA[
+                if (queryString) {
+                    if ('MANTLE_USER_ORG'.equals(entityFilterSetId)) {
+                        queryString = (queryString ? queryString + ' AND ' : '' ) + 'ownerPartyId:(' + (filterOrgIds ? filterOrgIds.join(' OR ') + ' OR ' : '') + '_NA_)'
+                    } else if ('MANTLE_ACTIVE_ORG'.equals(entityFilterSetId) && activeOrgId) {
+                        queryString = (queryString ? queryString + ' AND ' : '' ) + 'ownerPartyId:(' + activeOrgId + ' OR _NA_)'
+                    }
+                }
+            ]]></script>
+            <if condition="queryString">
+                <!--<service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context" in-map="context"/>-->
+                <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
+                              in-map="[indexName:indexName, documentType:documentType, queryString:queryString,orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
+                             pageIndex:pageIndex, pageSize:pageSize, pageNoLimit:pageNoLimit]"/>
+                <!-- The following call is taken from PartyServices search#Party.
+                    The "flattenDocument:false" causes Sales Person (partyId) to not be displayed. Not sure why.
+                <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
+                              in-map="[indexName:indexName, documentType:documentType, queryString:queryString, flattenDocument:false,
+                             orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
+                             pageIndex:pageIndex, pageSize:pageSize, pageNoLimit:pageNoLimit]"/>
+                -->
+            </if>
+        </actions>
+    </service>
 </services>

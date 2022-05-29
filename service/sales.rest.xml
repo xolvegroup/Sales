@@ -32,7 +32,8 @@ along with this software (see the LICENSE.md file). If not, see
             </method>
             <id name="pagePath">
                 <method type="get">
-                    <service name="org.moqui.impl.WikiServices.get#PublishedWikiPageText"/>
+                    <service name="sales.SalesServices.get#PublishedWikiPageText"/>
+                    <!--<service name="org.moqui.impl.WikiServices.get#PublishedWikiPageText"/>-->
                 </method>
             </id>
         </id>
