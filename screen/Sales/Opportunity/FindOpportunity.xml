@@ -3,8 +3,10 @@
         require-authentication="true" default-menu-title="Find Opportunity">
 
     <transition name="viewAccount"><default-response url="../../Account/ViewAccount"/></transition>
+    <transition name="viewOpportunity"><default-response url="../ViewOpportunity"/></transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
-
+    <transition name="createOpportunity"><service-call name="sales.SalesServices.create#Opportunity"/>
+        <default-response url="../ViewOpportunity"/></transition>
     <pre-actions>
         <!--
         <set field="indexName" value="mantle_sales_oppy"/>
@@ -17,7 +19,28 @@
         <service-call name="sales.SalesServices.search#Opportunity" in-map="context" out-map="context"/>
     </actions>
     <widgets>
-
+        <container-dialog id="CreateOpportunityDialog" button-text="New Opportunity">
+            <form-single name="CreateOpportunityForm" transition="createOpportunity">
+                <field name="accountPartyId"><default-field title="Sales Account"><drop-down allow-empty="false">
+                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'Account']"/>
+                </drop-down></default-field></field>
+                <field name="currencyUomId"><default-field title="Currency"><drop-down no-current-selected-key="${ec.user.getPreference('CurrencyDefault') ?: 'USD'}">
+                    <entity-options key="${uomId}" text="${description} [${uomId}]">
+                        <entity-find entity-name="moqui.basic.Uom">
+                            <econdition field-name="uomTypeEnumId" value="UT_CURRENCY_MEASURE"/>
+                            <order-by field-name="description"/>
+                        </entity-find></entity-options>
+                </drop-down></default-field></field>
+                <field name="estimatedAmount"><default-field title="Amount"><text-line size="10"/></default-field></field>
+                <field name="estimatedCloseDate"><default-field title="Close Date"><date-time type="date"/></default-field></field>
+                <field name="partyId"><default-field title="Sales Person"><drop-down allow-empty="true">
+                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'SalesRepresentative']"/>
+                </drop-down></default-field></field>
+                <field name="opportunityName"><default-field><text-line size="30"/></default-field></field>
+                <field name="description"><default-field><text-area/></default-field></field>
+                <field name="submitButton"><default-field title="Create Opportunity"><submit/></default-field></field>
+            </form-single>
+        </container-dialog>
         <form-list name="OpportunityList" list="documentList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
                    show-csv-button="true" show-xlsx-button="true" show-all-button="true">
             <field name="accountPartyId">
@@ -32,14 +55,14 @@
             </field>
             <field name="name">
                 <header-field title="Opportunity" show-order-by="true"><text-line size="40"/></header-field>
-                <default-field><display/></default-field>
+                <default-field><link url="viewOpportunity" text="${name}" link-type="anchor" parameter-map="[salesOpportunityId:salesOpportunityId]"/></default-field>
             </field>
             <field name="estimatedAmount">
                 <header-field title="Amount" show-order-by="true"/> <!-- TODO: Make this searchable as a range -->
                 <default-field><display currency-unit-field="currencyUomId"/></default-field>
             </field>
             <field name="estimatedCloseDate">
-                <header-field title="Close Date" show-order-by="true"/> <!-- TODO: Make this searchable as a range -->
+                <header-field title="Close Date" show-order-by="true"><date-time type="date"/></header-field>
                 <default-field><display/></default-field>
             </field>
             <field name="partyId">

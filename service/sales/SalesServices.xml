@@ -148,6 +148,28 @@ along with this software (see the LICENSE.md file). If not, see
             <set field="pageText" from="wikiPage.pageText"/>
         </actions>
     </service>
+    <service verb="create" noun="Opportunity">
+        <in-parameters>
+            <parameter name="accountPartyId"/>
+            <parameter name="partyId"/>
+            <parameter name="opportunityName"/>
+            <parameter name="currencyUomId"/>
+            <parameter name="estimatedAmount"/>
+            <parameter name="estimatedCloseDate"/>
+            <parameter name="description"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="salesOpportunityId"/>
+        </out-parameters>
+        <actions>
+            <!-- create Opportunity and Assign Sales Person -->
+            <service-call name="create#mantle.sales.opportunity.SalesOpportunity" in-map="context" out-map="newSalesOpportunityOut"/>
+            <set field="salesOpportunityId" from="newSalesOpportunityOut.salesOpportunityId"/>
+            <if condition="partyId">
+                <service-call name="create#mantle.sales.opportunity.SalesOpportunityParty" in-map="context + [roleTypeId:'SalesRepresentative']"/>
+            </if>
+        </actions>
+    </service>
     <service verb="search" noun="Opportunity">
         <in-parameters>
             <parameter name="anyField"/>
@@ -176,7 +198,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'name:' + name"/>
             </if>
             <if condition="partyId">
-                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'partyId:' + partyId"/>
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'SalesOpportunityParty.partyId:' + partyId"/>
             </if>
             <!--<set field="queryString" value="*"/>-->
             <!-- The following is taken from search#Party to enforce org security -->
@@ -187,7 +209,6 @@ along with this software (see the LICENSE.md file). If not, see
                 better to pick apart filterMap to see what's used, but this is specific to activeOrgId and filterOrgIds anyway -->
             <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.party.Party')"/>
             <if condition="findFilters"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
-            <!-- <log level="warn" message="Doing party search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
             <script><![CDATA[
                 if (queryString) {
                     if ('MANTLE_USER_ORG'.equals(entityFilterSetId)) {
@@ -197,7 +218,7 @@ along with this software (see the LICENSE.md file). If not, see
                     }
                 }
             ]]></script>
-            <if condition="queryString">
+            <if condition="!queryString"><set field="queryString" value="*:*"/></if>
                 <!--<service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context" in-map="context"/>-->
                 <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
                               in-map="[indexName:indexName, documentType:documentType, queryString:queryString,orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
@@ -209,7 +230,6 @@ along with this software (see the LICENSE.md file). If not, see
                              orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
                              pageIndex:pageIndex, pageSize:pageSize, pageNoLimit:pageNoLimit]"/>
                 -->
-            </if>
         </actions>
     </service>
 </services>

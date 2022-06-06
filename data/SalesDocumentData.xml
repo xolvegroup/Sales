@@ -29,12 +29,13 @@ along with this software (see the LICENSE.md file). If not, see
         <fields fieldSeqId="03" fieldPath="accountPartyId"/>
         <fields fieldSeqId="04" fieldPath="opportunityName" fieldNameAlias="name"/>
         <fields fieldSeqId="05" fieldPath="description"/>
-        <fields fieldSeqId="08" fieldPath="nextStep"/>
-        <fields fieldSeqId="09" fieldPath="estimatedAmount"/>
-        <fields fieldSeqId="10" fieldPath="currencyUomId"/>
-        <fields fieldSeqId="11" fieldPath="marketingCampaignId"/>
-        <fields fieldSeqId="12" fieldPath="dataSourceId"/>
-        <fields fieldSeqId="13" fieldPath="opportunityStageId"/>
+        <fields fieldSeqId="06" fieldPath="estimatedCloseDate"/>
+        <fields fieldSeqId="07" fieldPath="nextStep"/>
+        <fields fieldSeqId="08" fieldPath="estimatedAmount"/>
+        <fields fieldSeqId="09" fieldPath="currencyUomId"/>
+        <fields fieldSeqId="10" fieldPath="marketingCampaignId"/>
+        <fields fieldSeqId="11" fieldPath="dataSourceId"/>
+        <fields fieldSeqId="12" fieldPath="opportunityStageId"/>
         <!--SalesOpportunityParty -->
         <!-- SalesOpportunity entities are not defined with relationship aliases so use entity names and full path of relationship -->
         <fields fieldSeqId="20" fieldPath="SalesOpportunityParty:partyId"/>
