@@ -1,6 +1,92 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-title="View Opportunity">
+
+    <parameter name="salesOpportunityId" required="true"/>
+    <subscreens default-item="Activity"/>
+
+    <transition name="updateOpportunity"><service-call name="update#mantle.sales.opportunity.SalesOpportunity"/>
+        <default-response url="."/></transition>
+    <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
+    <actions>
+        <!-- This approach is the same as what is used in EditParty screen -->
+        <entity-find-one entity-name="mantle.sales.opportunity.SalesOpportunity" value-field="opportunity"/>
+        <if condition="opportunity == null"><return error="true" message="Opportunity not found with ID ${salesOpportunityId}"/></if>
+        <entity-find-one entity-name="mantle.party.PartyDetail" value-field="accountDetail">
+            <field-map field-name="partyId" from="opportunity.accountPartyId"/></entity-find-one>
+    </actions>
     <widgets>
-        <label text="It worked!" type="h4"/>
+        <container-row>
+            <row-col lg="3">
+                <section name="OpportunitySummarySection">
+                    <widgets>
+                        <container-box type="default">
+                            <box-header title="${opportunity.opportunityName}"/>
+                                <box-toolbar>
+                                    <container-dialog id="UpdateOpportunityDialog" button-text="Edit">
+                                        <form-single name="UpdateOpportunityForm" transition="updateOpportunity" map="opportunity">
+                                            <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
+                                            <field name="accountPartyId"><default-field title="Sales Account"><drop-down allow-empty="false">
+                                                <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'Account']"/>
+                                            </drop-down></default-field></field>
+                                            <field name="currencyUomId"><default-field title="Currency"><drop-down no-current-selected-key="${ec.user.getPreference('CurrencyDefault') ?: 'USD'}">
+                                                <entity-options key="${uomId}" text="${description} [${uomId}]">
+                                                    <entity-find entity-name="moqui.basic.Uom">
+                                                        <econdition field-name="uomTypeEnumId" value="UT_CURRENCY_MEASURE"/>
+                                                        <order-by field-name="description"/>
+                                                    </entity-find></entity-options>
+                                            </drop-down></default-field></field>
+                                            <field name="estimatedAmount"><default-field title="Amount"><text-line size="10"/></default-field></field>
+                                            <field name="estimatedCloseDate"><default-field title="Close Date"><date-time type="date"/></default-field></field>
+                                            <field name="partyId"><default-field title="Sales Person"><drop-down allow-empty="true">
+                                                <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'SalesRepresentative']"/>
+                                            </drop-down></default-field></field>
+                                            <field name="opportunityName"><default-field><text-line size="30"/></default-field></field>
+                                            <field name="description"><default-field><text-area/></default-field></field>
+                                            <field name="submitButton"><default-field title="Save"><submit/></default-field></field>
+                                        </form-single>
+                                    </container-dialog>
+                                </box-toolbar>
+                                <box-body-nopad>
+                                    <label text="Display using a container..." type="strong"/>
+                                    <container-row>
+                                        <row-col lg="4"><label text="Sales Account: "/></row-col>
+                                        <row-col lg="8"><label text="PartyNameOnlyTemplate" text-map="accountDetail" condition="accountDetail"/></row-col>
+                                    </container-row>
+                                    <container-row>
+                                        <row-col lg="4"><label text="Amount: "/></row-col>
+                                        <row-col lg="8"><label text="${ec.l10n.formatCurrency(opportunity.estimatedAmount ?: 0, opportunity?.currencyUomId)}"/></row-col>
+                                    </container-row>
+                                    <container-row>
+                                        <row-col lg="4"><label text="Stage: "/></row-col>
+                                        <row-col lg="8"><label text="${opportunity.opportunityStageId}"/></row-col> <!-- TODO: Display description from SalesOpportunityStage entity -->
+                                    </container-row>
+                                    <container-row>
+                                        <row-col lg="4"><label text="Close Date: "/></row-col>
+                                        <row-col lg="8"><label text="${ec.l10n.format(opportunity.estimatedCloseDate,'yyyy-MM-dd')}"/></row-col> <!-- TODO: make date format dynamic based on user locale -->
+                                    </container-row>
+                                    <container-row>
+                                        <row-col lg="4"><label text="Description: "/></row-col>
+                                        <row-col lg="8"><label text="${opportunity.description}"/></row-col> <!-- TODO: make date format dynamic based on user locale -->
+                                    </container-row>
+                                    <label text="Or display using a form..." type="strong"/>
+                                    <form-single name="OpportunityForm" map="opportunity">
+                                        <field name="accountPartyId"><default-field title="Sales Account"><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/></default-field></field>
+                                        <field name="estimatedAmount"><default-field title="Amount"><display currency-unit-field="currencyUomId"/></default-field></field>
+                                        <field name="opportunityStageId"><default-field title="Stage"><display-entity entity-name="SalesOpportunityStage"/></default-field></field>
+                                        <field name="estimatedCloseDate"><default-field title="Close Date"><display format="yyyy-MM-dd"/></default-field></field>
+                                        <field name="description"><default-field title="Description"><display/></default-field></field>
+                                    </form-single>
+                                </box-body-nopad>
+                        </container-box>
+                    </widgets>
+                </section>
+            </row-col>
+            <row-col lg="6">
+                <subscreens-panel id="CenterPanel" type="tab"/>
+            </row-col>
+            <row-col lg="3">
+
+            </row-col>
+        </container-row>
     </widgets>
 </screen>

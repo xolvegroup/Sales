@@ -1,16 +1,14 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-title="View Account">
     <parameter name="partyId" required="true"/>
-    <subscreens default-item="Activity">
-    </subscreens>
+    <subscreens default-item="Activity"/>
     <actions>
         <!-- This approach is the same as what is used in EditParty screen -->
         <entity-find-one entity-name="mantle.party.PartyDetail" value-field="party"/>
         <if condition="party == null"><return error="true" message="Party not found with ID ${partyId}"/></if>
     </actions>
     <widgets>
-        <container-row>
-            <row-col lg="3">
+        <container-row><row-col lg="3">
                 <section name="PartySummarySection">
                     <actions>
                         <!-- this approach is the same as what is used in EditParty screen -->
@@ -18,8 +16,7 @@
                                       in-map="[partyId:partyId, getAll:true]"/>
                     </actions>
                     <widgets>
-                        <label text="${party.organizationName}" type="h3"/>
-                        <container-box type="default"><box-header title="Sales Account Summary"/>
+                        <container-box type="default"><box-header title="${party.organizationName}"/>
                             <box-body-nopad>
                                 <!-- Display primary website and phone -->
                                 <section-iterate name="WebInfoSection" list="contactOut.webAddressList" entry="contactInfo">

@@ -57,13 +57,13 @@
                 <header-field title="Opportunity" show-order-by="true"><text-line size="40"/></header-field>
                 <default-field><link url="viewOpportunity" text="${name}" link-type="anchor" parameter-map="[salesOpportunityId:salesOpportunityId]"/></default-field>
             </field>
-            <field name="estimatedAmount">
+            <field name="estimatedAmount" align="right">
                 <header-field title="Amount" show-order-by="true"/> <!-- TODO: Make this searchable as a range -->
                 <default-field><display currency-unit-field="currencyUomId"/></default-field>
             </field>
             <field name="estimatedCloseDate">
                 <header-field title="Close Date" show-order-by="true"><date-time type="date"/></header-field>
-                <default-field><display/></default-field>
+                <default-field><display text="${ec.l10n.format(estimatedCloseDate,'yyyy-MM-dd')}"/></default-field> <!-- TODO: make date format dynamic based on user locale -->
             </field>
             <field name="partyId">
                 <header-field title="Sales Person" show-order-by="true">
