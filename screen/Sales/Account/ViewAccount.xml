@@ -62,14 +62,14 @@
             </row-col>
             <row-col lg="3">
                 <section name="ContactSection">
-
                     <actions>
                         <entity-find entity-name="mantle.party.PartyRelationship" list="contactList">
                             <econdition field-name="toPartyId" from="partyId"/>
                             <econdition field-name="fromRoleTypeId" value="Contact"/>
                         </entity-find>
                         <entity-find-count entity-name="mantle.party.PartyRelationship" count-field="relationshipCount">
-                            <econdition field-name="toPartyId" from="partyId"/></entity-find-count>
+                            <econdition field-name="toPartyId" from="partyId"/>
+                            <econdition field-name="fromRoleTypeId" value="Contact"/></entity-find-count>
                     </actions>
 
                     <widgets>

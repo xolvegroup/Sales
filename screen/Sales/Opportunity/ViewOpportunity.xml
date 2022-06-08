@@ -6,6 +6,10 @@
 
     <transition name="updateOpportunity"><service-call name="update#mantle.sales.opportunity.SalesOpportunity"/>
         <default-response url="."/></transition>
+    <transition name="addParty"><service-call name="create#mantle.sales.opportunity.SalesOpportunityParty"/>
+        <default-response url="."/></transition>
+    <transition name="removeParty"><service-call name="delete#mantle.sales.opportunity.SalesOpportunityParty"/>
+        <default-response url="."/></transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
     <actions>
         <!-- This approach is the same as what is used in EditParty screen -->
@@ -19,7 +23,7 @@
             <row-col lg="3">
                 <section name="OpportunitySummarySection">
                     <widgets>
-                        <container-box type="default">
+                        <container-box>
                             <box-header title="${opportunity.opportunityName}"/>
                                 <box-toolbar>
                                     <container-dialog id="UpdateOpportunityDialog" button-text="Edit">
@@ -48,8 +52,8 @@
                                 </box-toolbar>
                                 <box-body-nopad>
                                     <label text="Display using a container..." type="strong"/>
-                                    <container-row>
-                                        <row-col lg="4"><label text="Sales Account: "/></row-col>
+                                    <container-row style="color:red">
+                                        <row-col lg="4" style="color:red"><label text="Sales Account: "/></row-col>
                                         <row-col lg="8"><label text="PartyNameOnlyTemplate" text-map="accountDetail" condition="accountDetail"/></row-col>
                                     </container-row>
                                     <container-row>
@@ -68,6 +72,7 @@
                                         <row-col lg="4"><label text="Description: "/></row-col>
                                         <row-col lg="8"><label text="${opportunity.description}"/></row-col> <!-- TODO: make date format dynamic based on user locale -->
                                     </container-row>
+                                    <!--
                                     <label text="Or display using a form..." type="strong"/>
                                     <form-single name="OpportunityForm" map="opportunity">
                                         <field name="accountPartyId"><default-field title="Sales Account"><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/></default-field></field>
@@ -76,7 +81,50 @@
                                         <field name="estimatedCloseDate"><default-field title="Close Date"><display format="yyyy-MM-dd"/></default-field></field>
                                         <field name="description"><default-field title="Description"><display/></default-field></field>
                                     </form-single>
+                                    -->
                                 </box-body-nopad>
+                        </container-box>
+                    </widgets>
+                </section>
+                <section name="SalesTeamSection">
+                    <actions>
+                        <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityParty" list="salesTeamList">
+                            <econdition field-name="salesOpportunityId" from="salesOpportunityId"/>
+                            <econdition field-name="roleTypeId" value="SalesRepresentative"/>
+                        </entity-find>
+                    </actions>
+                    <widgets>
+                        <container-box>
+                            <box-header title="Sales Team"/>
+                            <box-toolbar>
+                                <container-dialog id="AddSalesPerson" button-text="Add Sales Person">
+                                    <form-single name="AddSalesPersonForm" transition="addParty" map="opportunity">
+                                        <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
+                                        <field name="roleTypeId"><default-field><hidden default-value="SalesRepresentative"/></default-field></field>
+                                        <!-- Select Party with role SalesRepresentative. How to exclude those already added? -->
+                                        <field name="partyId"><default-field title="Sales Person"><drop-down allow-empty="false">
+                                            <entity-options key="${partyId}" text="PartyNameOnlyTemplate">
+                                                <entity-find entity-name="mantle.party.PartyDetailAndRole">
+                                                    <econdition field-name="roleTypeId" value="SalesRepresentative"/>
+                                                </entity-find></entity-options>
+                                        </drop-down></default-field></field>
+                                        <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                                    </form-single>
+                                </container-dialog>
+                            </box-toolbar>
+                            <box-body-nopad>
+                                <form-list name="SalesTeamList" list="salesTeamList" skip-header="true">
+                                    <field name="partyId">
+                                        <default-field title="Sales Representative">
+                                            <display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
+                                        </default-field>
+                                    </field>
+                                    <field name="removeButton" align="right"><default-field>
+                                        <link url="removeParty" icon="fa fa-trash"
+                                              confirmation="Are you sure you want to remove this sales person?"/></default-field>
+                                    </field>
+                                </form-list>
+                            </box-body-nopad>
                         </container-box>
                     </widgets>
                 </section>
@@ -85,7 +133,75 @@
                 <subscreens-panel id="CenterPanel" type="tab"/>
             </row-col>
             <row-col lg="3">
+                <section name="ContactSection">
+                    <actions>
+                        <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityParty" list="contactList">
+                            <econdition field-name="salesOpportunityId" from="salesOpportunityId"/>
+                            <econdition field-name="roleTypeId" value="Contact"/>
+                        </entity-find>
+                    </actions>
+                    <widgets>
+                        <container-box>
+                            <box-header title="Contacts"/>
+                            <box-toolbar>
+                                <container-dialog id="AddContact" button-text="Add Contact">
+                                    <form-single name="AddContactForm" transition="addParty" map="opportunity">
+                                        <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
+                                        <field name="roleTypeId"><default-field><hidden default-value="Contact"/></default-field></field>
+                                        <!-- accountPartyId = toPartyId in PartyRelationship and fromRoleType = Contact. How to exclude those already added? -->
+                                        <field name="partyId"><default-field title="Contact"><drop-down allow-empty="false">
+                                            <entity-options key="${fromPartyId}" text="PartyNameOnlyTemplate">
+                                                <entity-find entity-name="mantle.party.PartyFromAndRelationship">
+                                                    <econdition field-name="toPartyId" from="accountPartyId"/>
+                                                    <econdition field-name="fromRoleTypeId" value="Contact"/>
+                                                </entity-find></entity-options>
+                                        </drop-down></default-field></field>
+                                        <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                                    </form-single>
+                                </container-dialog>
+                            </box-toolbar>
+                            <box-body-nopad>
+                                <form-list name="ContactList" list="contactList" skip-header="true">
+                                    <field name="partyId">
+                                        <default-field title="Contact">
+                                            <display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
+                                        </default-field>
+                                    </field>
+                                    <field name="removeButton" align="right"><default-field>
+                                        <link url="removeParty" icon="fa fa-trash"
+                                              confirmation="Are you sure you want to remove this contact?"/></default-field>
+                                    </field>
+                                </form-list>
+                            </box-body-nopad>
+                        </container-box>
+                    </widgets>
+                </section>
+                <section name="AttachmentSection">
+                    <widgets>
+                        <container-box><box-header title="Attachments"/><box-toolbar>
+                        <container-dialog id="UploadAttachmentDialog" button-text="Upload">
+                            <!-- Taken from wiki page. Need to know how to attach to other entities.
+                            <form-single name="UploadAttachment" transition="uploadAttachment">
+                                <field name="wikiSpaceId"><default-field><hidden/></default-field></field>
+                                <field name="pagePath"><default-field><hidden/></default-field></field>
+                                <field name="attachmentFile"><default-field><file/></default-field></field>
+                                <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                            </form-single>
+                            -->
+                        </container-dialog>
+                        </box-toolbar></container-box>
+                    </widgets>
+                </section>
+                <section name="QuoteSection">
+                    <widgets>
+                        <container-box>
+                            <box-header title="Quotes">
 
+                            </box-header>
+                        </container-box>
+
+                    </widgets>
+                </section>
             </row-col>
         </container-row>
     </widgets>
