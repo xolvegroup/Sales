@@ -17,7 +17,7 @@ along with this software (see the LICENSE.md file). If not, see
     <service verb="create" noun="Task">
         <in-parameters>
             <parameter name="workEffortId"><matches regexp="[A-Za-z0-9]{1,8}"
-                    message="Project ID must be only letters and digits and between 1 and 8 characters long"/></parameter>
+                    message="Task ID must be only letters and digits and between 1 and 8 characters long"/></parameter>
             <auto-parameters entity-name="mantle.work.effort.WorkEffort" include="nonpk"/>
             <parameter name="workEffortName" required="true"/>
             <parameter name="estimatedStartDate" type="Timestamp" format="yyyy-MM-dd"/>
@@ -30,6 +30,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="assignToPartyId"/>
             <parameter name="assignRoleTypeId" default-value="Assignee"/>
             <parameter name="assignStatusId" default-value="WeptAssigned"/>
+            <parameter name="salesOpportunityId"/>
         </in-parameters>
         <out-parameters><parameter name="workEffortId"/></out-parameters>
         <actions>
@@ -43,11 +44,18 @@ along with this software (see the LICENSE.md file). If not, see
                               in-map="[workEffortId:workEffortId, partyId:ec.user.userAccount.partyId,
                             roleTypeId:'Assignee', fromDate:ec.user.nowTimestamp, statusId:'WeptAssigned']"/>
             </if>
+            <!-- May need to put an if statement around this and NOT relate to customer if it is for an opportunity.
+              The reason is because if the sales account were changed on the opportunity then these work efforts would be wrong. -->
             <service-call name="create#mantle.work.effort.WorkEffortParty" in-map="[workEffortId:workEffortId,
                         partyId:accountPartyId, roleTypeId:'Customer', fromDate:ec.user.nowTimestamp]"/>
             <if condition="assignToPartyId">
                 <service-call name="create#mantle.work.effort.WorkEffortParty" in-map="[workEffortId:workEffortId, partyId:assignToPartyId,
                         roleTypeId:'assignRoleTypeId', fromDate:ec.user.nowTimestamp, statusId:assignStatusId]"/>
+            </if>
+            <!-- Add in parameter for salesOpportunityId. If exists, call service to create SalesOpportunityWorkEffort -->
+            <if condition="salesOpportunityId">
+                <service-call name="create#mantle.sales.opportunity.SalesOpportunityWorkEffort"
+                              in-map="[workEffortId:workEffortId,salesOpportunityId:salesOpportunityId]"/>
             </if>
         </actions>
     </service>
@@ -170,6 +178,159 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
+    <service verb="search" noun="Party"><description>This is a copy of search#Party for PartyServices.
+        The parameter "fromPartyId" is added so you can filter for a specific sales person.
+        This also depends on the toRelationships that were added to the out of the box dataDocuments definition.</description>
+        <in-parameters>
+            <parameter name="searchPartyIndexName" default-value="mantle_party"/>
+            <parameter name="searchPartyDocType" default-value="MantleParty"/>
+            <parameter name="anyField"/>
+
+            <parameter name="roleTypeId"/><parameter name="partyClassificationId"/>
+            <parameter name="pseudoId"/><parameter name="idValue"/><parameter name="gatewayCimId"/>
+            <parameter name="disabled"/><parameter name="hasDuplicates"/>
+            <parameter name="customerStatusId"/><parameter name="partyTypeEnumId"/>
+            <parameter name="username"/>
+
+            <parameter name="combinedName"/><parameter name="organizationName"/>
+            <parameter name="firstName"/><parameter name="lastName"/>
+
+            <parameter name="infoString"/>
+            <parameter name="areaCode"/><parameter name="contactNumber"/>
+            <parameter name="address1"/><parameter name="address2"/><parameter name="unitNumber"/>
+            <parameter name="city"/><parameter name="stateProvinceGeoId"/><parameter name="postalCode"/>
+
+            <parameter name="orderByField"/>
+            <parameter name="pageIndex" type="Integer" default="0"/>
+            <parameter name="pageSize" type="Integer" default="20"/>
+            <parameter name="pageNoLimit" type="Boolean" default="false"/>
+
+            <parameter name="fromPartyId"/> <!-- Sales Person -->
+        </in-parameters>
+        <out-parameters>
+            <parameter name="queryString"/>
+            <parameter name="documentList" type="List"><parameter name="document" type="Map"/></parameter>
+            <parameter name="documentListCount" type="Integer"/>
+            <parameter name="documentListPageIndex" type="Integer"/>
+            <parameter name="documentListPageSize" type="Integer"/>
+            <parameter name="documentListPageMaxIndex" type="Integer"/>
+            <parameter name="documentListPageRangeLow" type="Integer"/>
+            <parameter name="documentListPageRangeHigh" type="Integer"/>
+        </out-parameters>
+        <actions>
+            <set field="indexName" from="searchPartyIndexName ?: 'mantle_party'"/>
+            <set field="documentType" from="searchPartyDocType ?: 'MantleParty'"/>
+            <!-- <set field="orderByField" from="orderByField ?: 'combinedName'"/> -->
+            <set field="nestedQueryMap" from="[:]"/>
+            <set field="nowTimeLong" from="System.currentTimeMillis()"/>
+
+            <!-- auto prefix with '*:' so that highlighting works -->
+            <set field="queryString" from="anyField ? elasticQueryAutoWildcard(anyField, true) : ''"/>
+
+            <if condition="queryString"><set field="queryString" from="'(' + queryString + ')'"/></if>
+
+            <if condition="roleTypeId">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'roles.roleTypeId:' + roleTypeId"/></if>
+            <if condition="fromPartyId"> <!-- Filter on sales person -->
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'toRelationships.fromPartyId:' + fromPartyId"/></if>
+            <if condition="partyClassificationId">
+                <set field="nestedQueryMap.classifications" from="[bool:[filter:[
+                        [term:['classifications.partyClassificationId':partyClassificationId]],
+                        [range:['classifications.classFromDate':[lte:nowTimeLong]]]
+                    ], should:[
+                        [range:['classifications.classThruDate':[gte:nowTimeLong]]],
+                        [bool:[must_not:[exists:[field:'classifications.classThruDate']]]]
+                    ], minimum_should_match:1]]"/>
+                <if condition="!queryString"><set field="queryString" value="*:*"/></if>
+                <!-- <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'classifications.partyClassificationId:' + partyClassificationId"/> -->
+            </if>
+
+            <if condition="pseudoId">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'pseudoId:' + pseudoId + '*'"/></if>
+            <if condition="idValue">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'identifications.idValue:' + idValue + '*'"/></if>
+            <if condition="gatewayCimId">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'gatewayCimId:' + gatewayCimId + '*'"/></if>
+
+            <if condition="username">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'userAccounts.username:' + username + '*'"/></if>
+            <if condition="disabled">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'disabled:' + disabled"/></if>
+            <if condition="hasDuplicates">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'hasDuplicates:' + hasDuplicates"/></if>
+
+            <if condition="combinedName">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'combinedName:*' + combinedName + '*'"/></if>
+            <if condition="organizationName">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'organizationName:' + organizationName + '*'"/></if>
+            <if condition="firstName">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'firstName:' + firstName + '*'"/></if>
+            <if condition="lastName">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'lastName:' + lastName + '*'"/></if>
+
+            <if condition="infoString">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.infoString:' + infoString + '*'"/></if>
+            <if condition="areaCode">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.areaCode:' + areaCode + '*'"/></if>
+            <if condition="contactNumber">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.contactNumber:' + contactNumber + '*'"/></if>
+
+            <if condition="address1">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.address1:*' + address1 + '*'"/></if>
+            <if condition="address2">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.address2:*' + address2 + '*'"/></if>
+            <if condition="unitNumber">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.unitNumber:*' + unitNumber + '*'"/></if>
+            <if condition="city">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.city:' + city + '*'"/></if>
+            <if condition="stateProvinceGeoId">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.stateProvinceGeoId:' + stateProvinceGeoId"/></if>
+            <if condition="postalCode">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'contactMechs.postalCode:' + postalCode + '*'"/></if>
+            <if condition="customerStatusId">
+                <if condition="customerStatusId == '_exists_'">
+                    <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + '_exists_:customerStatusId'"/>
+                    <else>
+                        <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'customerStatusId:' + customerStatusId + '*'"/>
+                    </else>
+                </if>
+            </if>
+            <if condition="partyTypeEnumId">
+                <set field="queryString" from="(queryString ? queryString + ' AND ' : '' ) + 'partyTypeEnumId:' + partyTypeEnumId + '*'"/></if>
+
+            <!-- if we have activeOrgId or filterOrgIds see if user has active org or user org filters -->
+            <set field="activeOrgId" from="ec.user.context?.activeOrgId"/>
+            <set field="filterOrgIds" from="ec.user.context?.filterOrgIds"/>
+            <!-- NOTE: using entityFilterSetId is a hack that only works for these 'standard' filter sets, would be
+                better to pick apart filterMap to see what's used, but this is specific to activeOrgId and filterOrgIds anyway -->
+            <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.party.Party')"/>
+            <if condition="findFilters"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
+            <!-- <log level="warn" message="Doing party search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
+            <script><![CDATA[
+                if (queryString) {
+                    if ('MANTLE_USER_ORG'.equals(entityFilterSetId)) {
+                        queryString = (queryString ? queryString + ' AND ' : '' ) + 'ownerPartyId:(' + (filterOrgIds ? filterOrgIds.join(' OR ') + ' OR ' : '') + '_NA_)'
+                    } else if ('MANTLE_ACTIVE_ORG'.equals(entityFilterSetId) && activeOrgId) {
+                        queryString = (queryString ? queryString + ' AND ' : '' ) + 'ownerPartyId:(' + activeOrgId + ' OR _NA_)'
+                    }
+                }
+            ]]></script>
+
+            <set field="orderByFields" from="orderByField ? [orderByField.replace('combinedName', 'combinedName.keyword').replace('username', 'userAccounts.username.keyword')] : null"/>
+            <set field="highlightFields" from="['roles.roleTypeId', 'classifications.class', 'pseudoId',
+                    'identifications.idValue', 'combinedName', 'firstName', 'lastName', 'organizationName', 'userAccounts.username',
+                    'contactMech.infoString', 'contactMechs.address1', 'contactMechs.unitNumber', 'contactMechs.postalCode',
+                    'contactMechs.city', 'contactMechs.state', 'contactMechs.areaCode', 'contactMechs.contactNumber', 'contactMechs.city']"/>
+            <!-- <log level="warn" message="Product search queryString: ${queryString}"/> -->
+            <if condition="queryString">
+                <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
+                              in-map="[indexName:indexName, documentType:documentType, queryString:queryString, flattenDocument:false,
+                             orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
+                             pageIndex:pageIndex, pageSize:pageSize, pageNoLimit:pageNoLimit]"/>
+            </if>
+        </actions>
+    </service>
+
     <service verb="search" noun="Opportunity">
         <in-parameters>
             <parameter name="anyField"/>
