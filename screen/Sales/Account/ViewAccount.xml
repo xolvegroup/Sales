@@ -1,6 +1,9 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-title="View Account">
     <parameter name="partyId" required="true"/>
+    <transition name="removeContactInfo"><service-call name="mantle.party.ContactServices.delete#PartyContactMech"/>
+        <default-response url="."/></transition>
+    <transition name="viewContact"><default-response url="../../Contact/ViewContact"/></transition>
     <subscreens default-item="Activity"/>
     <actions>
         <!-- This approach is the same as what is used in EditParty screen -->
@@ -8,7 +11,8 @@
         <if condition="party == null"><return error="true" message="Party not found with ID ${partyId}"/></if>
     </actions>
     <widgets>
-        <container-row><row-col lg="3">
+        <container-row>
+            <row-col lg="3">
                 <section name="PartySummarySection">
                     <actions>
                         <!-- this approach is the same as what is used in EditParty screen -->
@@ -75,7 +79,7 @@
                     <widgets>
                         <container-box type="default"><box-header title="Contacts"/>
                             <box-body-nopad>
-                                <label text="Contacts Related to Account: ${relationshipCount}"/>
+                                <label text="${relationshipCount} Contacts related to this Sales Account"/>
                                 <!-- Display contacts associated with sales account.
                                  How to do this with section-iterate and just display simple text?
                                 <section-iterate name="ContactIterateSection" list="contactList" entry="contact">
@@ -91,7 +95,8 @@
                                 <form-list name="ContactList" list="contactList" skip-header="true">
                                     <field name="fromPartyId">
                                         <default-field title="Contact Name">
-                                            <display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
+                                            <link url="viewContact" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:fromPartyId]"/>
+                                            <!--<display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>-->
                                         </default-field>
                                     </field>
                                 </form-list>

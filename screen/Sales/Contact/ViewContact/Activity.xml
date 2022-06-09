@@ -1,0 +1,23 @@
+
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        default-menu-title="Activities" default-menu-index="0">
+
+    <actions>
+        <entity-find entity-name="moqui.entity.EntityAuditLog" list="activityList">
+            <search-form-inputs default-order-by="-changedDate"/>
+            <econditions>
+                <econdition field-name="changedEntityName" value="mantle.party.Party"/>
+                <econdition field-name="pkPrimaryValue" from="partyId"/>
+            </econditions>
+        </entity-find>
+    </actions>
+    <widgets>
+        <form-list name="ContactActivity" list="activityList">
+            <field name="changedDate"><header-field show-order-by="true"/> <default-field><display/></default-field></field>
+            <field name="changedByUserId"><default-field title="User Name"><display-entity entity-name="moqui.security.UserAccount"/></default-field></field>
+            <field name="changedFieldName"><default-field><display/></default-field></field>
+            <field name="oldValueText"><default-field title="Old Value"><display/></default-field></field>
+            <field name="newValueText"><default-field title="New Value"><display/></default-field></field>
+        </form-list>
+    </widgets>
+</screen>

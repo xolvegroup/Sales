@@ -1,16 +1,105 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-title="View Contact">
+    <parameter name="partyId" required="true"/>
+    <transition name="removeContactInfo"><service-call name="mantle.party.ContactServices.delete#PartyContactMech"/>
+        <default-response url="."/></transition>
+    <transition name="viewAccount"><default-response url="../../Account/ViewAccount"/></transition>
+    <subscreens default-item="Activity"/>
+    <actions>
+        <!-- This approach is the same as what is used in EditParty screen -->
+        <entity-find-one entity-name="mantle.party.PartyDetail" value-field="party"/>
+        <if condition="party == null"><return error="true" message="Party not found with ID ${partyId}"/></if>
+    </actions>
     <widgets>
-        <label text="It worked!" type="h4"/>
         <container-row>
             <row-col lg="3">
-                <label text="It Worked" type="p"/>
+                <section name="PartySummarySection">
+                    <actions>
+                        <!-- this approach is the same as what is used in EditParty screen -->
+                        <service-call name="mantle.party.ContactServices.get#PartyContactInfoList" out-map="contactOut"
+                                      in-map="[partyId:partyId, getAll:true]"/>
+                    </actions>
+                    <widgets>
+                        <container-box type="default"><box-header title="${party.firstName} ${party.lastName}"/>
+                            <box-body-nopad>
+                                <!-- Display primary website and phone -->
+                                <section-iterate name="WebInfoSection" list="contactOut.webAddressList" entry="contactInfo">
+                                    <widgets><container-row><row-col lg="7">
+                                        <!--<link url="${contactInfo.webAddress}" text="${contactInfo.webAddress}" link-type="anchor"/> -->
+                                        <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
+                                    </row-col><row-col lg="5">
+                                        <dynamic-dialog id="UpdateWebInfo" button-text="Update" transition="UpdateContactInfo"
+                                                        parameter-map="[partyId:partyId, webContactMechId:contactInfo.webContactMechId,
+                                        webContactMechPurposeId:contactInfo.webContactMechPurposeId]"/>
+                                        <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove Web URL?"
+                                              parameter-map="[partyId:partyId, contactMechId:contactInfo.webContactMechId,
+                                        contactMechPurposeId:contactInfo.webContactMechPurposeId]"/>
+                                    </row-col></container-row></widgets>
+                                </section-iterate>
+                                <section-iterate name="EmailInfoSection" list="contactOut.emailAddressList" entry="contactInfo"><widgets>
+                                    <container-row><row-col lg="7">
+                                        <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
+                                        </row-col><row-col lg="5">
+                                        <dynamic-dialog id="UpdateEmailInfo" button-text="Update" transition="UpdateContactInfo"
+                                                        parameter-map="[partyId:partyId, emailContactMechId:contactInfo.emailContactMechId,
+                                        emailContactMechPurposeId:contactInfo.emailContactMechPurposeId]"/>
+                                        <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove email address?"
+                                              parameter-map="[partyId:partyId, contactMechId:contactInfo.emailContactMechId,
+                                        contactMechPurposeId:contactInfo.emailContactMechPurposeId]"/>
+                                    </row-col></container-row>
+                                </widgets></section-iterate>
+                                <section-iterate name="PhoneInfoSection" list="contactOut.telecomNumberList" entry="contactInfo">
+                                    <widgets><container-row><row-col lg="7">
+                                        <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
+                                    </row-col><row-col lg="5">
+                                        <dynamic-dialog id="UpdatePhoneInfo" button-text="Update" transition="UpdateContactInfo"
+                                                        parameter-map="[partyId:partyId, telecomContactMechId:contactInfo.telecomContactMechId,
+                                        telecomContactMechPurposeId:contactInfo.telecomContactMechPurposeId]"/>
+                                        <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove phone number?"
+                                              parameter-map="[partyId:partyId, contactMechId:contactInfo.telecomContactMechId,
+                                        contactMechPurposeId:contactInfo.telecomContactMechPurposeId]"/>
+                                    </row-col></container-row></widgets>
+                                </section-iterate>
+                                <button-menu text="Add New" icon="fa fa-plus">
+                                    <dynamic-dialog id="AddPhoneInfo" button-text="Phone" transition="UpdateContactInfo"
+                                                    parameter-map="[partyId:partyId, createTelecom:'true']"/>
+                                    <dynamic-dialog id="AddEmailInfo" button-text="Email" transition="UpdateContactInfo"
+                                                    parameter-map="[partyId:partyId, createEmail:'true']"/>
+                                    <dynamic-dialog id="AddWebUrlInfo" button-text="URL" transition="UpdateContactInfo"
+                                                    parameter-map="[partyId:partyId, createWeb:'true']"/>
+                                </button-menu>
+                            </box-body-nopad>
+                        </container-box>
+                    </widgets>
+                </section>
             </row-col>
             <row-col lg="6">
-                <label text="It Worked" type="p"/>
+                <subscreens-panel id="CenterPanel" type="tab"/>
             </row-col>
             <row-col lg="3">
-                <label text="It Worked" type="p"/>
+                <section name="AccountSection">
+                    <actions>
+                        <entity-find entity-name="mantle.party.PartyRelationship" list="accountList">
+                            <econdition field-name="fromPartyId" from="partyId"/>
+                            <econdition field-name="toRoleTypeId" value="Account"/>
+                        </entity-find>
+                    </actions>
+
+                    <widgets>
+                        <container-box type="default"><box-header title="Sales Accounts"/>
+                            <box-body-nopad>
+                                <form-list name="AccountList" list="accountList" skip-header="true">
+                                    <field name="toPartyId">
+                                        <default-field title="Account Name">
+                                            <link url="viewAccount" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
+                                            <!-- <display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/> -->
+                                        </default-field>
+                                    </field>
+                                </form-list>
+                            </box-body-nopad>
+                        </container-box>
+                    </widgets>
+                </section>
             </row-col>
         </container-row>
     </widgets>

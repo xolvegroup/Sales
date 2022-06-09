@@ -1,5 +1,5 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
-        default-menu-title="Products" default-menu-index="7">
+        default-menu-title="Products" default-menu-index="7" default-menu-include="false">
 
     <actions>
         <entity-find entity-name="ProductSalesSummary" list="productList">

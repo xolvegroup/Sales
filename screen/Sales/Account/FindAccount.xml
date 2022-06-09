@@ -4,27 +4,43 @@
 
     <transition name="createAccount">
         <service-call name="mantle.sales.AccountServices.create#Account"/>
-        <default-response url="../EditCustomer"/>
+        <default-response url="../ViewAccount"/>
     </transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
     <transition name="viewAccount"><default-response url="../ViewAccount"/></transition>
 
+    <pre-actions>
+        <set field="roleTypeId" value="Account"/>
+    </pre-actions>
     <actions>
+        <service-call name="sales.SalesServices.search#Party" in-map="context" out-map="context"/>
+        <!-- Deprecated. Use search index instead.
         <entity-find entity-name="mantle.party.AccountAndRelationship" list="accountList">
             <econdition field-name="roleTypeId" value="Account"/>
             <econdition field-name="fromPartyId" ignore-if-empty="true"/>
         </entity-find>
+        -->
     </actions>
+
     <!-- Dialog box to create a new account, creates Party of type = organization and role = SalesAccount, Customer (default moqui behavior) -->
-    <!-- Predefined filter role with tabs for "My Accounts", etc. Use Moqui saved finds functionality. -->
+    <!-- TODO: Predefined filter with tabs for "My Accounts", etc. Use Moqui saved finds functionality. -->
     <widgets>
         <container-dialog id="CreateAccountDialog" button-text="New Sales Account">
             <form-single name="CreateAccountForm" transition="createAccount"
                          extends="component://SimpleScreens/screen/SimpleScreens/Party/FindParty.xml#CreateAccountForm"/>
         </container-dialog>
-
-        <form-list name="AccountList" list="accountList" show-page-size="true" header-dialog="true" skip-form="true">
-
+        <!--<form-list name="AccountList" list="accountList" show-page-size="true" header-dialog="true" skip-form="true">-->
+        <form-list name="AccountList" list="documentList" show-page-size="true" header-dialog="true" skip-form="true">
+            <row-actions>
+                <!-- Get Sales Person(s) -->
+                <entity-find entity-name="mantle.party.PartyRelationship" list="relList">
+                    <econdition field-name="toPartyId" from="partyId"/>
+                    <econdition field-name="fromRoleTypeId" value="SalesRepresentative"/>
+                </entity-find>
+                <entity-find entity-name="mantle.party.PartyDetail" list="repList">
+                    <econdition field-name="partyId" operator="in" from="relList.fromPartyId"/>
+                </entity-find>
+            </row-actions>
             <field name="organizationName">
                 <header-field title="Sales Account" show-order-by="true"><text-line size="40"/></header-field>
                 <default-field><link url="viewAccount" text="${organizationName}" link-type="anchor"/></default-field>
@@ -32,10 +48,17 @@
             <field name="fromPartyId">
                 <header-field title="Sales Person">
                     <drop-down allow-empty="true">
-                        <dynamic-options transition="searchPartyList" server-search="true" min-length="2" parameter-map="[roleTypeId:'SalesRepresentative']"/>
+                        <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'SalesRepresentative']"/>
                     </drop-down>
-            </header-field>
-                <default-field><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
+                </header-field>
+                <!-- Having trouble displaying sales person using the data document. Reverted to row actions and entity-find.
+                <default-field><display text="${toRelationships.fromPartyId}"/></default-field>
+                <default-field><display text="${toRelationships ? toRelationships*.fromPartyId.join(', ') : ''}"/></default-field>
+                -->
+                <default-field>
+                    <section-iterate name="RepList" list="repList" entry="rep"><widgets>
+                        <display text="PartyNameOnlyTemplate" text-map="rep"/>
+                    </widgets></section-iterate>
                 </default-field>
             </field>
             <field name="submitButton">

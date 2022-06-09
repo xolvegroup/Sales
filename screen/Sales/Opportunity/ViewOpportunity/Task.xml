@@ -6,25 +6,31 @@
         <default-response url="."/>
     </transition>
     <actions>
-        <entity-find entity-name="WorkEffortAndParty" list="weapList">
-            <econdition field-name="partyId"/>
+        <entity-find entity-name="SalesOpportunityWorkEffort" list="weList">
+            <econdition field-name="salesOpportunityId"/>
         </entity-find>
     </actions>
     <widgets>
-        <container-dialog id="NewTaskContainer" button-text="New Task">
-            <form-single name="NewTask" transition="createTask">
-                <field name="partyId"><default-field><hidden/></default-field></field>
-                <field name="workEffortName"><default-field title="Task Name"><text-line/></default-field></field>
-                <field name="accountPartyId" from="partyId"><default-field><hidden/></default-field></field>
-                <field name="submitButton"><default-field title="Create Task"><submit/></default-field></field>
-            </form-single>
-        </container-dialog>
-        <form-list name="UpdateAccountTaskForm" list="weapList" transition="updateAccountTask">
-            <field name="partyId"><default-field><hidden/></default-field></field>
+        <section name="TaskSection">
+            <widgets>
+                <container-box><box-header title="Opportunity Tasks"/><box-toolbar>
+                <container-dialog id="NewTaskContainer" button-text="New Task">
+                    <form-single name="NewTask" transition="createTask">
+                        <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
+                        <field name="accountPartyId" from="opportunity.accountPartyId"><default-field><hidden/></default-field></field>
+                        <field name="workEffortName"><default-field title="Task Name"><text-line/></default-field></field>
+                        <field name="submitButton"><default-field title="Create Task"><submit/></default-field></field>
+                    </form-single>
+                </container-dialog></box-toolbar><box-body-nopad>
 
-            <field name="workEffortId"><default-field title="Task">
-                <link text="${workEffortId} - ${workEffortName}" url="editProject" link-type="anchor"/>
-            </default-field></field>
-        </form-list>
+
+                <form-list name="TaskForm" list="weList">
+                    <field name="workEffortId"><default-field title="Task">
+                        <link text="${workEffortId} - ${workEffortName}" url="editTask" link-type="anchor"/>
+                    </default-field></field>
+                </form-list>
+                </box-body-nopad></container-box>
+            </widgets>
+        </section>
     </widgets>
 </screen>

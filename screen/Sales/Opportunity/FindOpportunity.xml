@@ -43,6 +43,15 @@
         </container-dialog>
         <form-list name="OpportunityList" list="documentList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
                    show-csv-button="true" show-xlsx-button="true" show-all-button="true">
+            <row-actions>
+                <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityParty" list="partyList">
+                    <econdition field-name="salesOpportunityId" from="salesOpportunityId"/>
+                    <econdition field-name="roleTypeId" value="SalesRepresentative"/>
+                </entity-find>
+                <entity-find entity-name="mantle.party.PartyDetail" list="salesTeamList">
+                    <econdition field-name="partyId" operator="in" from="partyList.partyId"/>
+                </entity-find>
+            </row-actions>
             <field name="accountPartyId">
                 <header-field title="Sales Account" show-order-by="true">
                     <drop-down allow-empty="true">
@@ -71,7 +80,17 @@
                         <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'SalesRepresentative']"/>
                     </drop-down>
                 </header-field>
-                <default-field><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/></default-field>
+                <default-field>
+                    <!-- Using this only displays the last party added to the oppy and does not limit to sales person (shows contact too)
+                    <display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/> -->
+                    <!-- Using this displays nothing
+                    <display text="${SalesOpportunityParty ? SalesOpportunityParty*.partyId.join(', ') : ''}"/>
+                    -->
+                    <!-- Revert to row actions and entity find to get reps associated with opportunity -->
+                    <section-iterate name="SalesTeamList" list="salesTeamList" entry="rep"><widgets>
+                       <display text="PartyNameOnlyTemplate" text-map="rep"/>
+                    </widgets></section-iterate>
+                </default-field>
             </field>
             <field name="submitButton">
                 <header-field title="Find"><submit/></header-field>

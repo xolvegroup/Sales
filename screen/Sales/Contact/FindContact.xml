@@ -3,7 +3,9 @@
         require-authentication="true" default-menu-title="Find Contact">
 
     <transition name="createContact"><service-call name="mantle.sales.AccountServices.create#Contact"/>
-        <default-response url="../EditCustomer"/></transition>
+        <default-response url="../ViewContact"/></transition>
+    <transition name="viewContact"><default-response url="../ViewContact"/></transition>
+    <transition name="viewAccount"><default-response url="../../Account/ViewAccount"/></transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
 
     <actions>
@@ -27,7 +29,10 @@
                     <econdition field-name="contactMechPurposeId" value="EmailPrimary"/>
                 </entity-find>
             </row-actions>
-            <field name="partyId"><default-field title="Contact Name"><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
+            <field name="partyId">
+                <default-field><link url="viewContact" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:partyId]"/>
+                <!--<default-field title="Contact Name"><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
+                </default-field>-->
                 </default-field>
             </field>
             <field name="contactEmail">
@@ -43,7 +48,8 @@
                         <dynamic-options transition="searchPartyList" server-search="true" min-length="2" parameter-map="[roleTypeId:'Account']"/>
                     </drop-down>
             </header-field>
-                <default-field><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
+                <default-field><link url="viewAccount" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
+                    <!--<display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>-->
                 </default-field>
             </field>
             <field name="submitButton">

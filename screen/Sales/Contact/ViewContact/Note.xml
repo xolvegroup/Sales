@@ -1,41 +1,41 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
         default-menu-title="Notes" default-menu-index="1">
 
-    <transition name="createOpportunityNote"><service-call name="create#mantle.sales.opportunity.SalesOpportunityNote"/>
+    <transition name="createPartyNote"><service-call name="create#mantle.party.PartyNote"/>
         <default-response url="."/></transition>
-    <transition name="updateOpportunityNote"><service-call name="update#mantle.sales.opportunity.SalesOpportunityNote"/>
+    <transition name="updatePartyNote"><service-call name="update#mantle.party.PartyNote"/>
         <default-response url="."/></transition>
     <actions>
-        <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityNote" list="opportunityNoteList">
-            <econdition field-name="salesOpportunityId"/><order-by field-name="-noteDate"/></entity-find>
+        <entity-find entity-name="mantle.party.PartyNote" list="partyNoteList">
+            <econdition field-name="partyId"/><order-by field-name="-noteDate"/></entity-find>
     </actions>
     <widgets>
-        <section name="NoteSection"><widgets>
-            <container-box><box-header title="Opportunity Notes"/><box-toolbar>
+        <section name="NotesSection"><widgets>
+            <container-box><box-header title="Notes"/><box-toolbar>
                 <container-dialog id="NewNoteDialog" button-text="Add Note">
-                    <form-single name="NewNoteForm" transition="createOpportunityNote">
-                        <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
+                    <form-single name="NewNoteForm" transition="createPartyNote">
+                        <field name="partyId"><default-field><hidden/></default-field></field>
                         <field name="noteText"><default-field title="Note"><text-area cols="60" rows="6"/></default-field></field>
                         <field name="submitButton"><default-field title="Add Note"><submit/></default-field></field>
                     </form-single>
                 </container-dialog>
             </box-toolbar><box-body>
-                <section-iterate name="NoteIterateSection" list="opportunityNoteList" entry="opportunityNote"><actions>
+                <section-iterate name="NoteIterateSection" list="partyNoteList" entry="partyNote"><actions>
                     <entity-find-one entity-name="mantle.party.PersonWithUserAccount" value-field="paua">
-                        <field-map field-name="userId" from="opportunityNote.userId"/></entity-find-one>
+                        <field-map field-name="userId" from="partyNote.userId"/></entity-find-one>
                 </actions><widgets>
-                    <label text="By ${paua?.firstName?:''} ${paua?.lastName?:''} at ${ec.l10n.format(opportunityNote.noteDate, 'yyyy-MM-dd HH:mm')}" type="i"/>
-                    <section name="UpdateNoteSection" condition="opportunityNote.userId == ec.user.userId || ec.user.isInGroup('ADMIN')"><widgets>
+                    <label text="By ${paua?.firstName?:''} ${paua?.lastName?:''} at ${ec.l10n.format(partyNote.noteDate, 'yyyy-MM-dd HH:mm')}" type="i"/>
+                    <section name="UpdateNoteSection" condition="partyNote.userId == ec.user.userId || ec.user.isInGroup('ADMIN')"><widgets>
                         <container-dialog id="UpdateNoteContainer" button-text="Edit Note">
-                            <form-single name="UpdateNoteForm" transition="updateOpportunityNote" map="opportunityNote">
-                                <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
+                            <form-single name="UpdateNoteForm" transition="updatePartyNote" map="partyNote">
+                                <field name="partyId"><default-field><hidden/></default-field></field>
                                 <field name="noteDate"><default-field><hidden/></default-field></field>
                                 <field name="noteText"><default-field title="Note"><text-area cols="60" rows="6"/></default-field></field>
                                 <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                             </form-single>
                         </container-dialog>
                     </widgets></section>
-                    <label text="${opportunityNote.noteText}" type="p"/>
+                    <label text="${partyNote.noteText}" type="p"/>
                 </widgets></section-iterate>
             </box-body></container-box>
         </widgets></section>

@@ -12,16 +12,16 @@
     </actions>
     <widgets>
         <container-box><box-header title="Tasks"/><box-toolbar>
-            <container-dialog id="NewTaskContainer" button-text="New Task">
-                <form-single name="NewTask" transition="createTask">
-                    <field name="partyId"><default-field><hidden/></default-field></field>
-                    <field name="workEffortName"><default-field title="Task Name"><text-line/></default-field></field>
-                    <field name="accountPartyId" from="partyId"><default-field><hidden/></default-field></field>
-                    <field name="submitButton"><default-field title="Create Task"><submit/></default-field></field>
-                </form-single>
-            </container-dialog></box-toolbar><box-body-nopad>
+        <container-dialog id="NewTaskContainer" button-text="New Task">
+            <form-single name="NewTask" transition="createTask">
+                <field name="partyId"><default-field><hidden/></default-field></field>
+                <field name="workEffortName"><default-field title="Task Name"><text-line/></default-field></field>
+                <field name="accountPartyId" from="partyId"><default-field><hidden/></default-field></field>
+                <field name="submitButton"><default-field title="Create Task"><submit/></default-field></field>
+            </form-single>
+        </container-dialog></box-toolbar><box-body-nopad>
             <!-- Add dialog box for updating tasks -->
-            <form-list name="UpdatePartyTaskForm" list="weapList" skip-header="false">
+            <form-list name="UpdatePartyTaskForm" list="weapList" skip-header="true">
                 <field name="partyId"><default-field><hidden/></default-field></field>
                 <field name="workEffortId"><default-field title="Task">
                     <link text="${workEffortId} - ${workEffortName}" url="editProject" link-type="anchor"/>
