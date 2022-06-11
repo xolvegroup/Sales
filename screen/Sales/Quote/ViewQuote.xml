@@ -1,0 +1,75 @@
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        require-authentication="true" default-menu-title="View Quote" default-menu-include="false">
+
+    <parameter name="orderId" required="true"/>
+
+    <subscreens default-item="Item">
+        <subscreens-item name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
+        <subscreens-item name="UpdatePaymentMethodInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdatePaymentMethodInfo.xml"/>
+    </subscreens>
+
+    <pre-actions>
+        <service-call name="mantle.order.OrderInfoServices.get#OrderDisplayInfo" in-map="[orderId:orderId, itemLimit:(itemLimit as Integer)]" out-map="context"/>
+        <set field="orderPartInfo" from="orderPartInfoList[0]"/>
+        <entity-find-one entity-name="mantle.party.PartyDetail" value-field="customerDetail">
+            <field-map field-name="partyId" from="firstPart.customerPartyId"/>
+        </entity-find-one>
+    </pre-actions>
+
+    <widgets>
+        <container-row>
+            <row-col lg="6">
+                <container-box>
+                    <box-header title="Quote #${orderId} - ${ec.resource.expand('PartyNameOnlyTemplate','',customerDetail)}"/>
+                    <box-toolbar><link url="." text="Put order buttons here"/></box-toolbar>
+                    <box-body-nopad>
+                        <!--
+                        <label text="Status ${orderHeader.statusId}" type="div"/>
+                        <label text="Created ${ec.l10n.format(orderHeader.entryDate,'yyyy-MM-dd')}" type="div"/>
+                        <label text="Total ${ec.l10n.formatCurrency(orderHeader.grandTotal ?: 0, orderHeader?.currencyUomId)}"/>
+                        -->
+                        <form-single name="HeaderForm" map="orderHeader">
+                            <field name="statusId"><default-field title="Status">
+                                <display text="${statusItem.description}"/></default-field></field>
+                            <field name="entryDate"><default-field title="Created"><display format="yyyy-MM-dd"/></default-field></field>
+                            <field name="grandTotal"><default-field><display currency-unit-field="currencyUomId"/></default-field></field>
+                            <field-layout>
+                                <field-col-row>
+                                    <field-col><field-ref name="statusId"/></field-col>
+                                    <field-col><field-ref name="entryDate"/></field-col>
+                                    <field-col><field-ref name="grandTotal"/></field-col>
+                                </field-col-row>
+                            </field-layout>
+                        </form-single>
+                    </box-body-nopad>
+                </container-box>
+                <container-box>
+                    <box-header title="Delivery Information"/>
+                    <box-toolbar><link url="." text="Put ship to buttons here"/></box-toolbar>
+                    <box-body-nopad>
+                        <label text="Ship to customer information" type="div"/>
+                    </box-body-nopad>
+                </container-box>
+            </row-col>
+            <row-col lg="6">
+                <container-box>
+                    <box-header title="Customer Information"/>
+                    <box-toolbar><link url="." text="Put bill to address buttons here"/></box-toolbar>
+                    <box-body-nopad>
+                        <label text="Bill to customer location, instructions, etc." type="div"/>
+                        <label text="${firstPart.customerPartyId}" type="div"/>
+                    </box-body-nopad>
+                </container-box>
+                <container-box>
+                    <box-header title="Payment Information"/>
+                    <box-toolbar><link url="." text="Put payment buttons here"/></box-toolbar>
+                    <box-body-nopad>
+                        <label text="Payment method, terms, etc." type="div"/>
+                    </box-body-nopad>
+                </container-box>
+            </row-col>
+        </container-row>
+        <subscreens-panel id="BottomPanel" type="tab"/>
+    </widgets>
+</screen>

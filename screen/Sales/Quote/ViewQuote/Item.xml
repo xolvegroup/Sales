@@ -1,0 +1,99 @@
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
+        default-menu-title="Items" default-menu-index="0">
+    <parameter name="orderPartInfo" required="true"/>
+    <transition name="addProductItem"><service-call name="mantle.order.OrderServices.add#OrderProductQuantity"/>
+        <default-response url="."/></transition>
+    <transition name="updateItem"><service-call name="mantle.order.OrderServices.update#OrderItem"/>
+        <default-response url="."/></transition>
+    <transition name="deleteItem"><service-call name="mantle.order.OrderServices.delete#OrderItem"/>
+        <default-response url="."/></transition>
+    <widgets>
+        <container-box>
+            <box-header title="Quote Items"/>
+            <box-toolbar>
+                <container-dialog id="AddProductItemContainer" button-text="Add Product">
+                    <form-single name="AddProductItemForm" transition="addProductItem" focus-field="productId">
+                        <field name="orderId"><default-field><hidden/></default-field></field>
+                        <field name="orderPartSeqId" from="orderPartInfo.orderPart.orderPartSeqId"><default-field><hidden/></default-field></field>
+                        <field name="updateExisting"><default-field><hidden default-value="false"/></default-field></field>
+                        <field name="requireInventory"><default-field><hidden default-value="false"/></default-field></field>
+
+                        <field name="assetClassEnumId"><default-field title="Asset Class">
+                            <drop-down allow-empty="true" no-current-selected-key="AsClsInventoryFin">
+                                <entity-options key="${enumId}" text="${description}"><entity-find entity-name="moqui.basic.Enumeration">
+                                    <econdition field-name="parentEnumId" value="AsClsInventory"/><order-by field-name="sequenceNum,description"/>
+                                </entity-find></entity-options>
+                            </drop-down>
+                        </default-field></field>
+                        <field name="productId"><default-field title="Product">
+                            <drop-down><dynamic-options transition="getProductList" server-search="true" min-length="0" depends-optional="true">
+                                <depends-on field="assetClassEnumId"/></dynamic-options></drop-down>
+                        </default-field></field>
+                        <field name="quantity"><default-field><text-line size="8" default-value="1"/></default-field></field>
+                        <field name="unitAmount"><default-field title="Price" tooltip="Leave empty to use Calc Price">
+                            <text-line size="10"/></default-field></field>
+                        <field name="calcAmount"><default-field title="Calc Price">
+                            <display dynamic-transition="getProductPrice"
+                                     parameter-map="[orderId:orderId, orderPartSeqId:orderPartInfo.orderPart.orderPartSeqId, priceFormat:'#,##0.00']">
+                                <depends-on field="productId"/><depends-on field="quantity"/></display>
+                        </default-field></field>
+                        <field name="standardCost"><conditional-field condition="orderPartInfo.isCustomerInternalOrg"
+                                                                      tooltip="Cost for accounting if different from Price, used to set Asset Acquire Cost on receipt">
+                            <text-line size="10"/></conditional-field></field>
+                        <field name="requiredByDate" from="orderPartInfo.orderPart.shipBeforeDate"><default-field><date-time format="yyyy-MM-dd HH:mm"/></default-field></field>
+                        <!-- <field name="itemDescription"><default-field><text-line size="60"/></default-field></field> -->
+                        <field name="itemTypeEnumId" from="null"><conditional-field condition="orderPartInfo.isCustomerInternalOrg" title="Item Type">
+                            <drop-down no-current-selected-key="ItemInventory">
+                                <option key="ItemInventory" text="Inventory"/>
+                                <option key="ItemAsset" text="Fixed Asset"/>
+                                <option key="ItemExpSupplies" text="Supplies"/>
+                            </drop-down>
+                        </conditional-field><default-field title="Item Type">
+                            <drop-down no-current-selected-key="ItemProduct">
+                                <option key="ItemProduct" text="Product"/>
+                                <option key="ItemAsset" text="Fixed Asset"/>
+                                <option key="ItemRental" text="Rental Asset"/>
+                                <option key="ItemReplacement" text="Replacement"/>
+                            </drop-down>
+                        </default-field></field>
+
+                        <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                    </form-single>
+                </container-dialog>
+            </box-toolbar>
+            <box-body-nopad>
+                <form-list name="OrderItems" list="orderPartInfo.partOrderItemList" list-entry="orderItem" transition="updateItem">
+                    <!--
+                    <field name="orderItemSeqId"><default-field title="Item"><display/></default-field></field>
+                    <field name="parentItemSeqId"><default-field title="Item"><display/></default-field></field>
+                    -->
+                    <field name="productId"><default-field title="Product"><display-entity entity-name="mantle.product.Product"/></default-field></field>
+                    <field name="itemTypeEnumId">
+                        <default-field title="Type">
+                            <display-entity entity-name="moqui.basic.Enumeration" text="${description}${isPromo ? ' (Promotion)' : ''}"/>
+                        </default-field>
+                    </field>
+                    <field name="itemDescription"><default-field title="Description"><display/></default-field></field>
+                    <field name="unitListPrice" align="right"><default-field title="List Price">
+                        <display currency-unit-field="orderHeader.currencyUomId"/></default-field>
+                    </field>
+                    <field name="unitAmount">
+                        <conditional-field condition="orderPartInfo.partEditable &amp;&amp; isPromo != 'Y'" title="Price">
+                            <text-line size="4" format="#,##0.00#"/></conditional-field>
+                        <default-field title="Price"><display currency-unit-field="orderHeader.currencyUomId"/></default-field>
+                    </field>
+                    <field name="quantity">
+                        <conditional-field condition="orderPartInfo.partEditable &amp;&amp; isPromo != 'Y'"><text-line size="1"/></conditional-field>
+                        <default-field><display/></default-field>
+                    </field>
+                    <field name="submitButton" align="right"><conditional-field condition="orderPartInfo.partEditable &amp;&amp; isPromo != 'Y'">
+                        <submit text="Update"/>
+                        <link url="deleteItem" text="" btn-type="danger" icon="fa fa-trash" confirmation="Delete item ${orderItemSeqId}?"/>
+                    </conditional-field><conditional-field condition="orderPartInfo.partEditable &amp;&amp; isPromo == 'Y'">
+                        <link url="deleteItem" text="" btn-type="danger" icon="fa fa-trash" confirmation="Delete item ${orderItemSeqId}?"/>
+                    </conditional-field><default-field title=""/></field>
+                </form-list>
+            </box-body-nopad>
+        </container-box>
+    </widgets>
+</screen>

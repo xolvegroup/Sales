@@ -1,5 +1,5 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
-        default-menu-title="View Opportunity">
+        default-menu-title="View Opportunity" default-menu-include="false">
 
     <parameter name="salesOpportunityId" required="true"/>
 
@@ -52,9 +52,9 @@
                                     </container-dialog>
                                 </box-toolbar>
                                 <box-body-nopad>
-                                    <!-- <label text="Display using a container..." type="strong"/> -->
+                                    <!-- Display using a container -->
                                     <container-row style="color:red">
-                                        <row-col lg="4" style="color:red"><label text="Sales Account: "/></row-col>
+                                        <row-col lg="4"><label text="Sales Account: "/></row-col>
                                         <row-col lg="8"><label text="PartyNameOnlyTemplate" text-map="accountDetail" condition="accountDetail"/></row-col>
                                     </container-row>
                                     <container-row>
@@ -73,8 +73,7 @@
                                         <row-col lg="4"><label text="Description: "/></row-col>
                                         <row-col lg="8"><label text="${opportunity.description}"/></row-col> <!-- TODO: make date format dynamic based on user locale -->
                                     </container-row>
-                                    <!--
-                                    <label text="Or display using a form..." type="strong"/>
+                                    <!-- Or display using a form
                                     <form-single name="OpportunityForm" map="opportunity">
                                         <field name="accountPartyId"><default-field title="Sales Account"><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/></default-field></field>
                                         <field name="estimatedAmount"><default-field title="Amount"><display currency-unit-field="currencyUomId"/></default-field></field>

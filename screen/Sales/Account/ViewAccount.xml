@@ -1,10 +1,12 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-2.1.xsd"
-        default-menu-title="View Account">
+        default-menu-title="View Account" default-menu-include="false">
     <parameter name="partyId" required="true"/>
     <transition name="removeContactInfo"><service-call name="mantle.party.ContactServices.delete#PartyContactMech"/>
         <default-response url="."/></transition>
     <transition name="viewContact"><default-response url="../../Contact/ViewContact"/></transition>
-    <subscreens default-item="Activity"/>
+    <subscreens default-item="Activity">
+        <subscreens-item name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
+    </subscreens>
     <actions>
         <!-- This approach is the same as what is used in EditParty screen -->
         <entity-find-one entity-name="mantle.party.PartyDetail" value-field="party"/>

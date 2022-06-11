@@ -70,9 +70,12 @@
                 <header-field title="Amount" show-order-by="true"/> <!-- TODO: Make this searchable as a range -->
                 <default-field><display currency-unit-field="currencyUomId"/></default-field>
             </field>
+            <!-- TODO: make date format dynamic based on user locale -->
             <field name="estimatedCloseDate">
                 <header-field title="Close Date" show-order-by="true"><date-time type="date"/></header-field>
-                <default-field><display text="${ec.l10n.format(estimatedCloseDate,'yyyy-MM-dd')}"/></default-field> <!-- TODO: make date format dynamic based on user locale -->
+                <conditional-field condition="estimatedCloseDate">
+                    <label text="${ec.l10n.format(new Date(estimatedCloseDate), 'yyyy-MM-dd')}" />
+                </conditional-field>
             </field>
             <field name="partyId">
                 <header-field title="Sales Person" show-order-by="true">

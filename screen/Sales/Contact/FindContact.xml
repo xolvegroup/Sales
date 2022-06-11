@@ -25,6 +25,7 @@
             <row-actions>
                 <!-- Get contact email address -->
                 <entity-find entity-name="mantle.party.contact.PartyContactMechInfo" list="emailList">
+                    <date-filter/>
                     <econdition field-name="partyId"/>
                     <econdition field-name="contactMechPurposeId" value="EmailPrimary"/>
                 </entity-find>
