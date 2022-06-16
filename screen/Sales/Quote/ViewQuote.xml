@@ -4,6 +4,30 @@
 
     <parameter name="orderId" required="true"/>
 
+    <transition name="getShippingOptions"><parameter name="orderId"/><parameter name="orderPartSeqId"/><actions>
+        <entity-find-one entity-name="mantle.order.OrderHeader" value-field="orderHeader"/>
+        <service-call name="mantle.product.StoreServices.get#StoreShippingOptions" out-map="shipOptsOut"
+                      in-map="[productStoreId:orderHeader.productStoreId, orderId:orderId, orderPartSeqId:orderPartSeqId,
+                            postalContactMechId:postalContactMechId, getRates:true]"/>
+        <script>
+            outList = []
+            for (sop in shipOptsOut.shippingOptions) outList.add([value:"${sop.carrierPartyId}:${sop.shipmentMethodEnumId}".toString(),
+            label:"${sop.description ? sop.description : (sop.carrierPartyId != '_NA_' ? (sop.carrierName + ' - ') : '') + sop.shipmentMethodDescription}${sop.shippingTotal != null ? ' ' + ec.l10n.formatCurrency(sop.shippingTotal, orderHeader.currencyUomId) : ''}".toString()])
+            ec.web.sendJsonResponse(outList)
+        </script>
+    </actions><default-response type="none"/></transition>
+    <transition name="setOrderBillingShippingInfo"><service-call name="mantle.order.OrderServices.set#OrderBillingShippingInfo"/>
+        <default-response url="."/></transition>
+    <transition name="updateShipToParty"><service-call name="sales.SalesOrderServices.update#ShipToParty"/>
+        <default-response url="."/></transition>
+    <transition name="updateBillToParty"><service-call name="sales.SalesOrderServices.update#BillToParty"/>
+        <default-response url="."/></transition>
+    <transition name="setBillToContactMech"><service-call name="sales.SalesOrderServices.update#BillToContactMech"/>
+        <default-response url="."/></transition>
+    <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
+    <transition name="updateOrderPart"><service-call name="mantle.order.OrderServices.update#OrderPart"/>
+        <default-response url="."/></transition>
+
     <subscreens default-item="Item">
         <subscreens-item name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
         <subscreens-item name="UpdatePaymentMethodInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdatePaymentMethodInfo.xml"/>
@@ -11,24 +35,23 @@
 
     <pre-actions>
         <service-call name="mantle.order.OrderInfoServices.get#OrderDisplayInfo" in-map="[orderId:orderId, itemLimit:(itemLimit as Integer)]" out-map="context"/>
+        <!-- This implementation only supports single part orders. It does not iterate through list of order parts. -->
         <set field="orderPartInfo" from="orderPartInfoList[0]"/>
-        <entity-find-one entity-name="mantle.party.PartyDetail" value-field="customerDetail">
-            <field-map field-name="partyId" from="firstPart.customerPartyId"/>
-        </entity-find-one>
+        <set field="orderPart" from="orderPartInfo.orderPart"/>
+        <set field="orderPartSeqId" from="orderPart.orderPartSeqId"/>
+        <!-- Check for different ship to and bill to party in OrderPartParty, else use customer on order part -->
+        <set field="customerShipToDetail" from="orderPartInfo.customerShipToDetail?:orderPartInfo.customerDetail"/>
+        <!-- Check for different bill to party, else use customer on order part -->
+        <set field="customerBillToDetail" from="orderPartInfo.customerBillToDetail?:orderPartInfo.customerDetail"/>
     </pre-actions>
 
     <widgets>
         <container-row>
             <row-col lg="6">
                 <container-box>
-                    <box-header title="Quote #${orderId} - ${ec.resource.expand('PartyNameOnlyTemplate','',customerDetail)}"/>
-                    <box-toolbar><link url="." text="Put order buttons here"/></box-toolbar>
+                    <box-header title="Quote #${orderId} - ${ec.resource.expand('PartyNameOnlyTemplate','',orderPartInfo.customerDetail)}"/>
+                    <box-toolbar><link url="." text="Put order buttons here (change status, etc)"/></box-toolbar>
                     <box-body-nopad>
-                        <!--
-                        <label text="Status ${orderHeader.statusId}" type="div"/>
-                        <label text="Created ${ec.l10n.format(orderHeader.entryDate,'yyyy-MM-dd')}" type="div"/>
-                        <label text="Total ${ec.l10n.formatCurrency(orderHeader.grandTotal ?: 0, orderHeader?.currencyUomId)}"/>
-                        -->
                         <form-single name="HeaderForm" map="orderHeader">
                             <field name="statusId"><default-field title="Status">
                                 <display text="${statusItem.description}"/></default-field></field>
@@ -42,30 +65,233 @@
                                 </field-col-row>
                             </field-layout>
                         </form-single>
+                            <label text="Customer Email: ${orderPartInfo.customerEmail ?: 'No Order or Primary email found'}" type="div"/>
+                        <!--
+                        <label text="Payment Terms: ${orderPartInfo.partSettlementTerm?.description ?: 'No payment terms set'}" type="div"/>
+                        -->
                     </box-body-nopad>
                 </container-box>
                 <container-box>
-                    <box-header title="Delivery Information"/>
-                    <box-toolbar><link url="." text="Put ship to buttons here"/></box-toolbar>
+                    <box-header title="Ship To Customer: ${ec.resource.expand('PartyNameOnlyTemplate','',customerShipToDetail)}"/>
+                    <box-toolbar>
+                        <container-dialog id="ChangeShipToDialog" button-text="Change Ship To">
+                            <form-single name="ChangeShipToForm" transition="updateShipToParty" map="orderPart">
+                                <!-- Set role type to ship to for this section -->
+                                <field name="orderId"><default-field><hidden/></default-field></field>
+                                <field name="orderPartSeqId"><default-field><hidden/></default-field></field>
+                                <field name="currentShipToPartyId"><default-field><hidden default-value="customerShipToDetail.partyId"/></default-field></field>
+                                <field name="newShipToPartyId"><default-field title="Party"><drop-down>
+                                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0"/></drop-down>
+                                </default-field></field>
+                                <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                        </box-toolbar>
                     <box-body-nopad>
-                        <label text="Ship to customer information" type="div"/>
+                        <section name="CurrentShippingAddress">
+                            <actions>
+                                <service-call name="mantle.party.ContactServices.get#PartyContactInfo" out-map="curShipToInfo"
+                                              in-map="[partyId:customerShipToDetail.partyId, postalContactMechId:orderPart.postalContactMechId]"/>
+                                <set field="contactInfo" from="curShipToInfo"/>
+                                <!-- addresses on profile -->
+                                <service-call name="mantle.party.ContactServices.get#PartyContactInfoList" out-map="customerShippingInfo"
+                                              in-map="[partyId:customerShipToDetail.partyId, postalContactMechPurposeId:'PostalShippingDest']"/>
+                            </actions>
+                            <widgets>
+                                <container-box><box-header title="Ship To Address"/>
+                                    <box-toolbar>
+                                        <container-dialog id="SelectShipToAddress" button-text="Select">
+                                            <form-single name="SelectShipToForm" transition="setOrderBillingShippingInfo" map="orderPartInfo.orderPart">
+                                                <field name="orderId"><default-field><hidden/></default-field></field>
+                                                <field name="orderPartSeqId"><default-field><hidden/></default-field></field>
+                                                <field name="paymentMethodId"><default-field><hidden/></default-field></field>
+                                                <!-- <field name="shippingTelecomContactMechId"><default-field><hidden/></default-field></field> -->
+
+                                                <field name="shippingPostalContactMechId" from="orderPart.postalContactMechId">
+                                                    <conditional-field title="Shipping Address" condition="orderPartInfo.partEditable"><drop-down>
+                                                        <list-options list="customerShippingInfo.postalAddressList" key="${postalContactMechId}" text="PostalAddressInfoTemplate"/>
+                                                    </drop-down></conditional-field>
+                                                    <default-field><hidden/></default-field>
+                                                </field>
+                                                <field name="carrierAndShipmentMethod">
+                                                    <conditional-field title="Shipment Method" condition="orderPartInfo.partEditable">
+                                                        <drop-down no-current-selected-key="${orderPart.carrierPartyId ? orderPart.carrierPartyId + ':' + orderPart.shipmentMethodEnumId : ''}">
+                                                            <list-options list="shippingOptions" key="${carrierPartyId}:${shipmentMethodEnumId}"
+                                                                          text="${description ? description : (carrierPartyId != '_NA_' ? (carrierName + ' - ') : '') + shipmentMethodDescription}${shippingTotal != null ? ' ' + ec.l10n.formatCurrency(shippingTotal, orderHeader.currencyUomId) : ''}"/>
+                                                            <dynamic-options transition="getShippingOptions"/>
+                                                        </drop-down>
+                                                    </conditional-field>
+                                                    <default-field title="Shipment Method">
+                                                        <display text="${orderPartInfo.shipmentMethodEnum?.description ?: ''}${orderPartInfo.carrierPartyDetail ? ' - ' + ec.resource.expand('PartyNameTemplate', null, orderPartInfo.carrierPartyDetail) : ''}"/></default-field>
+                                                </field>
+                                                <field name="submitButton">
+                                                    <conditional-field condition="orderPartInfo.partEditable" title="Save">
+                                                        <submit/></conditional-field>
+                                                    <default-field><ignored/></default-field>
+                                                </field>
+                                            </form-single>
+                                        </container-dialog>
+                                        <dynamic-dialog id="UpdatePostalInfo" button-text="Edit" transition="UpdateContactInfo"
+                                                        width="800" condition="orderPartInfo.partEditable &amp;&amp; contactInfo"
+                                                        parameter-map="[partyId:customerShipToDetail.partyId, postalContactMechId:contactInfo.postalContactMechId,
+                                                postalContactMechPurposeId:contactInfo.postalContactMechPurposeId, orderId:orderId]"/>
+                                        <dynamic-dialog id="AddPostalInfo" button-text="Add" transition="UpdateContactInfo"
+                                                        width="800" condition="orderPartInfo.partEditable"
+                                                        parameter-map="[partyId:customerShipToDetail.partyId, postalContactMechPurposeId:'PostalShippingDest',
+                                                        telecomContactMechPurposeId:'PhoneShippingDest', emailContactMechPurposeId:'EmailShippingDest', orderId:orderId, postalContactMechId:null]"/>
+                                    </box-toolbar>
+                                    <box-body-nopad>
+                                        <label text="Please select an address from the list below and click the Set button.
+                                        If none are listed add a new address." condition="!contactInfo" type="i"/>
+                                        <text type="html,vuet,qvt" location="component://Sales/template/ContactInfo.html.gstring"/>
+                                    </box-body-nopad>
+                                </container-box>
+
+                                <!-- Address validation to be implemented later. This source is from OrderDetail.xml.
+                                <container>
+                                    <label text="Trust: ${contactInfo.postalTrustLevelEnum?.description ?: 'New'}${contactInfo.postalContactMech.validateMessage?'*':''}"
+                                           type="strong" tooltip="${contactInfo.postalContactMech.validateMessage?:''}"/>
+                                    <link url="validateAddress" text="Validate"
+                                          parameter-map="[orderId:orderId, partyId:customerPartyId, facilityId:contactInfo.facilityId, contactMechId:contactInfo.postalContactMechId]"
+                                          condition="!contactInfo.postalContactMech.trustLevelEnumId || contactInfo.postalContactMech.trustLevelEnumId == 'CmtlNew'"/>
+                                </container>
+                                -->
+
+                        </widgets></section>
+                        <section name="SetShippingMethod">
+                            <widgets>
+                                <form-single name="SelectShipMethodForm" transition="setOrderBillingShippingInfo" map="orderPartInfo.orderPart">
+                                    <field name="orderId"><default-field><hidden/></default-field></field>
+                                    <field name="orderPartSeqId"><default-field><hidden/></default-field></field>
+                                    <field name="carrierAndShipmentMethod">
+                                        <conditional-field title="Shipment Method" condition="orderPartInfo.partEditable">
+                                            <drop-down submit-on-select="true" no-current-selected-key="${orderPart.carrierPartyId ? orderPart.carrierPartyId + ':' + orderPart.shipmentMethodEnumId : ''}">
+                                                <list-options list="shippingOptions" key="${carrierPartyId}:${shipmentMethodEnumId}"
+                                                              text="${description ? description : (carrierPartyId != '_NA_' ? (carrierName + ' - ') : '') + shipmentMethodDescription}${shippingTotal != null ? ' ' + ec.l10n.formatCurrency(shippingTotal, orderHeader.currencyUomId) : ''}"/>
+                                                <dynamic-options transition="getShippingOptions"/>
+                                            </drop-down>
+                                        </conditional-field>
+                                        <default-field title="Shipment Method">
+                                            <display text="${orderPartInfo.shipmentMethodEnum?.description ?: ''}${orderPartInfo.carrierPartyDetail ? ' - ' + ec.resource.expand('PartyNameTemplate', null, orderPartInfo.carrierPartyDetail) : ''}"/></default-field>
+                                    </field>
+
+                                </form-single>
+                            </widgets>
+                        </section>
                     </box-body-nopad>
                 </container-box>
             </row-col>
             <row-col lg="6">
                 <container-box>
-                    <box-header title="Customer Information"/>
-                    <box-toolbar><link url="." text="Put bill to address buttons here"/></box-toolbar>
+                    <box-header title="Bill To Customer: ${ec.resource.expand('PartyNameOnlyTemplate','',customerBillToDetail)}"/>
+                    <box-toolbar>
+                        <container-dialog id="ChangeBillToDialog" button-text="Change Bill To">
+                            <form-single name="ChangeBillToForm" transition="updateBillToParty" map="orderPart">
+                                <!-- Set role type to bill to for this section -->
+                                <field name="orderId"><default-field><hidden/></default-field></field>
+                                <field name="orderPartSeqId"><default-field><hidden/></default-field></field>
+                                <field name="currentBillToPartyId"><default-field><hidden default-value="customerBillToDetail.partyId"/></default-field></field>
+                                <field name="newBillToPartyId"><default-field title="Party"><drop-down>
+                                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0"/></drop-down>
+                                </default-field></field>
+                                <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                        </box-toolbar>
                     <box-body-nopad>
-                        <label text="Bill to customer location, instructions, etc." type="div"/>
-                        <label text="${firstPart.customerPartyId}" type="div"/>
+                        <section name="CurrentBillingAddress">
+                            <actions>
+                                <entity-find-one entity-name="mantle.order.OrderPartContactMech" value-field="curBillToContactMech">
+                                    <field-map field-name="orderId" from="orderPart.orderId"/>
+                                    <field-map field-name="orderPartSeqId" from="orderPart.orderPartSeqId"/>
+                                    <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+                                </entity-find-one>
+                                <if condition="curBillToContactMech != null">
+                                    <service-call name="mantle.party.ContactServices.get#PartyContactInfo" out-map="curBillToInfo"
+                                                  in-map="[partyId:customerBillToDetail.partyId, postalContactMechId:curBillToContactMech.contactMechId]"/>
+                                    <set field="contactInfo" from="curBillToInfo"/>
+                                </if>
+                                <!-- addresses on profile -->
+                                <service-call name="mantle.party.ContactServices.get#PartyContactInfoList" out-map="customerBillingInfo"
+                                              in-map="[partyId:customerBillToDetail.partyId, postalContactMechPurposeId:'PostalBilling']"/>
+                            </actions>
+                            <widgets>
+                                <container-box><box-header title="Bill To Address"/>
+                                    <box-toolbar>
+                                        <container-dialog id="SelectBillToAddress" button-text="Select">
+                                            <form-single name="SetBillingInfoForm" transition="setBillToContactMech" map="orderPartInfo.orderPart">
+                                                <field name="orderId"><default-field><hidden/></default-field></field>
+                                                <field name="orderPartSeqId"><default-field><hidden/></default-field></field>
+                                                <field name="paymentMethodId"><default-field><hidden/></default-field></field>
+                                                <field name="billToPostalContactMechId" from="curBillToContactMech?.contactMechId">
+                                                    <conditional-field title="Billing Address" condition="orderPartInfo.partEditable"><drop-down>
+                                                        <list-options list="customerBillingInfo.postalAddressList" key="${postalContactMechId}" text="PostalAddressInfoTemplate"/>
+                                                    </drop-down></conditional-field>
+                                                    <default-field><hidden/></default-field>
+                                                </field>
+                                                <field name="submitButton">
+                                                    <conditional-field condition="orderPartInfo.partEditable" title="Set Billing Address">
+                                                        <submit/></conditional-field>
+                                                    <default-field><ignored/></default-field>
+                                                </field>
+                                            </form-single>
+                                        </container-dialog>
+                                        <dynamic-dialog id="UpdatePostalInfo" button-text="Edit" transition="UpdateContactInfo"
+                                                        width="800" condition="orderPartInfo.partEditable &amp;&amp; contactInfo"
+                                                        parameter-map="[partyId:customerBillToDetail.partyId, postalContactMechId:contactInfo.postalContactMechId,
+                                                postalContactMechPurposeId:contactInfo.postalContactMechPurposeId, orderId:orderId]"/>
+                                        <dynamic-dialog id="AddPostalInfo" button-text="Add" transition="UpdateContactInfo"
+                                                        width="800" condition="orderPartInfo.partEditable"
+                                                        parameter-map="[partyId:customerBillToDetail.partyId, postalContactMechPurposeId:'PostalBilling',
+                                    telecomContactMechPurposeId:'PhoneBilling', emailContactMechPurposeId:'EmailBilling', orderId:orderId, postalContactMechId:null]"/>
+
+                                    </box-toolbar>
+                                    <box-body-nopad>
+                                        <label text="Please select an address from the list below and click the Set button.
+                                        If none are listed add a new address." condition="!contactInfo" type="i"/>
+                                        <text type="html,vuet,qvt" location="component://Sales/template/ContactInfo.html.gstring"/>
+                                    </box-body-nopad>
+                                </container-box>
+
+                                <!-- Address validation to be implemented later. This source is from OrderDetail.xml.
+                                <container>
+                                    <label text="Trust: ${contactInfo.postalTrustLevelEnum?.description ?: 'New'}${contactInfo.postalContactMech.validateMessage?'*':''}"
+                                           type="strong" tooltip="${contactInfo.postalContactMech.validateMessage?:''}"/>
+                                    <link url="validateAddress" text="Validate"
+                                          parameter-map="[orderId:orderId, partyId:customerPartyId, facilityId:contactInfo.facilityId, contactMechId:contactInfo.postalContactMechId]"
+                                          condition="!contactInfo.postalContactMech.trustLevelEnumId || contactInfo.postalContactMech.trustLevelEnumId == 'CmtlNew'"/>
+                                </container>
+                                -->
+
+                            </widgets></section>
+                        <section name="SetBillingAddress">
+                            <actions>
+
+                            </actions>
+                            <widgets>
+
+
+
+                            </widgets>
+                        </section>
                     </box-body-nopad>
                 </container-box>
                 <container-box>
                     <box-header title="Payment Information"/>
                     <box-toolbar><link url="." text="Put payment buttons here"/></box-toolbar>
                     <box-body-nopad>
-                        <label text="Payment method, terms, etc." type="div"/>
+                        <form-single name="EditPartForm" transition="updateOrderPart" map="orderPart">
+                            <field name="orderId"><default-field><hidden/></default-field></field>
+                            <field name="orderPartSeqId"><default-field><hidden/></default-field></field>
+                            <field name="settlementTermId"><default-field title="Payment Terms">
+                                <drop-down submit-on-select="true" allow-empty="true"><entity-options key="${settlementTermId}" text="${description}">
+                                    <entity-find entity-name="mantle.account.invoice.SettlementTermAndEnumMember">
+                                        <econdition field-name="enumGroupEnumId" value="EngPaymentTermType"/>
+                                        <order-by field-name="description"/>
+                                    </entity-find>
+                                </entity-options></drop-down>
+                            </default-field></field>
+                        </form-single>
                     </box-body-nopad>
                 </container-box>
             </row-col>

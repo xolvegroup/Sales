@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-2.1.xsd">
+
+    <service verb="update" noun="ShipToParty">
+        <in-parameters>
+            <parameter name="orderId"/>
+            <parameter name="orderPartSeqId"/>
+            <parameter name="currentShipToPartyId"/>
+            <parameter name="newShipToPartyId"/>
+        </in-parameters>
+        <actions>
+            <!-- If no change just return  -->
+            <if condition="currentShipToPartyId == newShipToPartyId">
+                <return/>
+            </if>
+            <!-- Get OrderPart  -->
+            <entity-find-one entity-name="OrderPart" value-field="orderPart">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+            </entity-find-one>
+            <!-- Clear existing setting from OrderPartParty.
+            There should only be one but technically the data model will allow for more than one party with the same role so this deletes all. -->
+            <service-call name="delete#mantle.order.OrderPartParty">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                <field-map field-name="roleTypeId" value="CustomerShipTo"/>
+                <field-map field-name="partyId" value="*"/>
+            </service-call>
+            <!-- Clear the postalContactMechId on the OrderPart -->
+            <service-call name="update#mantle.order.OrderPart">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                <field-map field-name="postalContactMechId" value=""/>
+            </service-call>
+            <!-- If the new setting is a party other than the customer on the order create a new OrderPartParty record. Else do nothing. -->
+            <if condition="newShipToPartyId != orderPart.customerPartyId">
+                <service-call name="create#mantle.order.OrderPartParty">
+                    <field-map field-name="orderId" from="orderId"/>
+                    <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                    <field-map field-name="roleTypeId" value="CustomerShipTo"/>
+                    <field-map field-name="partyId" from="newShipToPartyId"/>
+                </service-call>
+            </if>
+        </actions>
+    </service>
+    <service verb="update" noun="BillToParty">
+        <in-parameters>
+            <parameter name="orderId"/>
+            <parameter name="orderPartSeqId"/>
+            <parameter name="currentBillToPartyId"/>
+            <parameter name="newBillToPartyId"/>
+        </in-parameters>
+        <actions>
+            <if condition="currentBillToPartyId == newBillToPartyId">
+                <return/>
+            </if>
+            <!-- Get OrderPart -->
+            <entity-find-one entity-name="OrderPart" value-field="orderPart">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+            </entity-find-one>
+            <!-- Clear existing setting from OrderPartParty.
+            There should only be one but technically the data model will allow for more than one party with the same role so this deletes all. -->
+            <service-call name="delete#mantle.order.OrderPartParty">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                <field-map field-name="roleTypeId" value="CustomerBillTo"/>
+                <field-map field-name="partyId" value="*"/>
+            </service-call>
+            <!-- Clear existing OrderPartContactMech. If the bill to party changes then any previous bill to address setting belongs to another party. -->
+            <service-call name="delete#mantle.order.OrderPartContactMech">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+                <field-map field-name="contactMechId" value="*"/>
+            </service-call>
+            <!-- If the new setting is a party other than the customer on the order create a new OrderPartParty record. Else do nothing. -->
+            <if condition="newBillToPartyId != orderPart.customerPartyId">
+                <service-call name="create#mantle.order.OrderPartParty">
+                    <field-map field-name="orderId" from="orderPart.orderId"/>
+                    <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                    <field-map field-name="roleTypeId" value="CustomerBillTo"/>
+                    <field-map field-name="partyId" from="newBillToPartyId"/>
+                </service-call>
+            </if>
+        </actions>
+    </service>
+    <service verb="update" noun="BillToContactMech">
+        <in-parameters>
+            <parameter name="orderId"/>
+            <parameter name="orderPartSeqId"/>
+            <parameter name="billToPostalContactMechId"/>
+        </in-parameters>
+        <actions>
+            <!-- Clear existing setting from OrderPartContactMech -->
+            <service-call name="delete#mantle.order.OrderPartContactMech">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+                <field-map field-name="contactMechId" value="*"/>
+            </service-call>
+            <service-call name="create#mantle.order.OrderPartContactMech">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+                <field-map field-name="contactMechId" from="billToPostalContactMechId"/>
+            </service-call>
+        </actions>
+    </service>
+</services>
