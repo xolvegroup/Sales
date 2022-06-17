@@ -18,7 +18,7 @@ along with this software (see the LICENSE.md file). If not, see
 <!-- curl -X POST -u john.doe:moqui -i http://localhost:8080/rest/s1/sales/requests?requestTypeEnumId=RqtContact
     Getting an authentication error with "require-authentication="true"
     Using "anonymous-all for now and it is working. Also does not require the -u parameter in the call.-->
-<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/rest-api-2.1.xsd"
+<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/rest-api-3.xsd"
         name="sales" displayName="Sales REST API" version="1.0.0">
     <resource name="requests" require-authentication="anonymous-all">
         <method type="post"><service name="mantle.request.RequestServices.create#Request"/></method>
