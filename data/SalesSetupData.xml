@@ -21,7 +21,7 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.security.ArtifactAuthz artifactAuthzId="SALES" userGroupId="ADMIN" artifactGroupId="SALES"
                                   authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 
-    <!-- Artifact group for all of the Example REST API via the example resource (the root resource) -->
+    <!-- Artifact group for REST API -->
     <moqui.security.ArtifactGroup artifactGroupId="SALES_API" description="Sales REST API (via root resource)"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="SALES_API" artifactTypeEnumId="AT_REST_PATH"
                                         inheritAuthz="Y" artifactName="/Sales"/>
