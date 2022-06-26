@@ -13,7 +13,7 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <entity-facade-xml type="seed-initial">
-    <!-- Sales App -->
+    <!-- Xolve Sales App -->
     <moqui.security.ArtifactGroup artifactGroupId="XOLVE_SALES" description="CRM and SFA"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="XOLVE_SALES" artifactName="component://Sales/screen/Sales.xml"
                                         artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
