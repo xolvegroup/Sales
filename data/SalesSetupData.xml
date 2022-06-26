@@ -14,18 +14,24 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <entity-facade-xml type="seed-initial">
     <!-- Sales App -->
-    <moqui.security.ArtifactGroup artifactGroupId="SALES" description="Sales (via root screen)"/>
-    <moqui.security.ArtifactGroupMember artifactGroupId="SALES" artifactName="component://Sales/screen/Sales.xml"
+    <moqui.security.ArtifactGroup artifactGroupId="XOLVE_SALES" description="CRM and SFA"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="XOLVE_SALES" artifactName="component://Sales/screen/Sales.xml"
                                         artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
     <!-- authz/permission for ADMIN users -->
-    <moqui.security.ArtifactAuthz artifactAuthzId="SALES" userGroupId="ADMIN" artifactGroupId="SALES"
+    <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SALES" userGroupId="ADMIN" artifactGroupId="XOLVE_SALES"
                                   authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 
     <!-- Artifact group for REST API -->
-    <moqui.security.ArtifactGroup artifactGroupId="SALES_API" description="Sales REST API (via root resource)"/>
-    <moqui.security.ArtifactGroupMember artifactGroupId="SALES_API" artifactTypeEnumId="AT_REST_PATH"
+    <moqui.security.ArtifactGroup artifactGroupId="XOLVE_SALES_API" description="Sales REST API)"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="XOLVE_SALES_API" artifactTypeEnumId="AT_REST_PATH"
                                         inheritAuthz="Y" artifactName="/Sales"/>
+
     <!-- Full permissions for the ADMIN user group -->
-    <moqui.security.ArtifactAuthz artifactAuthzId="SALESAPI_AUTHZ_ALL" userGroupId="ADMIN" artifactGroupId="SALES_API"
+    <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SALES_API_AUTHZ_ALL" userGroupId="ADMIN" artifactGroupId="XOLVE_SALES_API"
                                   authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+
+    <!-- authz for Sales app user group -->
+    <moqui.security.UserGroup userGroupId="XOLVE_SALES_USERS" description="Sales Users"/>
+    <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SALES_USERS" userGroupId="XOLVE_SALES_USERS" artifactGroupId="XOLVE_SALES"
+                                  authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
 </entity-facade-xml>
