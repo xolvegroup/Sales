@@ -18,8 +18,14 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="removeContactInfo"><service-call name="mantle.party.ContactServices.delete#PartyContactMech"/>
         <default-response url="."/></transition>
     <transition name="viewAccount"><default-response url="../../Account/ViewAccount"/></transition>
-    <subscreens default-item="Activity">
-        <subscreens-item name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
+    <transition name="addContact"><service-call name="mantle.sales.AccountServices.add#Contact"/>
+        <default-response url="."/></transition>
+    <transition name="removeContact"><service-call name="mantle.sales.AccountServices.delete#Contact"/>
+        <default-response url="."/></transition>
+    <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
+
+    <subscreens default-item="Note">
+        <subscreens-item menu-include="false" name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
     </subscreens>
     <actions>
         <!-- This approach is the same as what is used in EditParty screen -->
@@ -98,12 +104,23 @@ along with this software (see the LICENSE.md file). If not, see
                         <entity-find entity-name="mantle.party.PartyRelationship" list="accountList">
                             <econdition field-name="fromPartyId" from="partyId"/>
                             <econdition field-name="toRoleTypeId" value="Account"/>
+                            <date-filter/>
                         </entity-find>
                     </actions>
 
                     <widgets>
-                        <container-box type="default"><box-header title="Sales Accounts"/>
-                            <box-body-nopad>
+                        <container-box type="default"><box-header title="Sales Accounts"/><box-toolbar>
+                            <container-dialog id="AddSalesAccountDialog" button-text="Add to Sales Account">
+                                <form-single name="AddSalesAccount" transition="addContact">
+                                    <field name="partyId"><default-field><hidden/></default-field></field>
+                                    <field name="accountPartyId"><default-field title="Sales Account"><drop-down>
+                                        <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'Account']"/>
+                                    </drop-down></default-field></field>
+                                    <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                                </form-single>
+                            </container-dialog>
+                        </box-toolbar>
+                            <box-body>
                                 <form-list name="AccountList" list="accountList" skip-header="true">
                                     <field name="toPartyId">
                                         <default-field title="Account Name">
@@ -111,8 +128,12 @@ along with this software (see the LICENSE.md file). If not, see
                                             <!-- <display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/> -->
                                         </default-field>
                                     </field>
+                                    <field name="removeButton" align="right"><default-field title="">
+                                        <link url="removeContact" icon="fa fa-trash" parameter-map="[partyRelationshipId:partyRelationshipId]"
+                                              confirmation="Are you sure you want to remove this contact from the account?"/>
+                                    </default-field></field>
                                 </form-list>
-                            </box-body-nopad>
+                            </box-body>
                         </container-box>
                     </widgets>
                 </section>

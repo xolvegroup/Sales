@@ -22,36 +22,46 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="viewAccount"><default-response url="../../Account/ViewAccount"/></transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
 
+    <pre-actions>
+        <set field="roleTypeId" value="Contact"/>
+    </pre-actions>
     <actions>
-        <entity-find entity-name="mantle.party.ContactAndRelationship" list="contactList">
-            <econdition field-name="roleTypeId" value="Contact"/>
-            <econdition field-name="toPartyId" ignore-if-empty="true"/>
-        </entity-find>
+        <service-call name="sales.SalesServices.search#Party" in-map="context" out-map="context"/>
     </actions>
     <widgets>
         <container-dialog id="CreateContactDialog" button-text="New Sales Contact">
-            <form-single name="CreateContactForm" transition="createContact"
-                         extends="component://SimpleScreens/screen/SimpleScreens/Party/FindParty.xml#CreateContactForm"/>
+            <form-single name="CreateContactForm" transition="createContact">
+                <field name="accountPartyId"><default-field title="Sales Account"><drop-down allow-empty="true">
+                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'Account']"/>
+                </drop-down></default-field></field>
+                <field name="firstName"><default-field><text-line size="30"/></default-field></field>
+                <field name="lastName"><default-field><text-line size="30"/></default-field></field>
+                <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
+            </form-single>
         </container-dialog>
-        <form-list name="ContactList" list="contactList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
+        <form-list name="ContactList" list="documentList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
                    show-csv-button="true" show-xlsx-button="true" show-page-size="true" show-all-button="true">
 
             <row-actions>
-                <!-- Get contact email address -->
+                <!-- Get contact email address TODO: get from datadoc. It is there as a contactMech.-->
                 <entity-find entity-name="mantle.party.contact.PartyContactMechInfo" list="emailList">
                     <date-filter/>
                     <econdition field-name="partyId"/>
                     <econdition field-name="contactMechPurposeId" value="EmailPrimary"/>
                 </entity-find>
+                <!--  -->
+                <entity-find entity-name="mantle.party.PartyRelationship" list="accountList">
+                    <econdition field-name="fromPartyId" from="partyId"/>
+                    <econdition field-name="fromRoleTypeId" value="Contact"/>
+                    <select-field field-name="toPartyId"/>
+                </entity-find>
             </row-actions>
             <field name="partyId">
-                <default-field><link url="viewContact" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:partyId]"/>
-                <!--<default-field title="Contact Name"><display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>
-                </default-field>-->
-                </default-field>
+                <default-field><link url="viewContact" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:partyId]"/></default-field>
             </field>
             <field name="contactEmail">
                 <default-field title="Email Address">
+                    <!-- This is how you display more than one value in a column. -->
                     <section-iterate name="EmailList" list="emailList" entry="email"><widgets>
                         <label text="${email.infoString}"/>
                     </widgets></section-iterate>
@@ -60,11 +70,26 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="toPartyId">
                 <header-field title="Sales Account">
                     <drop-down allow-empty="true">
-                        <dynamic-options transition="searchPartyList" server-search="true" min-length="2" parameter-map="[roleTypeId:'Account']"/>
+                        <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'Account']"/>
                     </drop-down>
             </header-field>
-                <default-field><link url="viewAccount" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
-                    <!--<display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>-->
+                <default-field>
+                    <!-- It is possible for a contact to be associated with more than one account. -->
+                    <section-iterate name="AccountList" list="accountList" entry="account">
+                        <actions>
+                            <!-- Get the party detail record based on toPartyId to display properly -->
+                            <entity-find-one entity-name="mantle.party.PartyDetail" value-field="accountDetail">
+                                <field-map field-name="partyId" from="account.toPartyId"/>
+                            </entity-find-one>
+                        </actions>
+                        <widgets>
+                        <!--use this to just display the name
+                        <display text="PartyNameOnlyTemplate" text-map="accountDetail"/
+                        >-->
+                        <!-- Or this to link to the account -->
+                        <link url="viewAccount" text-map="accountDetail" text="PartyNameOnlyTemplate"
+                              parameter-map="[partyId:account.toPartyId]" link-type="anchor"/>
+                    </widgets></section-iterate>
                 </default-field>
             </field>
             <field name="submitButton">

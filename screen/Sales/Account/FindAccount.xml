@@ -40,8 +40,10 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- TODO: Predefined filter with tabs for "My Accounts", etc. Use Moqui saved finds functionality. -->
     <widgets>
         <container-dialog id="CreateAccountDialog" button-text="New Sales Account">
-            <form-single name="CreateAccountForm" transition="createAccount"
-                         extends="component://SimpleScreens/screen/SimpleScreens/Party/FindParty.xml#CreateAccountForm"/>
+            <form-single name="CreateAccountForm" transition="createAccount">
+                <field name="organizationName"><default-field title="Sales ACcount"><text-line size="60"/></default-field></field>
+                <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
+            </form-single>
         </container-dialog>
         <!--<form-list name="AccountList" list="accountList" show-page-size="true" header-dialog="true" skip-form="true">-->
         <form-list name="AccountList" list="documentList" show-page-size="true" header-dialog="true" skip-form="true">

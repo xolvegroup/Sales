@@ -18,8 +18,8 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="removeContactInfo"><service-call name="mantle.party.ContactServices.delete#PartyContactMech"/>
         <default-response url="."/></transition>
     <transition name="viewContact"><default-response url="../../Contact/ViewContact"/></transition>
-    <subscreens default-item="Activity">
-        <subscreens-item name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
+    <subscreens default-item="Note">
+        <subscreens-item menu-include="false" name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
     </subscreens>
     <actions>
         <!-- This approach is the same as what is used in EditParty screen -->
@@ -86,9 +86,10 @@ along with this software (see the LICENSE.md file). If not, see
                         <entity-find entity-name="mantle.party.PartyRelationship" list="contactList">
                             <econdition field-name="toPartyId" from="partyId"/>
                             <econdition field-name="fromRoleTypeId" value="Contact"/>
+                            <date-filter/>
                         </entity-find>
                         <entity-find-count entity-name="mantle.party.PartyRelationship" count-field="relationshipCount">
-                            <econdition field-name="toPartyId" from="partyId"/>
+                            <econdition field-name="toPartyId" from="partyId"/><date-filter/>
                             <econdition field-name="fromRoleTypeId" value="Contact"/></entity-find-count>
                     </actions>
 
