@@ -51,6 +51,7 @@ along with this software (see the LICENSE.md file). If not, see
                 </entity-find>
                 <!--  -->
                 <entity-find entity-name="mantle.party.PartyRelationship" list="accountList">
+                    <date-filter/>
                     <econdition field-name="fromPartyId" from="partyId"/>
                     <econdition field-name="fromRoleTypeId" value="Contact"/>
                     <select-field field-name="toPartyId"/>

@@ -75,7 +75,7 @@ along with this software (see the LICENSE.md file). If not, see
                     </form-single>
                 </container-dialog>
             </box-toolbar>
-            <box-body-nopad>
+            <box-body>
                 <form-list name="OrderItems" list="orderPartInfo.partOrderItemList" list-entry="orderItem" transition="updateItem">
                     <!--
                     <field name="orderItemSeqId"><default-field title="Item"><display/></default-field></field>
@@ -107,7 +107,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <link url="deleteItem" text="" btn-type="danger" icon="fa fa-trash" confirmation="Delete item ${orderItemSeqId}?"/>
                     </conditional-field><default-field title=""/></field>
                 </form-list>
-            </box-body-nopad>
+            </box-body>
         </container-box>
     </widgets>
 </screen>

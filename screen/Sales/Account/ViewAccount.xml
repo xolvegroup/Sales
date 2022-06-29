@@ -37,7 +37,7 @@ along with this software (see the LICENSE.md file). If not, see
                     </actions>
                     <widgets>
                         <container-box type="default"><box-header title="${party.organizationName}"/>
-                            <box-body-nopad>
+                            <box-body>
                                 <!-- Display primary website and phone -->
                                 <section-iterate name="WebInfoSection" list="contactOut.webAddressList" entry="contactInfo">
                                     <widgets><container-row><row-col lg="7">
@@ -72,7 +72,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     <dynamic-dialog id="AddWebUrlInfo" button-text="URL" transition="UpdateContactInfo"
                                                     parameter-map="[partyId:partyId, createWeb:'true']"/>
                                 </button-menu>
-                            </box-body-nopad>
+                            </box-body>
                         </container-box>
                     </widgets>
                 </section>
@@ -95,7 +95,7 @@ along with this software (see the LICENSE.md file). If not, see
 
                     <widgets>
                         <container-box type="default"><box-header title="Contacts"/>
-                            <box-body-nopad>
+                            <box-body>
                                 <label text="${relationshipCount} Contacts related to this Sales Account"/>
                                 <!-- Display contacts associated with sales account.
                                  How to do this with section-iterate and just display simple text?
@@ -117,7 +117,7 @@ along with this software (see the LICENSE.md file). If not, see
                                         </default-field>
                                     </field>
                                 </form-list>
-                            </box-body-nopad>
+                            </box-body>
                         </container-box>
                     </widgets>
                 </section>

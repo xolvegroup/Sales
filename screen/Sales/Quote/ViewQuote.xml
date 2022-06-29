@@ -65,7 +65,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <container-box>
                     <box-header title="Quote #${orderId} - ${ec.resource.expand('PartyNameOnlyTemplate','',orderPartInfo.customerDetail)}"/>
                     <box-toolbar><link url="." text="Put order buttons here (change status, etc)"/></box-toolbar>
-                    <box-body-nopad>
+                    <box-body>
                         <form-single name="HeaderForm" map="orderHeader">
                             <field name="statusId"><default-field title="Status">
                                 <display text="${statusItem.description}"/></default-field></field>
@@ -83,7 +83,7 @@ along with this software (see the LICENSE.md file). If not, see
                         <!--
                         <label text="Payment Terms: ${orderPartInfo.partSettlementTerm?.description ?: 'No payment terms set'}" type="div"/>
                         -->
-                    </box-body-nopad>
+                    </box-body>
                 </container-box>
                 <container-box>
                     <box-header title="Ship To Customer: ${ec.resource.expand('PartyNameOnlyTemplate','',customerShipToDetail)}"/>
@@ -101,7 +101,7 @@ along with this software (see the LICENSE.md file). If not, see
                             </form-single>
                         </container-dialog>
                         </box-toolbar>
-                    <box-body-nopad>
+                    <box-body>
                         <section name="CurrentShippingAddress">
                             <actions>
                                 <service-call name="mantle.party.ContactServices.get#PartyContactInfo" out-map="curShipToInfo"
@@ -154,11 +154,11 @@ along with this software (see the LICENSE.md file). If not, see
                                                         parameter-map="[partyId:customerShipToDetail.partyId, postalContactMechPurposeId:'PostalShippingDest',
                                                         telecomContactMechPurposeId:'PhoneShippingDest', emailContactMechPurposeId:'EmailShippingDest', orderId:orderId, postalContactMechId:null]"/>
                                     </box-toolbar>
-                                    <box-body-nopad>
+                                    <box-body>
                                         <label text="Please select an address from the list below and click the Set button.
                                         If none are listed add a new address." condition="!contactInfo" type="i"/>
                                         <text type="html,vuet,qvt" location="component://Sales/template/ContactInfo.html.gstring"/>
-                                    </box-body-nopad>
+                                    </box-body>
                                 </container-box>
 
                                 <!-- Address validation to be implemented later. This source is from OrderDetail.xml.
@@ -192,7 +192,7 @@ along with this software (see the LICENSE.md file). If not, see
                                 </form-single>
                             </widgets>
                         </section>
-                    </box-body-nopad>
+                    </box-body>
                 </container-box>
             </row-col>
             <row-col lg="6">
@@ -212,7 +212,7 @@ along with this software (see the LICENSE.md file). If not, see
                             </form-single>
                         </container-dialog>
                         </box-toolbar>
-                    <box-body-nopad>
+                    <box-body>
                         <section name="CurrentBillingAddress">
                             <actions>
                                 <entity-find-one entity-name="mantle.order.OrderPartContactMech" value-field="curBillToContactMech">
@@ -260,11 +260,11 @@ along with this software (see the LICENSE.md file). If not, see
                                     telecomContactMechPurposeId:'PhoneBilling', emailContactMechPurposeId:'EmailBilling', orderId:orderId, postalContactMechId:null]"/>
 
                                     </box-toolbar>
-                                    <box-body-nopad>
+                                    <box-body>
                                         <label text="Please select an address from the list below and click the Set button.
                                         If none are listed add a new address." condition="!contactInfo" type="i"/>
                                         <text type="html,vuet,qvt" location="component://Sales/template/ContactInfo.html.gstring"/>
-                                    </box-body-nopad>
+                                    </box-body>
                                 </container-box>
 
                                 <!-- Address validation to be implemented later. This source is from OrderDetail.xml.
@@ -288,12 +288,12 @@ along with this software (see the LICENSE.md file). If not, see
 
                             </widgets>
                         </section>
-                    </box-body-nopad>
+                    </box-body>
                 </container-box>
                 <container-box>
                     <box-header title="Payment Information"/>
                     <box-toolbar><link url="." text="Put payment buttons here"/></box-toolbar>
-                    <box-body-nopad>
+                    <box-body>
                         <form-single name="EditPartForm" transition="updateOrderPart" map="orderPart">
                             <field name="orderId"><default-field><hidden/></default-field></field>
                             <field name="orderPartSeqId"><default-field><hidden/></default-field></field>
@@ -306,7 +306,7 @@ along with this software (see the LICENSE.md file). If not, see
                                 </entity-options></drop-down>
                             </default-field></field>
                         </form-single>
-                    </box-body-nopad>
+                    </box-body>
                 </container-box>
             </row-col>
         </container-row>

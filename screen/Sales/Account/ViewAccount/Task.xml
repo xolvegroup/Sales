@@ -19,6 +19,11 @@ along with this software (see the LICENSE.md file). If not, see
         <service-call name="sales.SalesServices.create#Task" in-map="context"/>
         <default-response url="."/>
     </transition>
+
+    <subscreens>
+        <subscreens-item menu-include="false" name="EditTask" location="component://Sales/screen/Sales/Task/EditTask.xml"/>
+    </subscreens>
+
     <actions>
         <entity-find entity-name="WorkEffortAndParty" list="weapList">
             <econdition field-name="partyId"/>
@@ -29,18 +34,24 @@ along with this software (see the LICENSE.md file). If not, see
             <container-dialog id="NewTaskContainer" button-text="New Task">
                 <form-single name="NewTask" transition="createTask">
                     <field name="partyId"><default-field><hidden/></default-field></field>
-                    <field name="workEffortName"><default-field title="Task Name"><text-line/></default-field></field>
                     <field name="accountPartyId" from="partyId"><default-field><hidden/></default-field></field>
+                    <field name="workEffortName"><default-field title="Task Name"><text-line/></default-field></field>
+                    <field name="description"><default-field title="Description"><text-area/></default-field></field>
                     <field name="submitButton"><default-field title="Create Task"><submit/></default-field></field>
                 </form-single>
-            </container-dialog></box-toolbar><box-body-nopad>
-            <!-- Add dialog box for updating tasks -->
-            <form-list name="UpdatePartyTaskForm" list="weapList" skip-header="false">
-                <field name="partyId"><default-field><hidden/></default-field></field>
-                <field name="workEffortId"><default-field title="Task">
-                    <link text="${workEffortId} - ${workEffortName}" url="editProject" link-type="anchor"/>
-                </default-field></field>
-            </form-list>
-        </box-body-nopad></container-box>
+            </container-dialog></box-toolbar>
+            <box-body>
+                <label text="Tasks created here will be associated with this sales account and assigned to the person who creates them." type="p"/>
+                <form-list name="UpdatePartyTaskForm" list="weapList" skip-header="false">
+                    <field name="workEffortId"><default-field><hidden/></default-field></field>
+                    <field name="workEffortName"><default-field title="Name"><display/></default-field></field>
+                    <field name="description"><default-field title="Description"><display/></default-field></field>
+                    <field name="editTask"><default-field title=" ">
+                        <dynamic-dialog id="EditTaskDialog" button-text="Edit" transition="EditTask"/>
+                    </default-field>
+                    </field>
+                </form-list>
+            </box-body>
+        </container-box>
     </widgets>
 </screen>
