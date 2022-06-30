@@ -24,6 +24,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="estimatedCompletionDate" type="Timestamp" format="yyyy-MM-dd"/>
             <parameter name="workEffortTypeEnumId" default-value="WetTask"/>
             <parameter name="statusId" default-value="WeInPlanning"/>
+            <parameter name="description"/>
 
             <parameter name="accountPartyId" required="true"/>
 

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<entity-facade-xml type="demo">
+    <mantle.sales.opportunity.SalesOpportunityStage opportunityStageId="STAGE_01" description="Stage 1" sequenceNum="1" defaultProbability="0.2"/>
+    <mantle.sales.opportunity.SalesOpportunityStage opportunityStageId="STAGE_02" description="Stage 2" sequenceNum="2" defaultProbability="0.4"/>
+    <mantle.sales.opportunity.SalesOpportunityStage opportunityStageId="STAGE_03" description="Stage 3" sequenceNum="3" defaultProbability="0.6"/>
+    <mantle.sales.opportunity.SalesOpportunityStage opportunityStageId="STAGE_04" description="Stage 4" sequenceNum="4" defaultProbability="0.8"/>
+    <mantle.sales.opportunity.SalesOpportunityStage opportunityStageId="STAGE_05" description="Closed Won" sequenceNum="5" defaultProbability="1"/>
+    <mantle.sales.opportunity.SalesOpportunityStage opportunityStageId="STAGE_06" description="Closed Lost" sequenceNum="6" defaultProbability="0"/>
+</entity-facade-xml>

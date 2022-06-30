@@ -46,8 +46,8 @@ along with this software (see the LICENSE.md file). If not, see
     </actions>
     <widgets>
         <form-single name="EditTask" transition="updateTask" map="task">
-            <field name="partyId"><default-field><hidden/>
-            </default-field></field>
+            <field name="partyId"><default-field><hidden/></default-field></field>
+            <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
             <field name="workEffortId"><default-field title="Task ID"><hidden/></default-field></field>
             <field name="workEffortName"><default-field title="Task Name"><text-line size="60"/></default-field></field>
             <field name="statusId"><default-field title="Status">

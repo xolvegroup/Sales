@@ -18,6 +18,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="removeContactInfo"><service-call name="mantle.party.ContactServices.delete#PartyContactMech"/>
         <default-response url="."/></transition>
     <transition name="viewContact"><default-response url="../../Contact/ViewContact"/></transition>
+    <transition name="viewOpportunity"><default-response url="../../Opportunity/ViewOpportunity"/></transition>
     <subscreens default-item="Note">
         <subscreens-item menu-include="false" name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
     </subscreens>
@@ -96,19 +97,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <widgets>
                         <container-box type="default"><box-header title="Contacts"/>
                             <box-body>
-                                <label text="${relationshipCount} Contacts related to this Sales Account"/>
-                                <!-- Display contacts associated with sales account.
-                                 How to do this with section-iterate and just display simple text?
-                                <section-iterate name="ContactIterateSection" list="contactList" entry="contact">
-                                    <widgets>
-                                        <label text="From Party: ${contact.fromPartyId}" type="p"/>
-                                        <label text="PartyNameOnlyTemplate" text-map="contact" type="p"/>
-                                        <display text="PartyNameOnlyTemplate" text-map="contact"/>
-                                        <display-entity entity-name="mantle.party.PartyDetail" key-field-name="fromPartyId" text="PartyNameOnlyTemplate"/>
-                                    </widgets>
-                                </section-iterate>
-                                -->
-                                <!-- Using form list until I figure out the above approach. -->
+                                <label text="Contacts related to this Sales Account: ${relationshipCount}"/>
                                 <form-list name="ContactList" list="contactList" skip-header="true">
                                     <field name="fromPartyId">
                                         <default-field title="Contact Name">
@@ -116,6 +105,26 @@ along with this software (see the LICENSE.md file). If not, see
                                             <!--<display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>-->
                                         </default-field>
                                     </field>
+                                </form-list>
+                            </box-body>
+                        </container-box>
+                    </widgets>
+                </section>
+                <section name="OpportunitySection">
+                    <actions>
+                        <entity-find entity-name="mantle.sales.opportunity.SalesOpportunity" list="oppyList">
+                            <econdition field-name="accountPartyId" from="partyId"/>
+                        </entity-find>
+                    </actions>
+                    <widgets>
+                        <container-box>
+                            <box-header title="Sales Opportunities"/>
+                            <box-body>
+                                <form-list name="OppyList" list="oppyList" skip-header="true">
+                                    <field name="opportunityName"><default-field>
+                                        <link url="viewOpportunity" text="${opportunityName}" link-type="anchor"/>
+                                    </default-field></field>
+                                    <field name="description"><default-field><display/></default-field></field>
                                 </form-list>
                             </box-body>
                         </container-box>

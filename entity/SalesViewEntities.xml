@@ -14,7 +14,10 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-3.xsd">
-<!--
+
+<!-- These entities were originally for supporting searches that required the party relationship,
+for example to find all accounts for a sales person, or all contacts on a sales account. They have been replaced
+by adding toRelationships to the MantleParty DataDocument for indexing with elastic/open search.
     <view-entity entity-name="PartyRoleAndRelationship" package="mantle.party">
         <member-entity entity-alias="PREL" entity-name="mantle.party.PartyRelationship"/>
         <member-entity entity-alias="PTY" entity-name="mantle.party.Party" join-from-alias="PREL">
@@ -31,7 +34,7 @@ along with this software (see the LICENSE.md file). If not, see
         <alias-all entity-alias="PER"><exclude field="partyId"/></alias-all>
         <alias-all entity-alias="ORG"><exclude field="partyId"/></alias-all>
     </view-entity>
-    -->
+
     <view-entity entity-name="AccountAndRelationship" package="mantle.party">
         <member-entity entity-alias="PTRL" entity-name="mantle.party.PartyRole"/>
         <member-entity entity-alias="PREL" entity-name="mantle.party.PartyRelationship" join-from-alias="PTRL" join-optional="true">
@@ -63,7 +66,7 @@ along with this software (see the LICENSE.md file). If not, see
         <alias-all entity-alias="PTY"><exclude field="partyId"/><exclude field="comments"/></alias-all>
         <alias-all entity-alias="PER"><exclude field="partyId"/></alias-all>
     </view-entity>
-
+-->
     <view-entity entity-name="SalesOpportunityAndParty" package="mantle.sales.opportunity">
         <member-entity entity-alias="OPPY" entity-name="mantle.sales.opportunity.SalesOpportunity"/>
         <member-entity entity-alias="SPTY" entity-name="mantle.sales.opportunity.SalesOpportunityParty" join-from-alias="OPPY" join-optional="true">
@@ -72,6 +75,8 @@ along with this software (see the LICENSE.md file). If not, see
         <alias-all entity-alias="OPPY"/>
         <alias-all entity-alias="SPTY"/>
     </view-entity>
+    <!-- This entity supports a screen (or report) for showing what products a customer has and has not purchased
+     An example can be found in the Product.xml screen in this application.-->
     <view-entity entity-name="ProductSalesSummary" package="mantle.order">
         <member-entity entity-alias="PROD" entity-name="mantle.product.Product"/>
         <member-entity entity-alias="OITM" entity-name="mantle.order.OrderItem" join-from-alias="PROD" join-optional="true">

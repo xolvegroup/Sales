@@ -24,7 +24,7 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="removeParty"><service-call name="delete#mantle.sales.opportunity.SalesOpportunityParty"/>
         <default-response url="."/></transition>
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
-    <subscreens default-item="Activity"/>
+    <subscreens default-item="Note"/>
     <pre-actions>
         <!-- This approach is the same as what is used in EditParty screen -->
         <entity-find-one entity-name="mantle.sales.opportunity.SalesOpportunity" value-field="opportunity"/>
@@ -32,6 +32,11 @@ along with this software (see the LICENSE.md file). If not, see
         <entity-find-one entity-name="mantle.party.PartyDetail" value-field="accountDetail">
             <field-map field-name="partyId" from="opportunity.accountPartyId"/></entity-find-one>
     </pre-actions>
+    <actions>
+        <entity-find-one entity-name="mantle.sales.opportunity.SalesOpportunityStage" value-field="stage">
+                <field-map field-name="opportunityStageId" from="opportunity.opportunityStageId"/>
+        </entity-find-one>
+    </actions>
 
     <widgets>
         <container-row>
@@ -55,6 +60,12 @@ along with this software (see the LICENSE.md file). If not, see
                                                     </entity-find></entity-options>
                                             </drop-down></default-field></field>
                                             <field name="estimatedAmount"><default-field title="Amount"><text-line size="10"/></default-field></field>
+                                            <field name="opportunityStageId"><default-field title="Stage"><drop-down>
+                                                <entity-options key="${opportunityStageId}" text="${description}">
+                                                    <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityStage">
+                                                        <order-by field-name="sequenceNum"/>
+                                                    </entity-find></entity-options>
+                                            </drop-down></default-field></field>
                                             <field name="estimatedCloseDate"><default-field title="Close Date"><date-time type="date"/></default-field></field>
                                             <field name="partyId"><default-field title="Sales Person"><drop-down allow-empty="true">
                                                 <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'SalesRepresentative']"/>
@@ -66,7 +77,6 @@ along with this software (see the LICENSE.md file). If not, see
                                     </container-dialog>
                                 </box-toolbar>
                                 <box-body>
-                                    <!-- Display using a container -->
                                     <container-row style="color:red">
                                         <row-col lg="4"><label text="Sales Account: "/></row-col>
                                         <row-col lg="8"><label text="PartyNameOnlyTemplate" text-map="accountDetail" condition="accountDetail"/></row-col>
@@ -77,7 +87,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     </container-row>
                                     <container-row>
                                         <row-col lg="4"><label text="Stage: "/></row-col>
-                                        <row-col lg="8"><label text="${opportunity.opportunityStageId}"/></row-col> <!-- TODO: Display description from SalesOpportunityStage entity -->
+                                        <row-col lg="8"><label text="${stage.description}" condition="stage"/></row-col> <!-- TODO: Display description from SalesOpportunityStage entity -->
                                     </container-row>
                                     <container-row>
                                         <row-col lg="4"><label text="Close Date: "/></row-col>
@@ -85,7 +95,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     </container-row>
                                     <container-row>
                                         <row-col lg="4"><label text="Description: "/></row-col>
-                                        <row-col lg="8"><label text="${opportunity.description}"/></row-col> <!-- TODO: make date format dynamic based on user locale -->
+                                        <row-col lg="8"><label text="${opportunity.description}" condition="opportunity.description"/></row-col> <!-- TODO: make date format dynamic based on user locale -->
                                     </container-row>
                                     <!-- Or display using a form
                                     <form-single name="OpportunityForm" map="opportunity">
@@ -112,6 +122,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <box-header title="Sales Team"/>
                             <box-toolbar>
                                 <container-dialog id="AddSalesPerson" button-text="Add Sales Person">
+                                    <label text="Sales people must first be setup by an administrator to appear in this list."/>
                                     <form-single name="AddSalesPersonForm" transition="addParty" map="opportunity">
                                         <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
                                         <field name="roleTypeId"><default-field><hidden default-value="SalesRepresentative"/></default-field></field>
@@ -159,6 +170,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <box-header title="Contacts"/>
                             <box-toolbar>
                                 <container-dialog id="AddContact" button-text="Add Contact">
+                                    <label text="This associates an existing contact with this opportunity. The contact must first be linked to the sales account to appear in this list."/>
                                     <form-single name="AddContactForm" transition="addParty" map="opportunity">
                                         <field name="salesOpportunityId"><default-field><hidden/></default-field></field>
                                         <field name="roleTypeId"><default-field><hidden default-value="Contact"/></default-field></field>
@@ -208,16 +220,16 @@ along with this software (see the LICENSE.md file). If not, see
                         </box-toolbar></container-box>
                     </widgets>
                 </section>
+                <!--
                 <section name="QuoteSection">
                     <widgets>
                         <container-box>
-                            <box-header title="Quotes">
-
-                            </box-header>
+                            <box-header title="Quotes"/>
                         </container-box>
-
                     </widgets>
                 </section>
+                -->
+                <!--
                 <section name="RequestSection">
                     <widgets>
                         <container-box>
@@ -228,6 +240,7 @@ along with this software (see the LICENSE.md file). If not, see
 
                     </widgets>
                 </section>
+                -->
             </row-col>
         </container-row>
     </widgets>
