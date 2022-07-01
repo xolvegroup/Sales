@@ -14,13 +14,14 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
-        require-authentication="true" default-menu-title="Find Quote">
+        require-authentication="true" default-menu-title="Find Quote (alpha)">
     <transition name="viewAccount"><default-response url="../../Account/ViewAccount"/></transition>
     <transition name="viewQuote"><default-response url="../ViewQuote"/></transition>
     <actions>
 
     </actions>
     <widgets>
+        <label text="Quote functionality is still under development. These screens provide a preview. You can use the default Moqui order screen availble in POPC or MarbleERP to create an order and it will appear in this list."/>
         <form-list name="OrderList" list="orderList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
                    show-csv-button="true" show-xlsx-button="true" show-all-button="true">
             <entity-find entity-name="mantle.order.OrderPartFindView" list="orderList">
