@@ -53,6 +53,18 @@ along with this software (see the LICENSE.md file). If not, see
                                         contactMechPurposeId:contactInfo.webContactMechPurposeId]"/>
                                     </row-col></container-row></widgets>
                                 </section-iterate>
+                                <section-iterate name="EmailInfoSection" list="contactOut.emailAddressList" entry="contactInfo"><widgets>
+                                    <container-row><row-col lg="7">
+                                        <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
+                                    </row-col><row-col lg="5">
+                                        <dynamic-dialog id="UpdateEmailInfo" button-text="Update" transition="UpdateContactInfo"
+                                                        parameter-map="[partyId:partyId, emailContactMechId:contactInfo.emailContactMechId,
+                                        emailContactMechPurposeId:contactInfo.emailContactMechPurposeId]"/>
+                                        <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove email address?"
+                                              parameter-map="[partyId:partyId, contactMechId:contactInfo.emailContactMechId,
+                                        contactMechPurposeId:contactInfo.emailContactMechPurposeId]"/>
+                                    </row-col></container-row>
+                                </widgets></section-iterate>
                                 <section-iterate name="PhoneInfoSection" list="contactOut.telecomNumberList" entry="contactInfo">
                                     <widgets><container-row><row-col lg="7">
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
