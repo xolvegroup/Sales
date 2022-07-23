@@ -138,7 +138,7 @@ along with this software (see the LICENSE.md file). If not, see
         <actions>
             <entity-find entity-name="moqui.resource.wiki.WikiBlogFindView" list="blogList">
                 <search-form-inputs default-order-by="-publishDate"/>
-                <select-field field-name="wikiBlogId,wikiPageId,wikiSpaceId,pagePath,author,publishDate,title,summary"/>
+                <select-field field-name="wikiBlogId,wikiPageId,wikiSpaceId,pagePath,author,publishDate,title,summary,metaKeywords"/>
             </entity-find>
         </actions>
     </service>
