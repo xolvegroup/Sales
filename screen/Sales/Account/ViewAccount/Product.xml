@@ -19,8 +19,10 @@ along with this software (see the LICENSE.md file). If not, see
 
     <actions>
         <entity-find entity-name="ProductSalesSummary" list="productList">
-            <econdition field-name="customerPartyId" from="partyId" or-null="true"/>
-            <econdition field-name="assetClassEnumId" value="AsClsInventoryFin"/>
+            <econdition field-name="customerPartyId" from="partyId"/>
+            <!--<econdition field-name="assetClassEnumId" value="AsClsInventoryFin"/>-->
+            <econdition field-name="assetClassEnumId" value="AsClsInventoryRaw,AsClsInventorySub" operator="not-in"/>
+            <econdition field-name="orderStatusId" value="OrderCompleted"/>
             <select-field field-name="productName,quantity,qtyWithoutDiscount,sales,discounts,netSales,currencyUomId"/>
         </entity-find>
     </actions>
@@ -28,10 +30,10 @@ along with this software (see the LICENSE.md file). If not, see
         <label text="Customer Product Summary" type="strong"/>
         <form-list name="ProductSummary" list="productList" header-dialog="true">
             <field name="productName"><header-field title="Product" show-order-by="true"/><default-field><display/></default-field></field>
-            <field name="quantity"><default-field><display/></default-field></field>
-            <field name="sales" align="right" show-total="true"><default-field title="Sales"><display currency-unit-field="currencyUomId"/></default-field></field>
-            <field name="discounts" align="right" show-total="true"><default-field title="Discounts"><display currency-unit-field="currencyUomId"/></default-field></field>
-            <field name="netSales" align="right" show-total="true"><default-field title="Net Sales"><display currency-unit-field="currencyUomId"/></default-field></field>
+            <field name="quantity"><header-field show-order-by="true"/><default-field><display/></default-field></field>
+            <field name="sales" align="right" show-total="true"><header-field show-order-by="true"/><default-field title="Sales"><display currency-unit-field="currencyUomId"/></default-field></field>
+            <field name="discounts" align="right" show-total="true"><header-field show-order-by="true"/><default-field title="Discounts"><display currency-unit-field="currencyUomId"/></default-field></field>
+            <field name="netSales" align="right" show-total="true"><header-field show-order-by="true"/><default-field title="Net Sales"><display currency-unit-field="currencyUomId"/></default-field></field>
         </form-list>
     </widgets>
 </screen>
