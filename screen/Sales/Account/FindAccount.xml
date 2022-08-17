@@ -53,7 +53,7 @@ along with this software (see the LICENSE.md file). If not, see
             </row-actions>
             <field name="organizationName">
                 <header-field title="Sales Account" show-order-by="true"><text-line size="40"/></header-field>
-                <default-field><link url="viewAccount" text="${organizationName}" link-type="anchor"/></default-field>
+                <default-field><link url="viewAccount" text="PartyNameTemplate" link-type="anchor"/></default-field>
             </field>
             <field name="fromPartyId">
                 <header-field title="Sales Person" show-order-by="true">

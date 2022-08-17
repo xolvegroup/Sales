@@ -33,7 +33,7 @@ along with this software (see the LICENSE.md file). If not, see
             <econdition field-name="customerPartyId" from="partyId" or-null="true"/>
             <econdition field-name="assetClassEnumId" value="AsClsInventoryFin,AsClsInventoryDig" operator="in"/>
             <econdition field-name="orderStatusId" value="OrderCompleted" or-null="true"/>
-            <!--<select-field field-name="productName,quantity,sales,discounts,netSales,currencyUomId"/>-->
+            <select-field field-name="productId,quantity,sales,discounts,netSales,currencyUomId"/>
         </entity-find>
     </actions>
     <widgets>
@@ -44,7 +44,7 @@ along with this software (see the LICENSE.md file). If not, see
             <field name="placedDate"><header-field><date-find/></header-field></field>
             <field name="productId"><header-field title="Product" show-order-by="true">
                 <drop-down allow-multiple="true"><dynamic-options transition="getProductList" server-search="true" min-length="0"/></drop-down>
-            </header-field><default-field><display text="${productName ? productName : ''}"/>
+            </header-field><default-field><display-entity entity-name="mantle.product.Product" text="ProductNameTemplate"/>
             </default-field></field>
             <field name="quantity" show-total="true"><header-field show-order-by="true"/><default-field><display/></default-field></field>
             <field name="sales" align="right" show-total="true"><header-field show-order-by="true"/><default-field title="Sales"><display currency-unit-field="currencyUomId"/></default-field></field>
