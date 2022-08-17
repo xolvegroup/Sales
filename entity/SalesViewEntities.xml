@@ -85,6 +85,7 @@ by adding toRelationships to the MantleParty DataDocument for indexing with elas
             <key-map field-name="orderId"/></member-entity>
         <member-entity entity-alias="OPRT" entity-name="mantle.order.OrderPart" join-from-alias="OITM" join-optional="true">
             <key-map field-name="orderId"/><key-map field-name="orderPartSeqId"/></member-entity>
+        <alias entity-alias="PROD" name="productId"/>
         <alias entity-alias="PROD" name="pseudoId"/>
         <alias entity-alias="PROD" name="productName"/>
         <alias entity-alias="PROD" name="amountUomId"/>
@@ -93,9 +94,9 @@ by adding toRelationships to the MantleParty DataDocument for indexing with elas
         <alias entity-alias="PROD" name="assetClassEnumId"/>
         <alias entity-alias="PROD" name="ownerPartyId"/>
         <alias entity-alias="OHDR" name="currencyUomId"/>
-        <alias entity-alias="OITM" name="orderId"/><!-- for a summary report this shouldn't be selected -->
-        <alias entity-alias="OITM" name="productId"/>
+        <alias entity-alias="OITM" name="orderId"/><!-- for a summary report this shouldn't be selected -->>
         <alias entity-alias="OITM" name="itemTypeEnumId"/>
+        <alias entity-alias="OITM" name="quantity"/>
         <alias name="quantity" function="sum">
             <case><when expression="OITM.ITEM_TYPE_ENUM_ID != 'ItemDiscount'">
                 <complex-alias expression="OITM.QUANTITY"/>

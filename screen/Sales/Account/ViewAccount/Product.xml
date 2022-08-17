@@ -33,7 +33,7 @@ along with this software (see the LICENSE.md file). If not, see
             <econdition field-name="customerPartyId" from="partyId" or-null="true"/>
             <econdition field-name="assetClassEnumId" value="AsClsInventoryFin,AsClsInventoryDig" operator="in"/>
             <econdition field-name="orderStatusId" value="OrderCompleted" or-null="true"/>
-            <select-field field-name="productName,quantity,sales,discounts,netSales,currencyUomId"/>
+            <!--<select-field field-name="productName,quantity,sales,discounts,netSales,currencyUomId"/>-->
         </entity-find>
     </actions>
     <widgets>
@@ -42,7 +42,7 @@ along with this software (see the LICENSE.md file). If not, see
                    show-all-button="true" show-csv-button="true" show-xlsx-button="true">
             <field name="partyId"><header-field><hidden/></header-field></field>
             <field name="placedDate"><header-field><date-find/></header-field></field>
-            <field name="productId" show-total="false"><header-field title="Product" show-order-by="true">
+            <field name="productId"><header-field title="Product" show-order-by="true">
                 <drop-down allow-multiple="true"><dynamic-options transition="getProductList" server-search="true" min-length="0"/></drop-down>
             </header-field><default-field><display text="${productName ? productName : ''}"/>
             </default-field></field>
