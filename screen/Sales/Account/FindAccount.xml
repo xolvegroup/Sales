@@ -56,7 +56,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <default-field><link url="viewAccount" text="${organizationName}" link-type="anchor"/></default-field>
             </field>
             <field name="fromPartyId">
-                <header-field title="Sales Person">
+                <header-field title="Sales Person" show-order-by="true">
                     <drop-down allow-empty="true">
                         <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'SalesRepresentative']"/>
                     </drop-down>
