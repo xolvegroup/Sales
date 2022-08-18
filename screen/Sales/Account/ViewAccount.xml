@@ -152,7 +152,7 @@ along with this software (see the LICENSE.md file). If not, see
                     <widgets>
                         <container-box>
                             <box-header title="Sales Orders"/>
-                            <box-body>
+                            <box-body height="20vh">
                                 <form-list name="OrderList" list="orderList" skip-header="true">
                                     <field name="orderId"><default-field>
                                         <link url="viewOrder" text="${orderId}" link-type="anchor"/>
