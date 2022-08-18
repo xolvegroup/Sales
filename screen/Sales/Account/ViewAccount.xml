@@ -42,10 +42,10 @@ along with this software (see the LICENSE.md file). If not, see
                             <box-body>
                                 <!-- Display primary website and phone -->
                                 <section-iterate name="WebInfoSection" list="contactOut.webAddressList" entry="contactInfo">
-                                    <widgets><container-row><row-col lg="7">
+                                    <widgets><container-row><row-col lg="8">
                                         <!--<link url="${contactInfo.webAddress}" text="${contactInfo.webAddress}" link-type="anchor"/> -->
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
-                                        </row-col><row-col lg="5">
+                                        </row-col><row-col lg="4">
                                         <dynamic-dialog id="UpdateWebInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, webContactMechId:contactInfo.webContactMechId,
                                         webContactMechPurposeId:contactInfo.webContactMechPurposeId]"/>
@@ -55,9 +55,9 @@ along with this software (see the LICENSE.md file). If not, see
                                     </row-col></container-row></widgets>
                                 </section-iterate>
                                 <section-iterate name="EmailInfoSection" list="contactOut.emailAddressList" entry="contactInfo"><widgets>
-                                    <container-row><row-col lg="7">
+                                    <container-row><row-col lg="8">
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
-                                    </row-col><row-col lg="5">
+                                    </row-col><row-col lg="4">
                                         <dynamic-dialog id="UpdateEmailInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, emailContactMechId:contactInfo.emailContactMechId,
                                         emailContactMechPurposeId:contactInfo.emailContactMechPurposeId]"/>
@@ -67,9 +67,9 @@ along with this software (see the LICENSE.md file). If not, see
                                     </row-col></container-row>
                                 </widgets></section-iterate>
                                 <section-iterate name="PhoneInfoSection" list="contactOut.telecomNumberList" entry="contactInfo">
-                                    <widgets><container-row><row-col lg="7">
+                                    <widgets><container-row><row-col lg="8">
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
-                                        </row-col><row-col lg="5">
+                                        </row-col><row-col lg="4">
                                         <dynamic-dialog id="UpdatePhoneInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, telecomContactMechId:contactInfo.telecomContactMechId,
                                         telecomContactMechPurposeId:contactInfo.telecomContactMechPurposeId]"/>
