@@ -19,6 +19,7 @@ along with this software (see the LICENSE.md file). If not, see
         <default-response url="."/></transition>
     <transition name="viewContact"><default-response url="../../Contact/ViewContact"/></transition>
     <transition name="viewOpportunity"><default-response url="../../Opportunity/ViewOpportunity"/></transition>
+    <transition name="viewOrder"><default-response url="../../Order/ViewOrder"/></transition>
     <subscreens default-item="Note">
         <subscreens-item menu-include="false" name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
     </subscreens>
@@ -37,7 +38,7 @@ along with this software (see the LICENSE.md file). If not, see
                                       in-map="[partyId:partyId, getAll:true]"/>
                     </actions>
                     <widgets>
-                        <container-box type="default"><box-header title="${party.organizationName}"/>
+                        <container-box type="default"><box-header title="${party.organizationName?:''}${party.firstName?:''}${party.lastName ? ' ' + party.lastName : ''}"/>
                             <box-body>
                                 <!-- Display primary website and phone -->
                                 <section-iterate name="WebInfoSection" list="contactOut.webAddressList" entry="contactInfo">
@@ -45,7 +46,7 @@ along with this software (see the LICENSE.md file). If not, see
                                         <!--<link url="${contactInfo.webAddress}" text="${contactInfo.webAddress}" link-type="anchor"/> -->
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
                                         </row-col><row-col lg="5">
-                                        <dynamic-dialog id="UpdateWebInfo" button-text="Update" transition="UpdateContactInfo"
+                                        <dynamic-dialog id="UpdateWebInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, webContactMechId:contactInfo.webContactMechId,
                                         webContactMechPurposeId:contactInfo.webContactMechPurposeId]"/>
                                         <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove Web URL?"
@@ -57,7 +58,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     <container-row><row-col lg="7">
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
                                     </row-col><row-col lg="5">
-                                        <dynamic-dialog id="UpdateEmailInfo" button-text="Update" transition="UpdateContactInfo"
+                                        <dynamic-dialog id="UpdateEmailInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, emailContactMechId:contactInfo.emailContactMechId,
                                         emailContactMechPurposeId:contactInfo.emailContactMechPurposeId]"/>
                                         <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove email address?"
@@ -69,7 +70,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     <widgets><container-row><row-col lg="7">
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
                                         </row-col><row-col lg="5">
-                                        <dynamic-dialog id="UpdatePhoneInfo" button-text="Update" transition="UpdateContactInfo"
+                                        <dynamic-dialog id="UpdatePhoneInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, telecomContactMechId:contactInfo.telecomContactMechId,
                                         telecomContactMechPurposeId:contactInfo.telecomContactMechPurposeId]"/>
                                         <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove phone number?"
@@ -137,6 +138,27 @@ along with this software (see the LICENSE.md file). If not, see
                                         <link url="viewOpportunity" text="${opportunityName}" link-type="anchor"/>
                                     </default-field></field>
                                     <field name="description"><default-field><display/></default-field></field>
+                                </form-list>
+                            </box-body>
+                        </container-box>
+                    </widgets>
+                </section>
+                <section name="OrderSection">
+                    <actions>
+                        <entity-find entity-name="mantle.order.OrderHeaderAndPart" list="orderList">
+                            <econdition field-name="customerPartyId" from="partyId"/>
+                        </entity-find>
+                    </actions>
+                    <widgets>
+                        <container-box>
+                            <box-header title="Sales Orders"/>
+                            <box-body>
+                                <form-list name="OrderList" list="orderList" skip-header="true">
+                                    <field name="orderId"><default-field>
+                                        <link url="viewOrder" text="${orderId}" link-type="anchor"/>
+                                    </default-field></field>
+                                    <field name="statusId"><default-field><display-entity entity-name="moqui.basic.StatusItem"/></default-field></field>
+                                    <field name="grandTotal" align="right"><default-field><display currency-unit-field="currencyUomId"/></default-field></field>
                                 </form-list>
                             </box-body>
                         </container-box>
