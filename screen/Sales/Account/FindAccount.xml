@@ -24,9 +24,15 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="viewAccount"><default-response url="../ViewAccount"/></transition>
 
     <pre-actions>
-        <set field="roleTypeId" value="Account"/>
+
     </pre-actions>
     <actions>
+        <if condition="!roleTypeId">
+            <then>
+                <set field="roleTypeId" value="Account"/>
+            </then>
+        </if>
+
         <service-call name="sales.SalesServices.search#Party" in-map="context" out-map="context"/>
     </actions>
 
@@ -40,7 +46,7 @@ along with this software (see the LICENSE.md file). If not, see
             </form-single>
         </container-dialog>
         <!--<form-list name="AccountList" list="accountList" show-page-size="true" header-dialog="true" skip-form="true">-->
-        <form-list name="AccountList" list="documentList" show-page-size="true" header-dialog="true" skip-form="true">
+        <form-list name="AccountList" list="documentList" saved-finds="true" show-page-size="true" header-dialog="true" skip-form="true">
             <row-actions>
                 <!-- Get Sales Person(s) -->
                 <entity-find entity-name="mantle.party.PartyRelationship" list="relList">
@@ -51,6 +57,12 @@ along with this software (see the LICENSE.md file). If not, see
                     <econdition field-name="partyId" operator="in" from="relList.fromPartyId"/>
                 </entity-find>
             </row-actions>
+            <field name="roleTypeId"><header-field title="Role">
+                <drop-down allow-multiple="true">
+                    <option key="Customer" text="Customer"/>
+                    <option key="Account" text="Sales Account"/>
+                </drop-down>
+            </header-field></field>
             <field name="organizationName">
                 <header-field title="Sales Account" show-order-by="true"><text-line size="40"/></header-field>
                 <default-field><link url="viewAccount" text="PartyNameTemplate" link-type="anchor"/></default-field>
