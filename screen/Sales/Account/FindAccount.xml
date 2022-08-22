@@ -58,7 +58,7 @@ along with this software (see the LICENSE.md file). If not, see
                 </entity-find>
             </row-actions>
             <field name="roleTypeId"><header-field title="Role">
-                <drop-down allow-multiple="true">
+                <drop-down>
                     <option key="Customer" text="Customer"/>
                     <option key="Account" text="Sales Account"/>
                 </drop-down>
