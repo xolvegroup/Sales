@@ -23,9 +23,6 @@ along with this software (see the LICENSE.md file). If not, see
     <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
     <transition name="viewAccount"><default-response url="../ViewAccount"/></transition>
 
-    <pre-actions>
-
-    </pre-actions>
     <actions>
         <if condition="!roleTypeId">
             <then>
@@ -45,7 +42,6 @@ along with this software (see the LICENSE.md file). If not, see
                 <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
             </form-single>
         </container-dialog>
-        <!--<form-list name="AccountList" list="accountList" show-page-size="true" header-dialog="true" skip-form="true">-->
         <form-list name="AccountList" list="documentList" saved-finds="true" show-page-size="true" header-dialog="true" skip-form="true">
             <row-actions>
                 <!-- Get Sales Person(s) -->
