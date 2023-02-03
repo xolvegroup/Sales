@@ -395,4 +395,85 @@ along with this software (see the LICENSE.md file). If not, see
                 -->
         </actions>
     </service>
+    <service verb="get" noun="AllSalesPerson">
+        <in-parameters>
+            <parameter name="partyIdList" type="List" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="spList"/>
+        </out-parameters>
+        <actions>
+            <set field="partyIdSet" from="new HashSet()"/>
+            <script>partyIdSet.addAll(partyIdList)</script>
+            <entity-find entity-name="mantle.party.PartyDetail" list="spList">
+                <econdition field-name="partyId" operator="in" from="partyIdList"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="SavedFinds">
+        <in-parameters>
+            <parameter name="formLocation" default-value="component://Sales/screen/Sales/Account/FindAccount.xml.form_list$AccountList"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="savedFindList"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.screen.form.FormListFindUserView" list="sfList">
+                <econdition field-name="userId" from="ec.user.userId"/>
+                <econdition field-name="formLocation" from="formLocation"/>
+            </entity-find>
+            <set field="savedFindList" from="[]"/>
+            <if condition="sfList">
+                <iterate list="sfList" entry="sf">
+                    <set field="saved_find" from="new HashMap()"/>
+                    <script>
+                        saved_find.putAll(sf)
+                        savedFindList.add(saved_find)
+                    </script>
+                    <entity-find entity-name="moqui.screen.form.FormListFindField" list="fieldList">
+                        <econdition field-name="formListFindId" from="sf.formListFindId"/>
+                    </entity-find>
+                    <if condition="fieldList">
+                        <script>
+                            saved_find.put("fieldList",fieldList)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="get" noun="PartyNoteList">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="partyNoteList"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyNote" list="tmpPartyNoteList">
+                <econdition field-name="partyId"/>
+                <order-by field-name="-noteDate"/>
+            </entity-find>
+            <set field="partyNoteList" from="[]"/>
+            <if condition="tmpPartyNoteList">
+                <iterate list="tmpPartyNoteList" entry="note">
+                    <set field="note_item" from="new HashMap()"/>
+                    <script>
+                        note_item.putAll(note)
+                        partyNoteList.add(note_item)
+                    </script>
+                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="partyDetail">
+                        <field-map field-name="partyId" from="note.userId"/>
+                    </entity-find-one>
+                    <if condition="partyDetail">
+                        <set field="assignedUserFirstName" from="partyDetail.firstName"/>
+                        <set field="assignedUserLastName" from="partyDetail.lastName"/>
+                        <script>
+                            note_item.put("added_by",assignedUserFirstName + ' ' + assignedUserLastName)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
 </services>

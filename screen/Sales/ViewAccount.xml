@@ -13,13 +13,11 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
-        default-menu-title="Accounts" default-menu-index="10" menu-image="/ssstatic/images/Customer.png">
+        default-menu-title="Accounts New" default-menu-index="10" menu-image="/ssstatic/images/Customer.png" render-modes="vue,qvue" server-static="vue,qvue">
 
-    <subscreens default-item="FindAccount">
-        <!--<subscreens-item name="ViewAccount" location="component://Sales/screen/Sales/Account/ViewAccount.xml"/>-->
-    </subscreens>
     <widgets>
-        <!-- popup will list all subscreens in the menu, tab does not -->
-        <subscreens-panel id="account-panel" type="popup"/>
+        <render-mode>
+            <text type="vue,qvue" location="component://Sales/screen/Sales/Account/ViewAccount.qvue"/>
+            </render-mode>
     </widgets>
 </screen>

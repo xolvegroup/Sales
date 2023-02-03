@@ -56,4 +56,22 @@ along with this software (see the LICENSE.md file). If not, see
                 </id>
         </id>
     </resource>
+    <resource name="getAllAccounts" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.search#Party"/></method>
+    </resource>
+    <resource name="getAllSalesPerson" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#AllSalesPerson"/></method>
+    </resource>
+    <resource name="createNewSalesAccount" require-authentication="anonymous-all">
+        <method type="post"><service name="mantle.sales.AccountServices.create#Account"/></method>
+    </resource>
+    <resource name="saved_finds" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#SavedFinds"/></method>
+    </resource>
+    <resource name="getPartyContactInfoList" require-authentication="anonymous-view">
+        <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfoList"/></method>
+    </resource>
+    <resource name="getPartyNoteList" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#PartyNoteList"/></method>
+    </resource>
 </resource>

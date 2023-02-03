@@ -1,0 +1,581 @@
+<template>
+    <div>
+
+        <div class="row q-mt-md">
+        <div class="col-3">
+            <q-card flat bordered class="detail_cls my-card">
+              <q-card-section>
+                <div class="text-h6">Note title</div>
+              </q-card-section>
+              <q-card-section class="q-pt-none q-px-sm">
+                <q-list>
+                              <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                                <q-item-section>
+                                  <q-item-label> <a href="http://test.com">http://test.com</a> </q-item-label>
+                                </q-item-section>
+
+                                <q-item-section style="display:block;" side top>
+                                  <q-btn outline dense icon="open_in_new" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                                </q-item-section>
+                              </q-item>
+
+                              <q-separator class="q-mx-sm" spaced inset ></q-separator>
+
+                              <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                                <q-item-section>
+                                  <q-item-label><a mailto="mayank091193@gmail.com">mayank091193@gmail.com</a></q-item-label>
+                                </q-item-section>
+
+                                <q-item-section style="display:block;" side top>
+                                  <q-btn outline dense icon="open_in_new" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                                </q-item-section>
+                              </q-item>
+
+                              <q-separator class="q-mx-sm" spaced inset ></q-separator>
+
+                              <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                                <q-item-section>
+                                  <q-item-label class="text-italic"> T: 1-98-98989 X98 </q-item-label>
+                                </q-item-section>
+
+                                <q-item-section style="display:block;" side top>
+                                  <q-btn outline dense icon="open_in_new" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                                </q-item-section>
+                              </q-item>
+
+                              <q-separator class="q-mx-sm" spaced inset ></q-separator>
+
+                              <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                                <q-item-section>
+                                  <q-item-label>
+                                    <q-btn-dropdown dense outline icon="add" class="text-capitalize" color="primary" label="Add New">
+                                      <q-list>
+                                        <q-item>
+                                          <q-item-section>
+                                            <q-btn @click="add_phone_modal=true" outline dense icon="open_in_new" class="q-mx-sm q-mt-sm text-capitalize text-primary ">&nbsp;Phone</q-btn>
+                                          </q-item-section>
+                                        </q-item>
+
+                                        <q-item>
+                                          <q-item-section>
+                                            <q-btn @click="add_email_modal=true" outline dense icon="open_in_new" class="q-mx-sm text-capitalize text-primary ">&nbsp;Email</q-btn>
+                                          </q-item-section>
+                                        </q-item>
+
+                                        <q-item >
+                                          <q-item-section>
+                                            <q-btn @click="add_url_modal=true" outline dense icon="open_in_new" class="q-mx-sm q-mb-sm text-primary ">&nbsp;&nbsp;URL</q-btn>
+                                          </q-item-section>
+                                        </q-item>
+                                      </q-list>
+                                    </q-btn-dropdown>
+                                  </q-item-label>
+                                </q-item-section>
+                              </q-item>
+
+                            </q-list>
+              </q-card-section>
+            </q-card>
+        </div>
+        <div class="col-6 q-px-md">
+            <q-tabs
+                v-model="tab"
+                  dense
+                  class="text-grey-8"
+                  active-color="primary"
+                  indicator-color="primary"
+                  align="left"
+                  shrink stretch
+                  narrow-indicator
+              >
+                <q-tab name="Notes" class="text-capitalize" label="Notes"></q-tab>
+                <q-tab name="Tasks" class="text-capitalize" label="Tasks" ></q-tab>
+                <q-tab name="Calls" class="text-capitalize" label="Calls" ></q-tab>
+                <q-tab name="Emails" class="text-capitalize" label="Emails" ></q-tab>
+                <q-tab name="Meetings" class="text-capitalize" label="Meetings" ></q-tab>
+                <q-tab name="Products" class="text-capitalize" label="Products" ></q-tab>
+              </q-tabs>
+
+              <q-separator class="q-px-none q-mx-sm"></q-separator>
+
+              <q-tab-panels v-model="tab" animated>
+                  <q-tab-panel name="Notes">
+
+                    <q-card flat bordered class="detail_cls my-card">
+                      <q-card-section style="display:flow-root">
+                        <div class="text-h6 text-primary float-left q-pt-sm">Notes</div>
+                        <q-btn @click="add_note_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Note</q-btn>
+                      </q-card-section>
+
+                      <q-card-section class="q-pt-none" style="">
+                            <q-list>
+                              <q-item>
+                                <q-item-section>
+                                  <q-item-label>First note title goes here.</q-item-label>
+                                  <q-item-label class="q-pt-sm" caption lines="2">
+                                    <q-icon dense name="person"></q-icon> <span class="q-ml-sm">Mayank Patel</span>
+                                    <q-icon dense name="clock"></q-icon> <span class="q-ml-sm">2023-02-02 05:48</span>
+                                  </q-item-label>
+                                </q-item-section>
+
+                                <q-item-section side top>
+                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                </q-item-section>
+                              </q-item>
+
+                              <q-separator spaced inset ></q-separator>
+
+                              <q-item>
+                                <q-item-section>
+                                  <q-item-label>First note title goes here.</q-item-label>
+                                  <q-item-label class="q-pt-sm" caption lines="2">
+                                    <q-icon dense name="person"></q-icon> <span class="q-ml-sm">Mayank Patel</span>
+                                    <q-icon dense name="clock"></q-icon> <span class="q-ml-sm">2023-02-02 05:48</span>
+                                  </q-item-label>
+                                </q-item-section>
+
+                                <q-item-section side top>
+                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                </q-item-section>
+                              </q-item>
+                            </q-list>
+                      </q-card-section>
+                    </q-card>
+
+                  </q-tab-panel>
+
+                  <q-tab-panel name="Tasks">
+
+                    <q-card flat bordered class="detail_cls my-card">
+                      <q-card-section style="display:flow-root">
+                        <div class="text-h6 text-primary float-left q-pt-sm">Tasks</div>
+                        <q-btn @click="add_task_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">New Task</q-btn>
+                      </q-card-section>
+
+                      <q-card-section >
+                        <div>
+                            Tasks created here will be associated with this sales account and assigned to the person who creates them.
+                        </div>
+                      </q-card-section>
+
+                      <q-card-section class="q-pt-none">
+                            <q-table
+                              :data="task_data"
+                              :columns="task_columns"
+                              row-key="name"
+                              hide-bottom
+                              flat
+                            >
+                              <template v-slot:body="props">
+                                <q-tr :props="props">
+                                  <q-td key="name" :props="props">
+                                    {{ props.row.name }}
+                                  </q-td>
+                                  <q-td key="description" :props="props">
+                                      {{ props.row.description }}
+                                  </q-td>
+                                  <q-td key="status" :props="props">
+                                      {{ props.row.status }}
+                                  </q-td>
+                                  <q-td key="action" :props="props">
+                                        <q-btn outline dense icon="edit" class="text-capitalize text-primary" label="Edit"></q-btn>
+                                  </q-td>
+                                </q-tr>
+                              </template>
+                            </q-table>
+                      </q-card-section>
+                    </q-card>
+                  </q-tab-panel>
+
+                  <q-tab-panel name="Calls">
+                    Contact https://www.xolvegroup.com/ for call center integration.
+                  </q-tab-panel>
+
+                  <q-tab-panel name="Emails">
+                    Contact https://www.xolvegroup.com/ for email and calendar integration.
+                  </q-tab-panel>
+
+                  <q-tab-panel name="Meetings">
+                    Contact https://www.xolvegroup.com/ for email and calendar integration.
+                  </q-tab-panel>
+
+                  <q-tab-panel name="Products">
+                    Contact https://www.xolvegroup.com/ for product integration.
+                  </q-tab-panel>
+                </q-tab-panels>
+        </div>
+        <div class="col-3">
+            <q-card flat bordered class="detail_cls my-card">
+              <q-card-section>
+                <div class="text-h5">Contacts</div>
+              </q-card-section>
+
+              <q-card-section class="q-pt-none">
+                Contacts related to this Sales Account: <q-chip dense square outline>10</q-chip>
+              </q-card-section>
+            </q-card>
+
+            <q-card flat bordered class="detail_cls my-card q-mt-md">
+              <q-card-section>
+                <div class="text-h6">Sales Opportunities</div>
+              </q-card-section>
+
+              <q-card-section class="q-pt-none">
+
+              </q-card-section>
+            </q-card>
+
+            <q-card flat bordered class="detail_cls my-card q-mt-md">
+              <q-card-section>
+                <div class="text-h6">Sales Orders</div>
+              </q-card-section>
+
+              <q-card-section class="q-pt-none">
+
+              </q-card-section>
+            </q-card>
+        </div>
+    </div>
+
+
+    <q-dialog v-model="add_email_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Email</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <q-select
+                            label="Email Purpose"
+                            dense
+                            outlined
+                            v-model="mdl_filter_email_purpose"
+                            use-input
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            input-debounce="0"
+                            option-value="value"
+                            option-label="label"
+                            :options="phone_purpose_options"
+                            @filter="filterFnEmailPurpose"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input  v-model="mdl_email"  square outlined style="margin:0;padding:0;" label="Email" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="add_phone_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 800px;max-width:800px;">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Phone</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <q-select
+                            label="Phone Purpose"
+                            dense
+                            outlined
+                            v-model="mdl_filter_phone_purpose"
+                            use-input
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            input-debounce="0"
+                            option-value="value"
+                            option-label="label"
+                            :options="phone_purpose_options"
+                            @filter="filterFnPhonePurpose"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+
+                        <div class="q-mt-sm q-pt-sm" style="display:flow-root">
+                            <div class="row">
+                                <div class="col-1 q-pt-xs q-mt-xs">Phone</div>
+
+                                <div class="col-10">
+                                    <div class="float-left q-pt-xs q-mt-xs">+&nbsp;</div>
+                                        <div class="float-left">
+                                         <q-input v-model="mdl_email" square outlined style="margin:0;padding:0;width:120px" label="Country Code" dense>
+                                        </q-input>
+                                   </div>
+
+                                   <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
+                                       <div class="float-left">
+                                            <q-input class="q-pl-sm" v-model="mdl_email"  square outlined style="margin:0;padding:0;width:120px" label="Area Code" dense>
+                                            </q-input>
+                                       </div>
+
+                                        <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
+                                       <div class="float-left">
+                                            <q-input class="q-pl-sm" v-model="mdl_email"  square outlined style="margin:0;padding:0;width:190px" label="Phone Number" dense>
+                                            </q-input>
+                                       </div>
+                                       <div class="float-left ">
+                                            <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;x&nbsp;</div>
+                                            <q-input class="q-pl-sm" v-model="mdl_email"  square outlined style="margin:0;padding:0;width:50px" dense>
+                                            </q-input>
+                                       </div>
+                                </div>
+
+                            </div>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+    <q-dialog v-model="add_url_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">URL</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <q-select
+                            label="Web URL Purpose"
+                            dense
+                            outlined
+                            v-model="mdl_filter_email_purpose"
+                            use-input
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            input-debounce="0"
+                            option-value="value"
+                            option-label="label"
+                            :options="url_purpose_options"
+                            @filter="filterFnUrlPurpose"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input  v-model="mdl_web_url"  square outlined style="margin:0;padding:0;" label="Web URL" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+    <q-dialog v-model="add_note_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Add Note</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input type="textarea" v-model="mdl_web_url"  square outlined style="margin:0;padding:0;" label="Note" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn outline dense label="Add Note" class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="add_task_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">New Task</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input v-model="mdl_web_url"  square outlined style="margin:0;padding:0;" label="Task Name" dense>
+                            </q-input>
+                            <div class="q-mt-sm q-pt-sm">
+                            <q-input type="textarea" v-model="mdl_web_url"  square outlined style="margin:0;padding:0;" label="Description" dense>
+                            </q-input>
+                            </div>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn outline dense label="Create Task" class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+
+
+
+
+</template>
+<script>
+module.exports = {
+    data: function () {
+        return {
+            tab: 'Notes',
+            add_email_modal: false,
+            email_purpose_options_master: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            email_purpose_options: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            mdl_filter_email_purpose:null,
+            mdl_email:'',
+            add_phone_modal:false,
+            phone_purpose_options_master: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            phone_purpose_options: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            mdl_filter_phone_purpose:null,
+            add_url_modal:false,
+            url_purpose_options_master: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            url_purpose_options: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            mdl_filter_url_purpose:null,
+            mdl_web_url:'',
+            add_note_modal: false,
+            add_task_modal:false,
+            task_data: [{'name':'Test',
+                        'description':'Test Desc',
+                        'status':'In Planning'}],
+            task_columns:[{ name: 'name',align:'left', label: 'Name', field: 'name' },
+                            { name: 'description',align:'left', label: 'Description', field: 'description' },
+                            { name: 'status',align:'left', label: 'Status', field: 'status' },
+                            { name: 'action',align:'left', label: '', field: '' },
+                          ],
+        }
+    },
+    methods: {
+        filterFnEmailPurpose (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.email_purpose_options = self.email_purpose_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.email_purpose_options = self.email_purpose_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+          filterFnPhonePurpose (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.phone_purpose_options = self.phone_purpose_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.phone_purpose_options = self.phone_purpose_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+          filterFnUrlPurpose (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.url_purpose_options = self.url_purpose_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.url_purpose_options = self.url_purpose_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+
+    },
+    created: function () {
+    }
+}
+</script>
+<style>
+    .custom_table_header {
+        height: 38px !important;
+    }
+    .detail_cls .q-field__label {
+        top: 10px !important;
+    }
+    .detail_cls .q-field--float .q-field__label {
+        top: 0px !important;
+    }
+    body {
+        overflow-x: hidden !important;
+    }
+    .max_width_700 {
+        max-width: 700px !important;
+    }
+</style>
