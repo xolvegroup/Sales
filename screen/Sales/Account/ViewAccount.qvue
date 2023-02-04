@@ -9,39 +9,39 @@
               </q-card-section>
               <q-card-section class="q-pt-none q-px-sm">
                 <q-list>
-                              <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                              <q-item v-for="item in webAddressList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
-                                  <q-item-label> <a href="http://test.com">http://test.com</a> </q-item-label>
+                                  <q-item-label> <a :href="item.webAddress" target="_blank">{{item.webAddress}}</a> </q-item-label>
                                 </q-item-section>
 
                                 <q-item-section style="display:block;" side top>
-                                  <q-btn outline dense icon="open_in_new" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
                                   <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
 
                               <q-separator class="q-mx-sm" spaced inset ></q-separator>
 
-                              <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                              <q-item v-for="item in emailAddressList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
-                                  <q-item-label><a mailto="mayank091193@gmail.com">mayank091193@gmail.com</a></q-item-label>
+                                  <q-item-label><a :mailto="item.emailAddress">{{item.emailAddress}}</a></q-item-label>
                                 </q-item-section>
 
                                 <q-item-section style="display:block;" side top>
-                                  <q-btn outline dense icon="open_in_new" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
                                   <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
 
                               <q-separator class="q-mx-sm" spaced inset ></q-separator>
 
-                              <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                              <q-item v-for="item in telecomNumberList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
-                                  <q-item-label class="text-italic"> T: 1-98-98989 X98 </q-item-label>
+                                  <q-item-label class="text-italic"> T: {{item.telecomNumber.countryCode}}-{{item.telecomNumber.areaCode}}-{{item.telecomNumber.contactNumber}} X{{item.telecomPartyContactMech.extension}} </q-item-label>
                                 </q-item-section>
 
                                 <q-item-section style="display:block;" side top>
-                                  <q-btn outline dense icon="open_in_new" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
                                   <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
@@ -89,7 +89,6 @@
                   indicator-color="primary"
                   align="left"
                   shrink stretch
-                  narrow-indicator
               >
                 <q-tab name="Notes" class="text-capitalize" label="Notes"></q-tab>
                 <q-tab name="Tasks" class="text-capitalize" label="Tasks" ></q-tab>
@@ -99,7 +98,7 @@
                 <q-tab name="Products" class="text-capitalize" label="Products" ></q-tab>
               </q-tabs>
 
-              <q-separator class="q-px-none q-mx-sm"></q-separator>
+              <q-separator class="q-px-none"></q-separator>
 
               <q-tab-panels v-model="tab" animated>
                   <q-tab-panel name="Notes">
@@ -111,29 +110,13 @@
                       </q-card-section>
 
                       <q-card-section class="q-pt-none" style="">
-                            <q-list>
-                              <q-item>
+                            <q-list class="q-px-xs" separator>
+                              <q-item class="q-py-md" v-for="item in partyNoteList">
                                 <q-item-section>
-                                  <q-item-label>First note title goes here.</q-item-label>
+                                  <q-item-label v-html="item.noteText.replaceAll('\n', '<br>')"></q-item-label>
                                   <q-item-label class="q-pt-sm" caption lines="2">
-                                    <q-icon dense name="person"></q-icon> <span class="q-ml-sm">Mayank Patel</span>
-                                    <q-icon dense name="clock"></q-icon> <span class="q-ml-sm">2023-02-02 05:48</span>
-                                  </q-item-label>
-                                </q-item-section>
-
-                                <q-item-section side top>
-                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
-                                </q-item-section>
-                              </q-item>
-
-                              <q-separator spaced inset ></q-separator>
-
-                              <q-item>
-                                <q-item-section>
-                                  <q-item-label>First note title goes here.</q-item-label>
-                                  <q-item-label class="q-pt-sm" caption lines="2">
-                                    <q-icon dense name="person"></q-icon> <span class="q-ml-sm">Mayank Patel</span>
-                                    <q-icon dense name="clock"></q-icon> <span class="q-ml-sm">2023-02-02 05:48</span>
+                                    <q-icon dense name="person"></q-icon> <span class="q-ml-sm">{{item.added_by}}</span>
+                                    <q-icon dense name="clock"></q-icon> <span class="q-ml-sm">{{formatDateTime(item.noteDate)}}</span>
                                   </q-item-label>
                                 </q-item-section>
 
@@ -506,6 +489,10 @@ module.exports = {
             mdl_web_url:'',
             add_note_modal: false,
             add_task_modal:false,
+            emailAddressList: [],
+            telecomNumberList: [],
+            webAddressList: [],
+            partyNoteList: [],
             task_data: [{'name':'Test',
                         'description':'Test Desc',
                         'status':'In Planning'}],
@@ -517,6 +504,13 @@ module.exports = {
         }
     },
     methods: {
+        formatDateTime (dt) {
+            if (dt) {
+                dt = new Date(dt);
+                return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0') +
+                        " " + String(dt.getHours()).padStart(2, '0') + ":" + String(dt.getMinutes()).padStart(2, '0');
+            }
+        },
         filterFnEmailPurpose (val, update) {
             let self = this;
               if (val === '') {
@@ -556,9 +550,42 @@ module.exports = {
               this.url_purpose_options = self.url_purpose_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
             })
           },
-
+          getPartyContactInfoList () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyContactInfoList", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        if (Object.keys(resp).indexOf("emailAddressList") > -1) {
+                            self.emailAddressList = resp.emailAddressList;
+                        }
+                        if (Object.keys(resp).indexOf("telecomNumberList") > -1) {
+                            self.telecomNumberList = resp.telecomNumberList;
+                        }
+                        if (Object.keys(resp).indexOf("webAddressList") > -1) {
+                            self.webAddressList = resp.webAddressList;
+                        }
+                    }
+                });
+            },
+            getPartyNoteList () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = $.extend({ partyId: params.partyId, moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyNoteList", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.partyNoteList = resp.partyNoteList;
+                    }
+                });
+            }
     },
     created: function () {
+        this.getPartyContactInfoList();
+        this.getPartyNoteList();
     }
 }
 </script>
