@@ -1,7 +1,9 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd" menu-image="fa fa-flash" menu-image-type="icon">
 
-    <subscreens default-item="Account"/>
+    <subscreens default-item="Account">
+        <subscreens-item name="ViewAccount" menu-title="View Account" location="component://Sales/screen/Sales/ViewAccount.xml" menu-index="101" menu-include="false"/>
+    </subscreens>
     <widgets>
         <subscreens-panel id="SalesPanel" type="popup"/>
     </widgets>

@@ -476,4 +476,37 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
+    <service verb="get" noun="PhoneOptions">
+        <out-parameters>
+            <parameter name="phoneOptions"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.contact.ContactMechPurpose" list="phoneOptions">
+                <econdition field-name="contactMechTypeEnumId" value="CmtTelecomNumber"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="WebOptions">
+        <out-parameters>
+            <parameter name="webOptions"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.contact.ContactMechPurpose" list="webOptions">
+                <econdition field-name="contactMechTypeEnumId" value="CmtWebAddress"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="EmailOptions">
+        <out-parameters>
+            <parameter name="emailOptions"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.contact.ContactMechPurpose" list="emailOptions">
+                <econdition field-name="contactMechTypeEnumId" value="CmtEmailAddress"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
 </services>

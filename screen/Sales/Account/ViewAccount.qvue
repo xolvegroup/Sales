@@ -5,7 +5,7 @@
         <div class="col-3">
             <q-card flat bordered class="detail_cls my-card">
               <q-card-section>
-                <div class="text-h6">Note title</div>
+                <div class="text-h6">View Account</div>
               </q-card-section>
               <q-card-section class="q-pt-none q-px-sm">
                 <q-list>
@@ -15,7 +15,7 @@
                                 </q-item-section>
 
                                 <q-item-section style="display:block;" side top>
-                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn @click="openEditWeb(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
                                   <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
@@ -28,7 +28,7 @@
                                 </q-item-section>
 
                                 <q-item-section style="display:block;" side top>
-                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn @click="openEditEmail(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
                                   <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
@@ -41,7 +41,7 @@
                                 </q-item-section>
 
                                 <q-item-section style="display:block;" side top>
-                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn @click="openEditPhone(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
                                   <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
@@ -111,7 +111,7 @@
 
                       <q-card-section class="q-pt-none" style="">
                             <q-list class="q-px-xs" separator>
-                              <q-item class="q-py-md" v-for="item in partyNoteList">
+                              <q-item class="q-py-md" :key="item.noteDate" v-for="item in partyNoteList">
                                 <q-item-section>
                                   <q-item-label v-html="item.noteText.replaceAll('\n', '<br>')"></q-item-label>
                                   <q-item-label class="q-pt-sm" caption lines="2">
@@ -248,8 +248,8 @@
                             use-input
                             :class="!$q.dark.isActive?'bg-white':''"
                             input-debounce="0"
-                            option-value="value"
-                            option-label="label"
+                            option-value="contactMechPurposeId"
+                            option-label="description"
                             :options="phone_purpose_options"
                             @filter="filterFnEmailPurpose"
                           >
@@ -269,7 +269,7 @@
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn outline dense label="Save"  class="text-capitalize" color="primary" />
+          <q-btn @click="storeEmail" :disabled="!(mdl_email)" outline dense label="Save"  class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -297,8 +297,8 @@
                             use-input
                             :class="!$q.dark.isActive?'bg-white':''"
                             input-debounce="0"
-                            option-value="value"
-                            option-label="label"
+                            option-value="contactMechPurposeId"
+                            option-label="description"
                             :options="phone_purpose_options"
                             @filter="filterFnPhonePurpose"
                           >
@@ -318,24 +318,24 @@
                                 <div class="col-10">
                                     <div class="float-left q-pt-xs q-mt-xs">+&nbsp;</div>
                                         <div class="float-left">
-                                         <q-input v-model="mdl_email" square outlined style="margin:0;padding:0;width:120px" label="Country Code" dense>
+                                         <q-input v-model="mdl_phone.countryCode" square outlined style="margin:0;padding:0;width:120px" label="Country Code" dense>
                                         </q-input>
                                    </div>
 
                                    <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
                                        <div class="float-left">
-                                            <q-input class="q-pl-sm" v-model="mdl_email"  square outlined style="margin:0;padding:0;width:120px" label="Area Code" dense>
+                                            <q-input class="q-pl-sm" v-model="mdl_phone.areaCode"  square outlined style="margin:0;padding:0;width:120px" label="Area Code" dense>
                                             </q-input>
                                        </div>
 
                                         <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
                                        <div class="float-left">
-                                            <q-input class="q-pl-sm" v-model="mdl_email"  square outlined style="margin:0;padding:0;width:190px" label="Phone Number" dense>
+                                            <q-input class="q-pl-sm" v-model="mdl_phone.contactNumber"  square outlined style="margin:0;padding:0;width:190px" label="Phone Number" dense>
                                             </q-input>
                                        </div>
                                        <div class="float-left ">
                                             <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;x&nbsp;</div>
-                                            <q-input class="q-pl-sm" v-model="mdl_email"  square outlined style="margin:0;padding:0;width:50px" dense>
+                                            <q-input class="q-pl-sm" v-model="mdl_phone.telecomExtension"  square outlined style="margin:0;padding:0;width:50px" dense>
                                             </q-input>
                                        </div>
                                 </div>
@@ -345,7 +345,7 @@
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn outline dense label="Save"  class="text-capitalize" color="primary" />
+          <q-btn @click="storePhone" :disabled="!(mdl_phone.countryCode && mdl_phone.areaCode && mdl_phone.contactNumber && mdl_phone.telecomExtension)" outline dense label="Save"  class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -371,12 +371,12 @@
                             label="Web URL Purpose"
                             dense
                             outlined
-                            v-model="mdl_filter_email_purpose"
+                            v-model="mdl_filter_url_purpose"
                             use-input
                             :class="!$q.dark.isActive?'bg-white':''"
                             input-debounce="0"
-                            option-value="value"
-                            option-label="label"
+                            option-value="contactMechPurposeId"
+                            option-label="description"
                             :options="url_purpose_options"
                             @filter="filterFnUrlPurpose"
                           >
@@ -396,7 +396,117 @@
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn outline dense label="Save"  class="text-capitalize" color="primary" />
+          <q-btn @click="storeWeb" :disabled="!(mdl_web_url)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="edit_email_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Email</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input  v-model="edit_mdl_email.emailAddress"  square outlined style="margin:0;padding:0;" label="Email" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn @click="editEmail" :disabled="!(edit_mdl_email.emailAddress)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="edit_phone_modal" v-if="edit_phone_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 800px;max-width:800px;">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Phone</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm" style="display:flow-root">
+                            <div class="row">
+                                <div class="col-1 q-pt-xs q-mt-xs">Phone</div>
+                                <div class="col-10">
+                                    <div class="float-left q-pt-xs q-mt-xs">+&nbsp;</div>
+                                        <div class="float-left">
+                                         <q-input v-model="edit_mdl_phone.telecomNumber.countryCode" square outlined style="margin:0;padding:0;width:120px" label="Country Code" dense>
+                                        </q-input>
+                                   </div>
+
+                                   <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
+                                       <div class="float-left">
+                                            <q-input class="q-pl-sm" v-model="edit_mdl_phone.telecomNumber.areaCode"  square outlined style="margin:0;padding:0;width:120px" label="Area Code" dense>
+                                            </q-input>
+                                       </div>
+
+                                        <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
+                                       <div class="float-left">
+                                            <q-input class="q-pl-sm" v-model="edit_mdl_phone.telecomNumber.contactNumber"  square outlined style="margin:0;padding:0;width:190px" label="Phone Number" dense>
+                                            </q-input>
+                                       </div>
+                                       <div class="float-left ">
+                                            <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;x&nbsp;</div>
+                                            <q-input class="q-pl-sm" v-model="edit_mdl_phone.telecomPartyContactMech.extension"  square outlined style="margin:0;padding:0;width:50px" dense>
+                                            </q-input>
+                                       </div>
+                                </div>
+
+                            </div>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn @click="editPhone" :disabled="!(edit_mdl_phone.telecomNumber.countryCode && edit_mdl_phone.telecomNumber.areaCode && edit_mdl_phone.telecomNumber.contactNumber && edit_mdl_phone.telecomPartyContactMech.extension)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+    <q-dialog v-model="edit_url_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">URL</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input  v-model="edit_mdl_web_url.webAddress"  square outlined style="margin:0;padding:0;" label="Web URL" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn @click="editWeb" :disabled="!(edit_mdl_web_url.webAddress)" outline dense label="Save"  class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -461,12 +571,6 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-
-
-
-
-
-
 </template>
 <script>
 module.exports = {
@@ -474,19 +578,26 @@ module.exports = {
         return {
             tab: 'Notes',
             add_email_modal: false,
-            email_purpose_options_master: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
-            email_purpose_options: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            edit_email_modal: false,
+            email_purpose_options_master: [],
+            email_purpose_options: [],
             mdl_filter_email_purpose:null,
             mdl_email:'',
+            edit_mdl_email:{},
+            mdl_phone:{},
+            edit_mdl_phone:{},
             add_phone_modal:false,
-            phone_purpose_options_master: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
-            phone_purpose_options: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            edit_phone_modal:false,
+            phone_purpose_options_master: [],
+            phone_purpose_options: [],
             mdl_filter_phone_purpose:null,
             add_url_modal:false,
-            url_purpose_options_master: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
-            url_purpose_options: [{"label":"Assignee","value":"Assignee"},{"label":"Collaborator","value":"Collaborator"}],
+            edit_url_modal:false,
+            url_purpose_options_master: [],
+            url_purpose_options: [],
             mdl_filter_url_purpose:null,
             mdl_web_url:'',
+            edit_mdl_web_url:{},
             add_note_modal: false,
             add_task_modal:false,
             emailAddressList: [],
@@ -521,7 +632,7 @@ module.exports = {
               }
               update(() => {
               const needle = val.toLowerCase()
-              this.email_purpose_options = self.email_purpose_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+              this.email_purpose_options = self.email_purpose_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
             })
           },
           filterFnPhonePurpose (val, update) {
@@ -534,7 +645,7 @@ module.exports = {
               }
               update(() => {
               const needle = val.toLowerCase()
-              this.phone_purpose_options = self.phone_purpose_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+              this.phone_purpose_options = self.phone_purpose_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
             })
           },
           filterFnUrlPurpose (val, update) {
@@ -547,7 +658,7 @@ module.exports = {
               }
               update(() => {
               const needle = val.toLowerCase()
-              this.url_purpose_options = self.url_purpose_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+              this.url_purpose_options = self.url_purpose_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
             })
           },
           getPartyContactInfoList () {
@@ -555,8 +666,8 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParms = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyContactInfoList", headers:{Accept:'application/json'}, data:allParms,
+                var allParams = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyContactInfoList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         if (Object.keys(resp).indexOf("emailAddressList") > -1) {
                             self.emailAddressList = resp.emailAddressList;
@@ -575,15 +686,180 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParms = $.extend({ partyId: params.partyId, moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyNoteList", headers:{Accept:'application/json'}, data:allParms,
+                var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyNoteList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.partyNoteList = resp.partyNoteList;
+                    }
+                });
+            },
+            getPhoneOptions () {
+                var self = this;
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPhoneOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.phone_purpose_options_master = JSON.parse(JSON.stringify(resp.phoneOptions));
+                        self.phone_purpose_options = JSON.parse(JSON.stringify(resp.phoneOptions));
+                        self.mdl_filter_phone_purpose = JSON.parse(JSON.stringify(self.phone_purpose_options_master)).find(function(item){
+                           return item.contactMechPurposeId === "PhonePrimary";
+                        });
+                    }
+                });
+            },
+            getWebOptions () {
+                var self = this;
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getWebOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.url_purpose_options_master = JSON.parse(JSON.stringify(resp.webOptions));
+                        self.url_purpose_options = JSON.parse(JSON.stringify(resp.webOptions));
+                        self.mdl_filter_url_purpose = JSON.parse(JSON.stringify(self.url_purpose_options_master)).find(function(item){
+                           return item.contactMechPurposeId === "WebUrlPrimary";
+                        });
+                    }
+                });
+            },
+            getEmailOptions () {
+                var self = this;
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getEmailOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.email_purpose_options_master = JSON.parse(JSON.stringify(resp.emailOptions));
+                        self.email_purpose_options = JSON.parse(JSON.stringify(resp.emailOptions));
+                        self.mdl_filter_email_purpose = JSON.parse(JSON.stringify(self.email_purpose_options_master)).find(function(item){
+                           return item.contactMechPurposeId === "EmailPrimary";
+                        });
+                    }
+                });
+            },
+            openEditPhone(item) {
+                this.edit_mdl_phone = JSON.parse(JSON.stringify(item));
+                this.edit_phone_modal = true;
+            },
+            storePhone () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val() }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["telecomContactMechPurposeId"] = self.mdl_filter_phone_purpose.contactMechPurposeId;
+                allParams["countryCode"] = self.mdl_phone.countryCode;
+                allParams["areaCode"] = self.mdl_phone.areaCode;
+                allParams["contactNumber"] = self.mdl_phone.contactNumber;
+                allParams["telecomExtension"] = self.mdl_phone.telecomExtension;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.mdl_phone = {};
+                        self.add_phone_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            editPhone () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val() }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["telecomContactMechPurposeId"] = self.edit_mdl_phone.telecomContactMechPurposeId;
+                allParams["countryCode"] = self.edit_mdl_phone.telecomNumber.countryCode;
+                allParams["areaCode"] = self.edit_mdl_phone.telecomNumber.areaCode;
+                allParams["contactNumber"] = self.edit_mdl_phone.telecomNumber.contactNumber;
+                allParams["telecomExtension"] = self.edit_mdl_phone.telecomPartyContactMech.extension;
+                allParams["telecomContactMechId"] = self.edit_mdl_phone.telecomContactMechId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.edit_mdl_phone = {};
+                        self.edit_phone_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            openEditWeb(item) {
+                this.edit_mdl_web_url = JSON.parse(JSON.stringify(item));
+                this.edit_url_modal = true;
+            },
+            storeWeb () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["webContactMechPurposeId"] = self.mdl_filter_url_purpose.contactMechPurposeId;
+                allParams["webAddress"] = self.mdl_web_url;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.mdl_web_url = "";
+                        self.add_url_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            editWeb () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["webContactMechPurposeId"] = self.edit_mdl_web_url.webContactMechPurposeId;
+                allParams["webAddress"] = self.edit_mdl_web_url.webAddress;
+                allParams["webContactMechId"] = self.edit_mdl_web_url.webContactMechId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.mdl_web_url = "";
+                        self.edit_url_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            openEditEmail(item) {
+                this.edit_mdl_email = JSON.parse(JSON.stringify(item));
+                this.edit_email_modal = true;
+            },
+            storeEmail () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["emailContactMechPurposeId"] = self.mdl_filter_email_purpose.contactMechPurposeId;
+                allParams["emailAddress"] = self.mdl_email;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.mdl_email = "";
+                        self.add_email_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            editEmail () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["emailContactMechPurposeId"] = self.mdl_filter_email_purpose.contactMechPurposeId;
+                allParams["emailAddress"] = self.edit_mdl_email.emailAddress;
+                allParams["emailContactMechId"] = self.edit_mdl_email.emailContactMechId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.edit_mdl_email = {};
+                        self.edit_email_modal = false;
+                        self.getPartyContactInfoList();
                     }
                 });
             }
     },
     created: function () {
+        this.getPhoneOptions();
+        this.getWebOptions();
+        this.getEmailOptions();
         this.getPartyContactInfoList();
         this.getPartyNoteList();
     }

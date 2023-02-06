@@ -74,4 +74,16 @@ along with this software (see the LICENSE.md file). If not, see
     <resource name="getPartyNoteList" require-authentication="anonymous-view">
         <method type="get"><service name="sales.SalesServices.get#PartyNoteList"/></method>
     </resource>
+    <resource name="getPhoneOptions" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#PhoneOptions"/></method>
+    </resource>
+    <resource name="getWebOptions" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#WebOptions"/></method>
+    </resource>
+    <resource name="getEmailOptions" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#EmailOptions"/></method>
+    </resource>
+    <resource name="storePartyContactInfo" require-authentication="anonymous-all">
+        <method type="post"><service name="mantle.party.ContactServices.store#PartyContactInfo"/></method>
+    </resource>
 </resource>
