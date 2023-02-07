@@ -361,10 +361,10 @@ module.exports = {
                 }
                 allParams["pageIndex"] = page-1;
                 allParams["pageSize"] = fetchCount;
-                allParams["moquiSessionToken"] = $("#confMoquiSessionToken").val();
+                allParams["moquiSessionToken"] = self.$root.moquiSessionToken;
             }
             else {
-                var allParams = $.extend({pageIndex: page-1, pageSize: fetchCount ,moquiSessionToken:$("#confMoquiSessionToken").val() }, {});
+                var allParams = $.extend({pageIndex: page-1, pageSize: fetchCount ,moquiSessionToken:self.$root.moquiSessionToken }, {});
                 allParams["roleTypeId"] = "Account";
             }
             $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getAllAccounts", headers:{Accept:'application/json'}, data:allParams,
@@ -388,7 +388,7 @@ module.exports = {
         addNewSalesAccount() {
             let self = this;
               var allParams = $.extend({organizationName: self.new_sales_account_name,
-                                      moquiSessionToken:$("#confMoquiSessionToken").val() }, {});
+                                      moquiSessionToken:self.$root.moquiSessionToken }, {});
               $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/createNewSalesAccount", headers:{Accept:'application/json'}, data:allParams,
                   error:moqui.handleAjaxError, success:function(resp) {
                       self.new_sales_account_name = "";
@@ -537,7 +537,7 @@ module.exports = {
         },
         fetchLoggedInUser() {
             let self = this;
-            var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val() }, {});
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
             $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/wm/loggedInUser", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.logged_in_user = resp.loggedInUser;
@@ -546,7 +546,7 @@ module.exports = {
         },
         getSavedFinds () {
             var self = this;
-            var allParms = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+            var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/saved_finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.saved_find_list = resp.savedFindList;
@@ -642,7 +642,7 @@ module.exports = {
             }
 
             var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
-             formLocation: 'component://Sales/screen/Sales/Account/FindAccount.xml.form_list$AccountList' ,moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+             formLocation: 'component://Sales/screen/Sales/Account/FindAccount.xml.form_list$AccountList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_sales_person) {
@@ -669,7 +669,7 @@ module.exports = {
             var vm = this;
 
             var allParms = $.extend({ formListFindId: formListFindId, fieldName: fieldName, fieldValue: fieldValue,
-             fieldOperator: "equals" ,moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+             fieldOperator: "equals" ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds_fields", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
 
@@ -685,7 +685,7 @@ module.exports = {
                 }
                 return item;
             });
-            var allParms = $.extend({ partyIdList: JSON.stringify(input_party_ids), moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+            var allParms = $.extend({ partyIdList: JSON.stringify(input_party_ids), moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
             return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getAllSalesPerson", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError
             });

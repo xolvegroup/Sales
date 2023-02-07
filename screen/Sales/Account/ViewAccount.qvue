@@ -16,7 +16,7 @@
 
                                 <q-item-section style="display:block;" side top>
                                   <q-btn @click="openEditWeb(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
-                                  <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline @click="confirmDelete(item)" dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
 
@@ -24,12 +24,12 @@
 
                               <q-item v-for="item in emailAddressList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
-                                  <q-item-label><a :mailto="item.emailAddress">{{item.emailAddress}}</a></q-item-label>
+                                  <q-item-label><a :href="'mailto:' + item.emailAddress">{{item.emailAddress}}</a></q-item-label>
                                 </q-item-section>
 
                                 <q-item-section style="display:block;" side top>
                                   <q-btn @click="openEditEmail(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
-                                  <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline @click="confirmDelete(item)" dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
 
@@ -42,7 +42,7 @@
 
                                 <q-item-section style="display:block;" side top>
                                   <q-btn @click="openEditPhone(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
-                                  <q-btn outline dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn outline @click="confirmDelete(item)" dense icon="delete" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
 
@@ -529,13 +529,13 @@
 
         <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
                         <div class="q-mt-sm q-pt-sm">
-                            <q-input type="textarea" v-model="mdl_web_url"  square outlined style="margin:0;padding:0;" label="Note" dense>
+                            <q-input type="textarea" v-model="new_note"  square outlined style="margin:0;padding:0;" label="Note" dense>
                             </q-input>
                         </div>
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn outline dense label="Add Note" class="text-capitalize" color="primary" />
+          <q-btn @click="addNote" :disabled="!(new_note)" outline dense label="Add Note" class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -571,12 +571,26 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="delete_contact" persistent>
+      <q-card style="max-width: 450px" class="q-pa-md">
+        <q-card-section class="row items-center">
+          <q-avatar icon="delete" color="red" text-color="white"></q-avatar>
+          <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to delete this contact?</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn outlined label="Cancel" color="grey" v-close-popup></q-btn>
+          <q-btn v-if="" outlined label="Delete" color="red" @click="deleteContact"></q-btn>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 </template>
 <script>
 module.exports = {
     data: function () {
         return {
             tab: 'Notes',
+            delete_contact: false,
             add_email_modal: false,
             edit_email_modal: false,
             email_purpose_options_master: [],
@@ -597,6 +611,7 @@ module.exports = {
             url_purpose_options: [],
             mdl_filter_url_purpose:null,
             mdl_web_url:'',
+            new_note:'',
             edit_mdl_web_url:{},
             add_note_modal: false,
             add_task_modal:false,
@@ -604,6 +619,7 @@ module.exports = {
             telecomNumberList: [],
             webAddressList: [],
             partyNoteList: [],
+            item_to_delete: {},
             task_data: [{'name':'Test',
                         'description':'Test Desc',
                         'status':'In Planning'}],
@@ -615,6 +631,51 @@ module.exports = {
         }
     },
     methods: {
+        confirmDelete(item) {
+            this.item_to_delete = JSON.parse(JSON.stringify(item));
+            this.delete_contact = true;
+        },
+        deleteContact() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            allParams["partyId"] = params.partyId;
+            allParams["contactMechPurposeId"] = self.item_to_delete.telecomContactMechPurposeId || self.item_to_delete.emailContactMechPurposeId || self.item_to_delete.webContactMechPurposeId;
+            allParams["contactMechId"] = self.item_to_delete.telecomContactMechId || self.item_to_delete.emailContactMechId || self.item_to_delete.webContactMechId;
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/removePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.item_to_delete = {};
+                    self.delete_contact = false;
+                    self.$q.notify({
+                        message: 'Deleted successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getPartyContactInfoList();
+                }
+            });
+        },
+        addNote() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            allParams["partyId"] = params.partyId;
+            allParams["noteText"] = self.new_note;
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/createPartyNote", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.new_note = "";
+                    self.add_note_modal = false;
+                    self.$q.notify({
+                        message: 'Note added successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getPartyNoteList();
+                }
+            });
+        },
         formatDateTime (dt) {
             if (dt) {
                 dt = new Date(dt);
@@ -666,7 +727,7 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParams = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyContactInfoList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         if (Object.keys(resp).indexOf("emailAddressList") > -1) {
@@ -686,7 +747,7 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyNoteList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.partyNoteList = resp.partyNoteList;
@@ -695,7 +756,7 @@ module.exports = {
             },
             getPhoneOptions () {
                 var self = this;
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPhoneOptions", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.phone_purpose_options_master = JSON.parse(JSON.stringify(resp.phoneOptions));
@@ -708,7 +769,7 @@ module.exports = {
             },
             getWebOptions () {
                 var self = this;
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getWebOptions", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.url_purpose_options_master = JSON.parse(JSON.stringify(resp.webOptions));
@@ -721,7 +782,7 @@ module.exports = {
             },
             getEmailOptions () {
                 var self = this;
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getEmailOptions", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.email_purpose_options_master = JSON.parse(JSON.stringify(resp.emailOptions));
@@ -741,7 +802,7 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val() }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
                 allParams["partyId"] = params.partyId;
                 allParams["telecomContactMechPurposeId"] = self.mdl_filter_phone_purpose.contactMechPurposeId;
                 allParams["countryCode"] = self.mdl_phone.countryCode;
@@ -761,7 +822,7 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val() }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
                 allParams["partyId"] = params.partyId;
                 allParams["telecomContactMechPurposeId"] = self.edit_mdl_phone.telecomContactMechPurposeId;
                 allParams["countryCode"] = self.edit_mdl_phone.telecomNumber.countryCode;
@@ -786,7 +847,7 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 allParams["partyId"] = params.partyId;
                 allParams["webContactMechPurposeId"] = self.mdl_filter_url_purpose.contactMechPurposeId;
                 allParams["webAddress"] = self.mdl_web_url;
@@ -803,7 +864,7 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 allParams["partyId"] = params.partyId;
                 allParams["webContactMechPurposeId"] = self.edit_mdl_web_url.webContactMechPurposeId;
                 allParams["webAddress"] = self.edit_mdl_web_url.webAddress;
@@ -825,7 +886,7 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 allParams["partyId"] = params.partyId;
                 allParams["emailContactMechPurposeId"] = self.mdl_filter_email_purpose.contactMechPurposeId;
                 allParams["emailAddress"] = self.mdl_email;
@@ -842,7 +903,7 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParams = $.extend({ moquiSessionToken:$("#confMoquiSessionToken").val(), treeNodeId:'#' }, {});
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 allParams["partyId"] = params.partyId;
                 allParams["emailContactMechPurposeId"] = self.mdl_filter_email_purpose.contactMechPurposeId;
                 allParams["emailAddress"] = self.edit_mdl_email.emailAddress;
