@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
+        require-authentication="true" default-menu-title="Find Agreements">
+
+
+    <transition name="viewAccount"><default-response url="//Sales/Account/ViewAccount"/></transition>
+    <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
+    <!--
+    <transition name="viewOrder"><default-response url="../ViewOrder"/></transition>
+    <actions>
+
+    </actions>
+    -->
+
+    <widgets>
+        <form-list name="AgreementList" list="agreementList" skip-form="true" header-dialog="true" select-columns="true" saved-finds="true"
+                   show-csv-button="true" show-xlsx-button="true" show-all-button="true">
+            <entity-find entity-name="mantle.party.agreement.Agreement" list="agreementList">
+                <!--
+                <search-form-inputs>
+                    <default-parameters partStatusId="OrderOpen,OrderProposed,OrderRequested,OrderPlaced,OrderApproved,OrderHold" partStatusId_op="in"/>
+                </search-form-inputs>
+                <select-field field-name="orderPartSeqId"/>
+                -->
+            </entity-find>
+            <field name="otherPartyId">
+                <header-field title="Customer" show-order-by="true">
+                    <drop-down allow-empty="true"><dynamic-options transition="searchPartyList"
+                        server-search="true" min-length="2" parameter-map="[roleTypeId:'Customer']"/></drop-down>
+                </header-field>
+                <default-field>
+                    <link url="viewAccount" entity-name="mantle.party.PartyDetail" text="PartyNameTemplate"
+                          link-type="anchor" parameter-map="[partyId:otherPartyId]"/>
+                </default-field>
+            </field>
+            <field name="agreementId"><header-field title="Agreement" show-order-by="true"><text-find size="20" hide-options="true"/></header-field>
+                <default-field>
+                    <link url="viewAgreement" link-type="anchor" text="${agreementId}"/>
+                </default-field></field>
+            <field name="description"><header-field title="Description"><text-find size="40"/></header-field>
+                <default-field><display/></default-field></field>
+            <!-- Add agreement status once implemented
+            <field name="partStatusId">
+                <header-field title="Status" show-order-by="true">
+                    <widget-template-include location="component://webroot/template/screen/BasicWidgetTemplates.xml#statusDropDown">
+                        <set field="statusTypeId" value="OrderHeader"/><set field="allowMultiple" value="true"/></widget-template-include>
+                </header-field>
+                <default-field container-style="text-strong"><display-entity entity-name="moqui.basic.StatusItem"/></default-field>
+            </field>
+            -->
+            <!-- TODO: refactor all date fields to format based on user locale -->
+            <field name="agreementDate">
+                <header-field title="Agreement Date" show-order-by="true"><date-time type="date"/></header-field>
+                <default-field><display format="yyyy-MM-dd"/></default-field>
+            </field>
+            <field name="fromDate">
+                <header-field title="From Date" show-order-by="true"><date-time type="date"/></header-field>
+                <default-field><display format="yyyy-MM-dd"/></default-field>
+            </field>
+            <field name="thruDate">
+                <header-field title="Thru Date" show-order-by="true"><date-time type="date"/></header-field>
+                <default-field><display format="yyyy-MM-dd"/></default-field>
+            </field>
+            <field name="submitButton"><header-field title="Find"><submit/></header-field></field>
+        </form-list>
+    </widgets>
+</screen>
