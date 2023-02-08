@@ -9,7 +9,7 @@
               </q-card-section>
               <q-card-section class="q-pt-none q-px-sm">
                 <q-list>
-                              <q-item v-for="item in webAddressList" style="min-height:unset" class="q-py-none q-px-sm">
+                              <q-item :key="item.webContactMechId" v-for="item in webAddressList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
                                   <q-item-label> <a :href="item.webAddress" target="_blank">{{item.webAddress}}</a> </q-item-label>
                                 </q-item-section>
@@ -22,7 +22,7 @@
 
                               <q-separator class="q-mx-sm" spaced inset ></q-separator>
 
-                              <q-item v-for="item in emailAddressList" style="min-height:unset" class="q-py-none q-px-sm">
+                              <q-item :key="item.emailContactMechId" v-for="item in emailAddressList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
                                   <q-item-label><a :href="'mailto:' + item.emailAddress">{{item.emailAddress}}</a></q-item-label>
                                 </q-item-section>
@@ -35,7 +35,7 @@
 
                               <q-separator class="q-mx-sm" spaced inset ></q-separator>
 
-                              <q-item v-for="item in telecomNumberList" style="min-height:unset" class="q-py-none q-px-sm">
+                              <q-item :key="item.telecomContactMechId" v-for="item in telecomNumberList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
                                   <q-item-label class="text-italic"> T: {{item.telecomNumber.countryCode}}-{{item.telecomNumber.areaCode}}-{{item.telecomNumber.contactNumber}} X{{item.telecomPartyContactMech.extension}} </q-item-label>
                                 </q-item-section>
@@ -121,7 +121,7 @@
                                 </q-item-section>
 
                                 <q-item-section side top>
-                                  <q-btn outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn @click="openEditNote(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
                             </q-list>
@@ -539,6 +539,33 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="is_edit_note">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Edit Note</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input type="textarea" v-model="note_edit_item.noteText"  square outlined style="margin:0;padding:0;" label="Note" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn @click="editNote" :disabled="!(note_edit_item.noteText)" outline dense label="Update" class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <q-dialog v-model="add_task_modal">
       <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
@@ -620,6 +647,8 @@ module.exports = {
             webAddressList: [],
             partyNoteList: [],
             item_to_delete: {},
+            note_edit_item: {},
+            is_edit_note: false,
             task_data: [{'name':'Test',
                         'description':'Test Desc',
                         'status':'In Planning'}],
@@ -670,6 +699,28 @@ module.exports = {
                     self.add_note_modal = false;
                     self.$q.notify({
                         message: 'Note added successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getPartyNoteList();
+                }
+            });
+        },
+        openEditNote(item) {
+            this.note_edit_item = JSON.parse(JSON.stringify(item));
+            this.is_edit_note = true;
+        },
+        editNote() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            self.note_edit_item["moquiSessionToken"] = self.$root.moquiSessionToken;
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/updatePartyNote", headers:{Accept:'application/json'}, data:self.note_edit_item,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.note_edit_item = {};
+                    self.is_edit_note = false;
+                    self.$q.notify({
+                        message: 'Note updated successfully.',
                         position: 'bottom-left',
                       });
                     self.getPartyNoteList();
