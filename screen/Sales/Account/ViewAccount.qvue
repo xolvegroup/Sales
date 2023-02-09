@@ -1,6 +1,5 @@
 <template>
     <div>
-
         <div class="row q-mt-md">
         <div class="col-3">
             <q-card flat bordered class="detail_cls my-card">
@@ -20,7 +19,7 @@
                                 </q-item-section>
                               </q-item>
 
-                              <q-separator class="q-mx-sm" spaced inset ></q-separator>
+                              <q-separator v-if="webAddressList.length > 0 && emailAddressList.length > 0" class="q-mx-sm" spaced inset ></q-separator>
 
                               <q-item :key="item.emailContactMechId" v-for="item in emailAddressList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
@@ -33,7 +32,7 @@
                                 </q-item-section>
                               </q-item>
 
-                              <q-separator class="q-mx-sm" spaced inset ></q-separator>
+                              <q-separator v-if="emailAddressList.length > 0 && telecomNumberList.length > 0" class="q-mx-sm" spaced inset ></q-separator>
 
                               <q-item :key="item.telecomContactMechId" v-for="item in telecomNumberList" style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
@@ -46,7 +45,7 @@
                                 </q-item-section>
                               </q-item>
 
-                              <q-separator class="q-mx-sm" spaced inset ></q-separator>
+                              <q-separator v-if="emailAddressList.length > 0 || webAddressList.length > 0 || telecomNumberList.length > 0" class="q-mx-sm" spaced inset ></q-separator>
 
                               <q-item style="min-height:unset" class="q-py-none q-px-sm">
                                 <q-item-section>
@@ -101,7 +100,7 @@
               <q-separator class="q-px-none"></q-separator>
 
               <q-tab-panels v-model="tab" animated>
-                  <q-tab-panel name="Notes">
+                  <q-tab-panel class="q-px-none" name="Notes">
 
                     <q-card flat bordered class="detail_cls my-card">
                       <q-card-section style="display:flow-root">
@@ -109,11 +108,11 @@
                         <q-btn @click="add_note_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Note</q-btn>
                       </q-card-section>
 
-                      <q-card-section class="q-pt-none" style="">
-                            <q-list class="q-px-xs" separator>
+                      <q-card-section class="q-pt-none" style="padding: 0px">
+                            <q-list separator>
                               <q-item class="q-py-md" :key="item.noteDate" v-for="item in partyNoteList">
                                 <q-item-section>
-                                  <q-item-label v-html="item.noteText.replaceAll('\n', '<br>')"></q-item-label>
+                                  <q-item-label v-html="getHtmlForMD(item.noteText.replaceAll('\n', '<br>'))"></q-item-label>
                                   <q-item-label class="q-pt-sm" caption lines="2">
                                     <q-icon dense name="person"></q-icon> <span class="q-ml-sm">{{item.added_by}}</span>
                                     <q-icon dense name="clock"></q-icon> <span class="q-ml-sm">{{formatDateTime(item.noteDate)}}</span>
@@ -130,7 +129,7 @@
 
                   </q-tab-panel>
 
-                  <q-tab-panel name="Tasks">
+                  <q-tab-panel class="q-px-none" name="Tasks">
 
                     <q-card flat bordered class="detail_cls my-card">
                       <q-card-section style="display:flow-root">
@@ -144,48 +143,54 @@
                         </div>
                       </q-card-section>
 
-                      <q-card-section class="q-pt-none">
+                      <q-card-section class="q-pt-none" style="padding: 0px">
                             <q-table
-                              :data="task_data"
+                              :data="task_list"
                               :columns="task_columns"
                               row-key="name"
                               hide-bottom
                               flat
+                              :pagination.sync="pagination"
                             >
-                              <template v-slot:body="props">
-                                <q-tr :props="props">
-                                  <q-td key="name" :props="props">
-                                    {{ props.row.name }}
-                                  </q-td>
-                                  <q-td key="description" :props="props">
-                                      {{ props.row.description }}
-                                  </q-td>
-                                  <q-td key="status" :props="props">
-                                      {{ props.row.status }}
-                                  </q-td>
-                                  <q-td key="action" :props="props">
+                                <template v-slot:body-cell-action="props">
+                                    <q-td key="action" :props="props">
                                         <q-btn outline dense icon="edit" class="text-capitalize text-primary" label="Edit"></q-btn>
+                                    </q-td>
+                                </template>
+                                <template v-slot:body-cell-description="props">
+                                    <q-td key="description" :props="props">
+                                        <span v-html="getHtmlForMD(props.row.description.replaceAll('\n', '<br>'))"></span>
+                                    </q-td>
+                                </template>
+                                <template v-slot:body-cell-status="props">
+                                  <q-td :props="props">
+                                    <q-chip
+                                      :style="'background-color: ' + status_color_map[props.row.statusId]"
+                                      text-color="white"
+                                      dense
+                                      round
+                                    > <span class="q-mr-xs" style="font-size:22px;">●</span> {{getStatusName(props.row.statusId)}}
+                                    </q-chip>
                                   </q-td>
-                                </q-tr>
-                              </template>
+                                </template>
                             </q-table>
                       </q-card-section>
                     </q-card>
                   </q-tab-panel>
 
-                  <q-tab-panel name="Calls">
+                  <q-tab-panel class="q-px-none" name="Calls">
                     Contact https://www.xolvegroup.com/ for call center integration.
                   </q-tab-panel>
 
-                  <q-tab-panel name="Emails">
+                  <q-tab-panel class="q-px-none" name="Emails">
                     Contact https://www.xolvegroup.com/ for email and calendar integration.
                   </q-tab-panel>
 
-                  <q-tab-panel name="Meetings">
+                  <q-tab-panel class="q-px-none" name="Meetings">
                     Contact https://www.xolvegroup.com/ for email and calendar integration.
                   </q-tab-panel>
 
-                  <q-tab-panel name="Products">
+                  <q-tab-panel class="q-px-none" name="Products">
                     Contact https://www.xolvegroup.com/ for product integration.
                   </q-tab-panel>
                 </q-tab-panels>
@@ -512,7 +517,7 @@
     </q-dialog>
 
 
-    <q-dialog v-model="add_note_modal">
+    <q-dialog id="add_note_editor_id" v-model="add_note_modal" @show="initializeEditor('#addNote')">
       <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
         <q-card-section>
         <div class="row q-px-sm">
@@ -529,17 +534,16 @@
 
         <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
                         <div class="q-mt-sm q-pt-sm">
-                            <q-input type="textarea" v-model="new_note"  square outlined style="margin:0;padding:0;" label="Note" dense>
-                            </q-input>
+                            <div :class="$q.dark.isActive?'text-white':'text-black'" style="border: 1px solid #c2c2c2;min-height: 150px !important;" id="addNote"></div>
                         </div>
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn @click="addNote" :disabled="!(new_note)" outline dense label="Add Note" class="text-capitalize" color="primary" />
+          <q-btn @click="addNote" outline dense label="Add Note" class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-dialog v-model="is_edit_note">
+    <q-dialog id="edit_note_editor_id" v-model="is_edit_note" @show="initializeEditor('#editNote')">
       <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
         <q-card-section>
         <div class="row q-px-sm">
@@ -556,8 +560,7 @@
 
         <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
                         <div class="q-mt-sm q-pt-sm">
-                            <q-input type="textarea" v-model="note_edit_item.noteText"  square outlined style="margin:0;padding:0;" label="Note" dense>
-                            </q-input>
+                            <div :class="$q.dark.isActive?'text-white':'text-black'" style="border: 1px solid #c2c2c2;min-height: 150px !important;" id="editNote"></div>
                         </div>
         </q-card-section>
 
@@ -567,7 +570,7 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="add_task_modal">
+    <q-dialog id="add_task_editor_id" v-model="add_task_modal" @show="initializeEditor('#addTask')">
       <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
         <q-card-section>
         <div class="row q-px-sm">
@@ -584,17 +587,17 @@
 
         <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
                         <div class="q-mt-sm q-pt-sm">
-                            <q-input v-model="mdl_web_url"  square outlined style="margin:0;padding:0;" label="Task Name" dense>
+                            <q-input v-model="new_task_name"  square outlined style="margin:0;padding:0;" label="Task Name" dense>
                             </q-input>
                             <div class="q-mt-sm q-pt-sm">
-                            <q-input type="textarea" v-model="mdl_web_url"  square outlined style="margin:0;padding:0;" label="Description" dense>
+                                <div :class="$q.dark.isActive?'text-white':'text-black'" style="border: 1px solid #c2c2c2;min-height: 150px !important;" id="addTask"></div>
                             </q-input>
                             </div>
                         </div>
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn outline dense label="Create Task" class="text-capitalize" color="primary" />
+          <q-btn :disabled="!(new_task_name)" @click="addTask" outline dense label="Create Task" class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -624,6 +627,7 @@ module.exports = {
             email_purpose_options: [],
             mdl_filter_email_purpose:null,
             mdl_email:'',
+            new_task_name:'',
             edit_mdl_email:{},
             mdl_phone:{},
             edit_mdl_phone:{},
@@ -638,7 +642,6 @@ module.exports = {
             url_purpose_options: [],
             mdl_filter_url_purpose:null,
             mdl_web_url:'',
-            new_note:'',
             edit_mdl_web_url:{},
             add_note_modal: false,
             add_task_modal:false,
@@ -646,13 +649,19 @@ module.exports = {
             telecomNumberList: [],
             webAddressList: [],
             partyNoteList: [],
+            status_options_master: [],
+            status_options: [],
             item_to_delete: {},
             note_edit_item: {},
             is_edit_note: false,
-            task_data: [{'name':'Test',
-                        'description':'Test Desc',
-                        'status':'In Planning'}],
-            task_columns:[{ name: 'name',align:'left', label: 'Name', field: 'name' },
+            task_list: [],
+            pagination: {
+                page: 0,
+                rowsPerPage: 0
+              },
+            status_color_map:{WeInPlanning: '#979391', WeApproved: '#6a97ff', WeInProgress: '#f0b057', WeComplete: '#34d391', WeOnHold: '#e8697d',
+                               WeClosed: '#79c947', WeCancelled: '#e8a19e'},
+            task_columns:[{ name: 'name',align:'left', label: 'Name', field: 'workEffortName' },
                             { name: 'description',align:'left', label: 'Description', field: 'description' },
                             { name: 'status',align:'left', label: 'Status', field: 'status' },
                             { name: 'action',align:'left', label: '', field: '' },
@@ -660,6 +669,64 @@ module.exports = {
         }
     },
     methods: {
+        getStatusName(id) {
+            if (id) {
+                let status_name = this.status_options_master.find(function(item){
+                    return item.statusId === id;
+                });
+                if (status_name) {
+                    return status_name.description;
+                }
+            }
+        },
+        getStatuses () {
+            var self = this;
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/statuses", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.status_options_master = resp.statusList;
+                    self.status_options = resp.statusList;
+                }
+            });
+        },
+        getHtmlForMD(content) {
+            if (content) {
+                try {
+                    let md_conv = new showdown.Converter({metadata: true});
+                    return md_conv.makeHtml(content);
+                }
+                catch(err) {
+                    let md_conv = new showdown.Converter({metadata: true});
+                    return md_conv.makeHtml(content);
+                }
+            }
+        },
+        initializeEditor(elem) {
+            let self = this;
+            InlineEditor
+            .create( document.querySelector( elem ),
+            {
+            })
+            .then( editor => {
+             if (elem === "#addNote"){
+                 window.add_note_editor = editor;
+                 $("#add_note_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
+             }
+             else if (elem === "#editNote"){
+                 window.edit_note_editor = editor;
+                 editor.setData(self.note_edit_item.noteText);
+                 $("#edit_note_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
+             }
+             else if (elem === "#addTask"){
+                 window.add_task_editor = editor;
+                 $("#add_task_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
+             }
+             else if (elem === "#editTask"){
+                 window.edit_task_editor = editor;
+                 $("#edit_task_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
+             }
+         } )
+        },
         confirmDelete(item) {
             this.item_to_delete = JSON.parse(JSON.stringify(item));
             this.delete_contact = true;
@@ -692,7 +759,7 @@ module.exports = {
             });
             var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
             allParams["partyId"] = params.partyId;
-            allParams["noteText"] = self.new_note;
+            allParams["noteText"] = window.add_note_editor.getData();
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/createPartyNote", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.new_note = "";
@@ -702,6 +769,28 @@ module.exports = {
                         position: 'bottom-left',
                       });
                     self.getPartyNoteList();
+                }
+            });
+        },
+        addTask() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            allParams["partyId"] = params.partyId;
+            allParams["accountPartyId"] = params.partyId;
+            allParams["workEffortName"] = self.new_task_name;
+            allParams["description"] = window.add_task_editor.getData();
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/createTask", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.new_note = "";
+                    self.add_task_modal = false;
+                    self.$q.notify({
+                        message: 'Task added successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getTaskList();
                 }
             });
         },
@@ -715,6 +804,7 @@ module.exports = {
               get: (searchParams, prop) => searchParams.get(prop),
             });
             self.note_edit_item["moquiSessionToken"] = self.$root.moquiSessionToken;
+            self.note_edit_item["noteText"] = window.edit_note_editor.getData();
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/updatePartyNote", headers:{Accept:'application/json'}, data:self.note_edit_item,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.note_edit_item = {};
@@ -802,6 +892,18 @@ module.exports = {
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyNoteList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.partyNoteList = resp.partyNoteList;
+                    }
+                });
+            },
+            getTaskList () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/gatAllTask", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.task_list = resp.allTasks;
                     }
                 });
             },
@@ -969,11 +1071,16 @@ module.exports = {
             }
     },
     created: function () {
-        this.getPhoneOptions();
-        this.getWebOptions();
-        this.getEmailOptions();
-        this.getPartyContactInfoList();
-        this.getPartyNoteList();
+        let self = this;
+        self.getStatuses();
+        self.getPhoneOptions();
+        self.getWebOptions();
+        self.getEmailOptions();
+        self.getPartyContactInfoList();
+        setTimeout( () => {
+            this.getPartyNoteList();
+            this.getTaskList();
+        }, 300 );
     }
 }
 </script>
@@ -992,5 +1099,15 @@ module.exports = {
     }
     .max_width_700 {
         max-width: 700px !important;
+    }
+    .ck-editor {
+        width: 100% !important;
+        margin-bottom: 9px !important;
+    }
+    .ck-editor__editable {
+        min-height: 150px !important;
+    }
+    .ck-balloon-panel_visible {
+        z-index: 10000 !important;
     }
 </style>

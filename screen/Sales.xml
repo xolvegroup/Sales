@@ -6,5 +6,11 @@
     </subscreens>
     <widgets>
         <subscreens-panel id="SalesPanel" type="popup"/>
+        <render-mode><text type="html,vuet,qvt,qvue"><![CDATA[
+        <script type=text/javascript src="${sri.buildUrl('Scripts/ckeditor.js').url}" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js" integrity="sha512-LhccdVNGe2QMEfI3x4DVV3ckMRe36TfydKss6mJpdHjNFiV07dFpS2xzeZedptKZrwxfICJpez09iNioiSZ3hA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.1/turndown.min.js" integrity="sha512-7f2yNDjY95XObwgNriZ38R/29bcPSuGWkM3NotiI6JeKe/GdBXkjzuYAVnM+yQEtwLbvDYn20fZy8QJ79aSEew==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/3.2.0/diff.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        ]]></text></render-mode>
     </widgets>
 </screen>

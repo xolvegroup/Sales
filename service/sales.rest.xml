@@ -95,4 +95,13 @@ along with this software (see the LICENSE.md file). If not, see
     <resource name="updatePartyNote" require-authentication="anonymous-all">
         <method type="post"><service name="update#mantle.party.PartyNote"/></method>
     </resource>
+    <resource name="gatAllTask" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#AllTask"/></method>
+    </resource>
+    <resource name="statuses" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#Statuses"/></method>
+    </resource>
+    <resource name="createTask" require-authentication="anonymous-all">
+        <method type="post"><service name="sales.SalesServices.create#Task"/></method>
+    </resource>
 </resource>
