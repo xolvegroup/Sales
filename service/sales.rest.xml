@@ -71,6 +71,9 @@ along with this software (see the LICENSE.md file). If not, see
     <resource name="getPartyContactInfoList" require-authentication="anonymous-view">
         <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfoList"/></method>
     </resource>
+    <resource name="getPartyDetail" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#PartyDetail"/></method>
+    </resource>
     <resource name="getPartyNoteList" require-authentication="anonymous-view">
         <method type="get"><service name="sales.SalesServices.get#PartyNoteList"/></method>
     </resource>
@@ -103,5 +106,8 @@ along with this software (see the LICENSE.md file). If not, see
     </resource>
     <resource name="createTask" require-authentication="anonymous-all">
         <method type="post"><service name="sales.SalesServices.create#Task"/></method>
+    </resource>
+    <resource name="updateTask" require-authentication="anonymous-all">
+        <method type="post"><service name="mantle.work.TaskServices.update#Task"/></method>
     </resource>
 </resource>

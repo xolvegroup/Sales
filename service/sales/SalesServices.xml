@@ -395,6 +395,19 @@ along with this software (see the LICENSE.md file). If not, see
                 -->
         </actions>
     </service>
+    <service verb="get" noun="PartyDetail">
+        <in-parameters>
+            <parameter name="partyId" required="true" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="party"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.party.PartyDetail" value-field="party">
+                <econdition field-name="partyId" from="partyId"/>
+            </entity-find-one>
+        </actions>
+    </service>
     <service verb="get" noun="AllSalesPerson">
         <in-parameters>
             <parameter name="partyIdList" type="List" />

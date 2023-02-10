@@ -4,7 +4,7 @@
         <div class="col-3">
             <q-card flat bordered class="detail_cls my-card">
               <q-card-section>
-                <div class="text-h6">View Account</div>
+                <div class="text-h6 q-px-sm" v-if="current_party">{{current_party.organizationName}}</div>
               </q-card-section>
               <q-card-section class="q-pt-none q-px-sm">
                 <q-list>
@@ -154,7 +154,7 @@
                             >
                                 <template v-slot:body-cell-action="props">
                                     <q-td key="action" :props="props">
-                                        <q-btn outline dense icon="edit" class="text-capitalize text-primary" label="Edit"></q-btn>
+                                        <q-btn @click="openEditTask(props.row)" outline dense icon="edit" class="text-capitalize text-primary" label="Edit"></q-btn>
                                     </q-td>
                                 </template>
                                 <template v-slot:body-cell-description="props">
@@ -601,6 +601,76 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog id="edit_task_editor_id" v-model="edit_task_modal" @show="initializeEditor('#editTask')">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="min-width: 800px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Edit Task</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+            <div class="row q-mt-sm q-pt-sm">
+                <div class="col-12">
+                    <q-input v-model="task_edit_item.workEffortName" outlined label="Task Name" dense>
+                    </q-input>
+                </div>
+                <div class="col-6 q-py-lg">
+                    <q-select
+                        label="Status"
+                        dense
+                        outlined
+                        v-model="status"
+                        use-input
+                        input-debounce="0"
+                        option-value="statusId"
+                        option-label="description"
+                        :options="status_options"
+                        @filter="filterFnStatus"
+                      >
+                        <template v-slot:no-option>
+                          <q-item>
+                            <q-item-section class="text-grey">
+                              No results
+                            </q-item-section>
+                          </q-item>
+                        </template>
+                      </q-select>
+                </div>
+                <div class="col-6 q-py-lg q-pl-sm">
+                    <q-input label="Due Date" outlined dense v-model="edit_due_date">
+                        <template v-slot:append>
+                          <q-icon name="event" class="cursor-pointer">
+                            <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                              <q-date mask="YYYY-MM-DD" v-model="edit_due_date">
+                                <div class="row items-center justify-end">
+                                  <q-btn v-close-popup label="Close" color="primary" flat />
+                                </div>
+                              </q-date>
+                            </q-popup-proxy>
+                          </q-icon>
+                        </template>
+                      </q-input>
+                </div>
+                <div class="col-12">
+                    <div :class="$q.dark.isActive?'text-white':'text-black'" style="border: 1px solid #c2c2c2;min-height: 150px !important;" id="editTask"></div>
+                </q-input>
+                </div>
+            </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn :disabled="!(task_edit_item.workEffortName && status)" @click="editTask" outline dense label="Update" class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
     <q-dialog v-model="delete_contact" persistent>
       <q-card style="max-width: 450px" class="q-pa-md">
         <q-card-section class="row items-center">
@@ -635,6 +705,7 @@ module.exports = {
             edit_phone_modal:false,
             phone_purpose_options_master: [],
             phone_purpose_options: [],
+            status: null,
             mdl_filter_phone_purpose:null,
             add_url_modal:false,
             edit_url_modal:false,
@@ -645,6 +716,7 @@ module.exports = {
             edit_mdl_web_url:{},
             add_note_modal: false,
             add_task_modal:false,
+            edit_task_modal:false,
             emailAddressList: [],
             telecomNumberList: [],
             webAddressList: [],
@@ -653,8 +725,11 @@ module.exports = {
             status_options: [],
             item_to_delete: {},
             note_edit_item: {},
+            edit_due_date: null,
+            task_edit_item: {},
             is_edit_note: false,
             task_list: [],
+            current_party: {},
             pagination: {
                 page: 0,
                 rowsPerPage: 0
@@ -669,6 +744,19 @@ module.exports = {
         }
     },
     methods: {
+        filterFnStatus (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.status_options = self.status_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.status_options = self.status_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
+            })
+          },
         getStatusName(id) {
             if (id) {
                 let status_name = this.status_options_master.find(function(item){
@@ -686,6 +774,18 @@ module.exports = {
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.status_options_master = resp.statusList;
                     self.status_options = resp.statusList;
+                }
+            });
+        },
+        getPartyDetail () {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyDetail", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.current_party = resp.party;
                 }
             });
         },
@@ -723,6 +823,7 @@ module.exports = {
              }
              else if (elem === "#editTask"){
                  window.edit_task_editor = editor;
+                 editor.setData(self.task_edit_item.description);
                  $("#edit_task_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
              }
          } )
@@ -817,6 +918,12 @@ module.exports = {
                 }
             });
         },
+        formatDate (dt) {
+            if (dt) {
+                dt = new Date(dt);
+                return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0');
+            }
+        },
         formatDateTime (dt) {
             if (dt) {
                 dt = new Date(dt);
@@ -892,6 +999,42 @@ module.exports = {
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyNoteList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.partyNoteList = resp.partyNoteList;
+                    }
+                });
+            },
+            openEditTask(item) {
+                let self = this;
+                self.task_edit_item = JSON.parse(JSON.stringify(item));
+                self.status = self.status_options_master.find(function(item){
+                    return item.statusId === self.task_edit_item.statusId;
+                });
+                if (self.task_edit_item.estimatedCompletionDate){
+                    self.edit_due_date = self.formatDate(self.task_edit_item.estimatedCompletionDate);
+                }
+                self.edit_task_modal = true;
+            },
+            editTask() {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                self.task_edit_item["moquiSessionToken"] = self.$root.moquiSessionToken;
+                self.task_edit_item["description"] = window.edit_task_editor.getData();
+                if (self.status) {
+                    self.task_edit_item["statusId"] = self.status.statusId;
+                }
+                if (self.edit_due_date) {
+                    self.task_edit_item["estimatedCompletionDate"] = self.edit_due_date
+                }
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/updateTask", headers:{Accept:'application/json'}, data:self.task_edit_item,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.task_edit_item = {};
+                        self.edit_task_modal = false;
+                        self.$q.notify({
+                            message: 'Task updated successfully.',
+                            position: 'bottom-left',
+                          });
+                        self.getTaskList();
                     }
                 });
             },
@@ -1072,6 +1215,7 @@ module.exports = {
     },
     created: function () {
         let self = this;
+        self.getPartyDetail();
         self.getStatuses();
         self.getPhoneOptions();
         self.getWebOptions();
