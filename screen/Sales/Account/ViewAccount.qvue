@@ -198,11 +198,18 @@
         <div class="col-3">
             <q-card flat bordered class="detail_cls my-card">
               <q-card-section>
-                <div class="text-h5">Contacts</div>
+                <div class="text-h6">Contacts</div>
               </q-card-section>
 
               <q-card-section class="q-pt-none">
-                Contacts related to this Sales Account: <q-chip dense square outline>10</q-chip>
+                <span>Contacts related to this Sales Account: <q-chip color="primary" dense square outline>{{contact_count}}</q-chip></span>
+                    <q-list dense separator>
+                      <q-item class="q-py-md" :key="item.fromDate" v-for="item in contact_list">
+                        <q-item-section>
+                            <a href="#">{{item.contact_person}}</a>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
               </q-card-section>
             </q-card>
 
@@ -212,7 +219,17 @@
               </q-card-section>
 
               <q-card-section class="q-pt-none">
-
+                <q-list dense separator>
+                    <q-item :key="item.salesOpportunityId" v-for="item in oppy_list">
+                        <q-item-section class="q-py-sm">
+                          <q-item-label>
+                            <a href="#">{{item.opportunityName}}</a>
+                          </q-item-label>
+                          <q-item-label caption>
+                            <span v-html="(item.description || '').replaceAll('\n', '<br>')"></span>
+                          </q-item-label>
+                        </q-item-section>
+                    </q-item>
               </q-card-section>
             </q-card>
 
@@ -719,8 +736,11 @@ module.exports = {
             edit_task_modal:false,
             emailAddressList: [],
             telecomNumberList: [],
+            oppy_list: [],
             webAddressList: [],
             partyNoteList: [],
+            contact_list: [],
+            contact_count: 0,
             status_options_master: [],
             status_options: [],
             item_to_delete: {},
@@ -1089,6 +1109,31 @@ module.exports = {
                     }
                 });
             },
+            getContactList () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/getContactList", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.contact_list = resp.contactList;
+                        self.contact_count = resp.relationshipCount;
+                    }
+                });
+            },
+            getSalesOpportunity () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/getSalesOpportunity", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.oppy_list = resp.oppyList;
+                    }
+                });
+            },
             openEditPhone(item) {
                 this.edit_mdl_phone = JSON.parse(JSON.stringify(item));
                 this.edit_phone_modal = true;
@@ -1221,6 +1266,8 @@ module.exports = {
         self.getWebOptions();
         self.getEmailOptions();
         self.getPartyContactInfoList();
+        self.getContactList();
+        self.getSalesOpportunity();
         setTimeout( () => {
             this.getPartyNoteList();
             this.getTaskList();

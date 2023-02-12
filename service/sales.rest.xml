@@ -110,4 +110,10 @@ along with this software (see the LICENSE.md file). If not, see
     <resource name="updateTask" require-authentication="anonymous-all">
         <method type="post"><service name="mantle.work.TaskServices.update#Task"/></method>
     </resource>
+    <resource name="getContactList" require-authentication="anonymous-view">
+        <method type="post"><service name="sales.SalesServices.get#ContactList"/></method>
+    </resource>
+    <resource name="getSalesOpportunity" require-authentication="anonymous-view">
+        <method type="post"><service name="sales.SalesServices.get#SalesOpportunity"/></method>
+    </resource>
 </resource>
