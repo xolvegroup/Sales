@@ -64,8 +64,8 @@ along with this software (see the LICENSE.md file). If not, see
             -->
             <!-- TODO: refactor all date fields to format based on user locale -->
             <field name="agreementDate">
-                <header-field title="Agreement Date" show-order-by="true"><date-time type="date"/></header-field>
-                <default-field><display format="yyyy-MM-dd"/></default-field>
+                <header-field title="Agreement Date" show-order-by="true"><date-time type="date-time"/></header-field>
+                <default-field><display/></default-field>
             </field>
             <field name="fromDate">
                 <header-field title="From Date" show-order-by="true"><date-time type="date"/></header-field>

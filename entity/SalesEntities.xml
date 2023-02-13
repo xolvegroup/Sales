@@ -25,11 +25,4 @@ along with this software (see the LICENSE.md file). If not, see
         <relationship type="one" related="moqui.security.UserAccount"/>
     </entity>
 
-    <!-- Join entity for Agreements and Subscriptions -->
-    <entity entity-name="AgreementSubscription" package="mantle.party.agreement">
-        <field name="agreementId" type="id" is-pk="true"/>
-        <field name="subscriptionId" type="id" is-pk="true"/>
-        <relationship type="one" related="mantle.party.agreement.Agreement"/>
-        <relationship type="one" related="mantle.product.subscription.Subscription"/>
-    </entity>
 </entities>
