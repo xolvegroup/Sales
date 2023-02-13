@@ -116,4 +116,10 @@ along with this software (see the LICENSE.md file). If not, see
     <resource name="getSalesOpportunity" require-authentication="anonymous-view">
         <method type="post"><service name="sales.SalesServices.get#SalesOpportunity"/></method>
     </resource>
+    <resource name="getSalesOrders" require-authentication="anonymous-view">
+        <method type="post"><service name="sales.SalesServices.get#SalesOrders"/></method>
+    </resource>
+    <resource name="getOrderStatuses" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#OrderStatuses"/></method>
+    </resource>
 </resource>

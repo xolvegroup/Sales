@@ -560,6 +560,31 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
+    <service verb="get" noun="SalesOrders">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.order.OrderHeaderAndPart" list="orderList">
+                <econdition field-name="customerPartyId" from="partyId"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="OrderStatuses">
+        <out-parameters>
+            <parameter name="statusList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.StatusItem" list="statusList">
+                <econdition field-name="statusTypeId" value="OrderHeader"/>
+                <select-field field-name="statusId,description"/>
+                <order-by field-name="sequenceNum"/>
+            </entity-find>
+        </actions>
+    </service>
     <service verb="get" noun="ContactList">
         <in-parameters>
             <parameter name="partyId" required="true"/>

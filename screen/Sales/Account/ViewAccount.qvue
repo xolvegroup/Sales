@@ -239,7 +239,16 @@
               </q-card-section>
 
               <q-card-section class="q-pt-none">
-
+                    <q-list dense separator>
+                      <q-item class="q-py-md" :key="item.orderId" v-for="item in sales_orders">
+                        <q-item-section class="col-4">
+                            <a href="#">{{item.orderId}}</a>
+                        </q-item-section>
+                        <q-item-section>
+                            {{item.status_name}}
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
               </q-card-section>
             </q-card>
         </div>
@@ -728,6 +737,7 @@ module.exports = {
             edit_url_modal:false,
             url_purpose_options_master: [],
             url_purpose_options: [],
+            order_status_options: [],
             mdl_filter_url_purpose:null,
             mdl_web_url:'',
             edit_mdl_web_url:{},
@@ -750,6 +760,7 @@ module.exports = {
             is_edit_note: false,
             task_list: [],
             current_party: {},
+            sales_orders: [],
             pagination: {
                 page: 0,
                 rowsPerPage: 0
@@ -794,6 +805,16 @@ module.exports = {
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.status_options_master = resp.statusList;
                     self.status_options = resp.statusList;
+                }
+            });
+        },
+        getOrderStatuses () {
+            var self = this;
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getOrderStatuses", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.order_status_options = resp.statusList;
+                    self.getSalesOrders();
                 }
             });
         },
@@ -1134,6 +1155,23 @@ module.exports = {
                     }
                 });
             },
+            getSalesOrders () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/getSalesOrders", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.sales_orders = resp.orderList.map(function(item){
+                            item["status_name"] = self.order_status_options.find(function(item_actual_status){
+                                return item_actual_status.statusId === item.statusId;
+                            }).description;
+                            return item;
+                        });
+                    }
+                });
+            },
             openEditPhone(item) {
                 this.edit_mdl_phone = JSON.parse(JSON.stringify(item));
                 this.edit_phone_modal = true;
@@ -1262,6 +1300,7 @@ module.exports = {
         let self = this;
         self.getPartyDetail();
         self.getStatuses();
+        self.getOrderStatuses();
         self.getPhoneOptions();
         self.getWebOptions();
         self.getEmailOptions();
