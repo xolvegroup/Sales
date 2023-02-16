@@ -425,7 +425,7 @@ along with this software (see the LICENSE.md file). If not, see
     </service>
     <service verb="get" noun="SavedFinds">
         <in-parameters>
-            <parameter name="formLocation" default-value="component://Sales/screen/Sales/Account/FindAccount.xml.form_list$AccountList"/>
+            <parameter name="formLocation" required="true"/>
         </in-parameters>
         <out-parameters>
             <parameter name="savedFindList"/>
@@ -583,6 +583,101 @@ along with this software (see the LICENSE.md file). If not, see
                 <select-field field-name="statusId,description"/>
                 <order-by field-name="sequenceNum"/>
             </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="AllRelatedAccounts">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="accountList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyRelationship" list="accountListTmp">
+                <date-filter/>
+                <econdition field-name="fromPartyId" from="partyId"/>
+                <econdition field-name="fromRoleTypeId" value="Contact"/>
+                <select-field field-name="toPartyId"/>
+            </entity-find>
+            <set field="accountList" from="[]"/>
+            <if condition="accountListTmp">
+                <iterate list="accountListTmp" entry="acct">
+                    <set field="item" from="new HashMap()"/>
+                    <script>
+                        item.putAll(acct)
+                        accountList.add(item)
+                    </script>
+                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="account_details">
+                        <field-map field-name="partyId" from="acct.toPartyId"/>
+                    </entity-find-one>
+                    <script>
+                        item.put("account_name",account_details.organizationName)
+                    </script>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="search" noun="PartyList">
+        <in-parameters>
+            <parameter name="term"/>
+            <parameter name="roleTypeId"/>
+            <parameter name="indexName"/>
+            <parameter name="documentType"/>
+            <parameter name="partyTypeEnumId"/>
+            <parameter name="includeDisabled"/> <!-- 'true' includes disabled -->
+            <parameter name="restrictActiveOrg"/> <!-- !'true' restricts to active org (only if present) -->
+            <parameter name="pageIndex"/>
+        </in-parameters>
+        <actions>
+            <if condition="!term &amp;&amp; !pageIndex"><script>ec.web.sendJsonResponse([])</script><return/></if>
+            <set field="term" from="term ?: '*'"/>
+
+            <set field="indexName" from="indexName ?: searchIndexName ?: 'mantle'"/>
+            <set field="documentType" from="documentType ?: searchPartyDocType ?: 'MantleParty'"/>
+            <!-- <log message="====== searchPartyList indexName=${indexName}, documentType=${documentType}, term=${term}"/> -->
+
+            <entity-find-one entity-name="mantle.party.PartyDetail" value-field="partyDetail">
+                <field-map field-name="partyId" from="term"/></entity-find-one>
+
+            <if condition="partyDetail != null"><then>
+                <script>
+                    def outList = [[value:partyDetail.partyId, label:ec.resource.expand("PartyNameTemplate", "", partyDetail)]]
+                    ec.web.sendJsonResponse(outList)
+                </script>
+            </then><else>
+                <!-- if we have activeOrgId or filterOrgIds see if user has active org or user org filters -->
+                <set field="activeOrgId" from="ec.user.context?.activeOrgId"/>
+                <set field="filterOrgIds" from="ec.user.context?.filterOrgIds"/>
+                <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.party.Party')"/>
+                <if condition="findFilters"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
+                <!-- <log level="warn" message="Doing party search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
+
+                <script><![CDATA[
+                    StringBuilder termSb = new StringBuilder('(')
+                    termSb.append(elasticQueryAutoWildcard(term, false)).append(')')
+
+                    if (roleTypeId) termSb.append(' AND roles.roleTypeId:(').append(roleTypeId.replaceAll(/,/, ' OR ')).append(')')
+                    if (partyTypeEnumId) termSb.append(' AND (partyTypeEnumId:' + partyTypeEnumId + ')')
+                    if (!'true'.equals(includeDisabled)) termSb.append(' AND (NOT disabled:Y)')
+                    if (activeOrgId && 'true'.equals(restrictActiveOrg)) termSb.append(' AND (partyId:' + activeOrgId + ')')
+
+                    if ('MANTLE_USER_ORG'.equals(entityFilterSetId)) {
+                        termSb.append(' AND ownerPartyId:(' + (filterOrgIds ? filterOrgIds.join(' OR ') + ' OR ' : '') + '_NA_)')
+                    } else if ('MANTLE_ACTIVE_ORG'.equals(entityFilterSetId) && activeOrgId) {
+                        termSb.append(' AND ownerPartyId:(' + activeOrgId + ' OR _NA_)')
+                    }
+                ]]></script>
+                <!-- <log level="warn" message="Doing party search with queryString [${termSb.toString()}], indexName:${indexName}, documentType:${documentType}"/> -->
+                <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
+                        in-map="[queryString:termSb.toString(), indexName:indexName, documentType:documentType]"/>
+                <!-- <log level="warn" message="Got party search results: ${documentList}"/> -->
+                <script>
+                    def outList = []
+                    for (document in documentList) outList.add([value:document._id, label:ec.resource.expand("PartyNameTemplate", "", document)])
+                    ec.web.sendJsonResponse(outList)
+                </script>
+                <!-- <log level="warn" message="Got party search outList: ${outList}"/> -->
+            </else></if>
         </actions>
     </service>
     <service verb="get" noun="ContactList">

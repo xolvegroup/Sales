@@ -122,4 +122,19 @@ along with this software (see the LICENSE.md file). If not, see
     <resource name="getOrderStatuses" require-authentication="anonymous-view">
         <method type="get"><service name="sales.SalesServices.get#OrderStatuses"/></method>
     </resource>
+    <resource name="getAllContacts" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.search#Party"/></method>
+    </resource>
+    <resource name="searchPartyList" require-authentication="anonymous-view">
+        <method type="post"><service name="sales.SalesServices.search#PartyList"/></method>
+    </resource>
+    <resource name="contacts" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.search#Party"/></method>
+        <resource name="relatedAccounts" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.get#AllRelatedAccounts"/></method>
+        </resource>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.sales.AccountServices.create#Contact"/></method>
+        </resource>
+    </resource>
 </resource>
