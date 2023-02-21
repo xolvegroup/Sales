@@ -257,7 +257,7 @@
                             >
                                 <template v-slot:body-cell-combinedname="props">
                                   <q-td :props="props">
-                                    <a class="text-weight-medium" :href="'ViewAccount?partyId=' + props.row.partyId">{{props.row.combinedName}}</a>
+                                    <a class="text-weight-medium" :href="'ViewContact?partyId=' + props.row.partyId">{{props.row.combinedName}}</a>
                                   </q-td>
                                 </template>
                                 <template v-slot:body-cell-email="props">
@@ -537,7 +537,6 @@ module.exports = {
         },
         searchPartyList (search_keyword) {
             var self = this;
-            self.searched_accounts = [];
             var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
             allParms["hasAllParms"] = true;
             allParms["pageIndex"] = 0;

@@ -136,5 +136,11 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="create" require-authentication="anonymous-all">
             <method type="post"><service name="mantle.sales.AccountServices.create#Contact"/></method>
         </resource>
+        <resource name="delete" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.sales.AccountServices.delete#Contact"/></method>
+        </resource>
+        <resource name="add" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.sales.AccountServices.add#Contact"/></method>
+        </resource>
     </resource>
 </resource>
