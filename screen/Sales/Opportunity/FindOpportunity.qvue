@@ -1,11 +1,11 @@
 <template>
     <div>
-    <q-dialog v-model="add_new_sales_account">
+    <q-dialog v-model="add_new_opportunity">
           <q-card class="q-pa-none detail_cls" style="width: 50vw; max-width: 50vw;">
             <q-card-section>
               <div class="row q-px-md q-py-sm">
                 <div class="col-11 q-pt-sm text-h5 text-weight-bold">
-                    New Sales Account
+                    New Opportunity
                 </div>
                 <div class="col-1">
                     <q-btn flat round dense icon="close" class="float-right" v-close-popup></q-btn>
@@ -15,13 +15,113 @@
             <q-separator></q-separator>
 
             <q-card-section class="q-ma-md edit_page">
-                <q-input  v-model="new_sales_account_name" outlined label="Sales Account" style="margin:0;padding:0;background-color:white;" dense>
+                <div class="row q-col-gutter-md detail_cls">
+                    <div class="col-12">
+                        <q-select
+                            dense
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            label="Sales Account"
+                            outlined
+                            v-model="new_sales_contact_account"
+                            use-input
+                            input-debounce="700"
+                            option-value="value"
+                            option-label="label"
+                            :options="account_options"
+                            @filter="filterFnAccount"
+                            >
+                            <template v-slot:no-option>
+                                <q-item>
+                                  <q-item-section class="text-grey">
+                                    No results
+                                  </q-item-section>
+                                </q-item>
+                            </template>
+                        </q-select>
+                    </div>
+                    <div class="col-12">
+                        <q-select
+                            dense
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            label="Currency"
+                            outlined
+                            v-model="new_uom"
+                            use-input
+                            input-debounce="700"
+                            option-value="uomId"
+                            option-label="uom_label"
+                            :options="currency_options"
+                            @filter="filterFnCurrency"
+                            >
+                            <template v-slot:no-option>
+                                <q-item>
+                                  <q-item-section class="text-grey">
+                                    No results
+                                  </q-item-section>
+                                </q-item>
+                            </template>
+                        </q-select>
+                    </div>
+                    <div class="col-6">
+                        <q-input  v-model="new_opp_amount" outlined label="Amount" style="margin:0;padding:0;background-color:white;" dense>
+                                        </q-input>
+                    </div>
+                    <div class="col-6">
+                        <div class="col-6">
+                            <q-input label="Close Date" outlined dense v-model="close_date">
+                                <template v-slot:append>
+                                  <q-icon name="event" class="cursor-pointer">
+                                    <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                      <q-date mask="YYYY-MM-DD" v-model="close_date">
+                                        <div class="row items-center justify-end">
+                                          <q-btn v-close-popup label="Close" color="primary" flat />
+                                        </div>
+                                      </q-date>
+                                    </q-popup-proxy>
+                                  </q-icon>
+                                </template>
+                              </q-input>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <q-select
+                            dense
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            label="Sales Person"
+                            outlined
+                            v-model="new_sales_person"
+                            use-input
+                            input-debounce="700"
+                            option-value="value"
+                            option-label="label"
+                            :options="sales_person_options"
+                            @filter="filterFnSalesPerson"
+                            >
+                            <template v-slot:no-option>
+                                <q-item>
+                                  <q-item-section class="text-grey">
+                                    No results
+                                  </q-item-section>
+                                </q-item>
+                            </template>
+                        </q-select>
+                    </div>
+                    <div class="col-12">
+                        <q-input  v-model="opportunity_name" outlined label="Opportunity Name" style="margin:0;padding:0;background-color:white;" dense>
                                     </q-input>
+                    </div>
+
+                    <div class="col-12">
+                        <q-input type="textarea" v-model="description" outlined label="Description" style="margin:0;padding:0;background-color:white;" dense>
+                                    </q-input>
+                    </div>
+                </div>
             </q-card-section>
+            
 
             <q-separator></q-separator>
             <q-card-actions class="q-pa-md" align="left">
-              <q-btn :disable="!(new_sales_account_name)" @click="addNewSalesAccount()" outline dense label="Create" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn :disable="!(new_sales_contact_account && opportunity_name)" @click="addNewOpportunity()" outline dense label="Create" class="text-capitalize q-mb-md" color="primary"></q-btn>
               <q-btn v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
             </q-card-actions>
           </q-card>
@@ -49,9 +149,6 @@
                            <div class="row">
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_sales_person">
                                     <span class="text-subtitle2">User : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_sales_person.userFullName }}</span>
-                                </div>
-                                <div class="col-6 q-pb-sm" v-if="mdl_filter_role">
-                                    <span class="text-subtitle2">Role : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_role.label }}</span>
                                 </div>
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_account">
                                     <span class="text-subtitle2">Sales Account : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_account }}</span>
@@ -104,33 +201,31 @@
                     </div>
                 </div>
                 <div class="row q-mt-md q-col-gutter-md detail_cls">
-                    <div class="col-12">
-                        <q-select
-                            label="Role*"
-                            dense
-                            outlined
-                            v-model="mdl_filter_role"
-                            use-input
-                            :class="!$q.dark.isActive?'bg-white':''"
-                            input-debounce="0"
-                            option-value="value"
-                            option-label="label"
-                            :options="role_options"
-                            @filter="filterFnRole"
-                          >
-                            <template v-slot:no-option>
-                              <q-item>
-                                <q-item-section class="text-grey">
-                                  No results
-                                </q-item-section>
-                              </q-item>
-                            </template>
-                          </q-select>
-                    </div>
-                    <div class="col-12">
-                    <q-input  v-model="mdl_filter_account" outlined label="Sales Account" style="margin:0;padding:0;background-color:white;" dense>
+                    <!--<div class="col-12">
+                                    <q-select
+                                        dense
+                                        :class="!$q.dark.isActive?'bg-white':''"
+                                        label="Sales Account"
+                                        outlined
+                                        v-model="mdl_filter_account"
+                                        use-input
+                                        input-debounce="700"
+                                        option-value="value"
+                                        option-label="label"
+                                        :options="account_options"
+                                        @filter="filterFnAccount"
+                                        >
+                                        <template v-slot:no-option>
+                                            <q-item>
+                                              <q-item-section class="text-grey">
+                                                No results
+                                              </q-item-section>
+                                            </q-item>
+                                        </template>
+                                    </q-select>
+                                    <q-input  v-model="mdl_filter_account" outlined label="Sales Account" style="margin:0;padding:0;background-color:white;" dense>
                                     </q-input>
-                    </div>
+                    </div>-->
                     <div class="col-12">
                         <q-select
                             label="Order By"
@@ -155,7 +250,7 @@
                           </q-select>
                     </div>
                     <div class="col-12">
-                        <q-btn :disabled="!(mdl_filter_role)" @click="findOptions()" style="width: 140px" class="text-blue q-px-sm q-ml-sm" outline dense icon="search" label="Find"></q-btn>
+                        <q-btn @click="findOptions()" style="width: 140px" class="text-blue q-px-sm q-ml-sm" outline dense icon="search" label="Find"></q-btn>
                         <q-btn @click="resetFind()" style="width: 140px" class="q-px-sm q-ml-sm" outline dense icon="search" label="Clear"></q-btn>
                     </div>
                 </div>
@@ -171,12 +266,12 @@
                 style="width: 175px;"
             class="custom_btn_dropdown"
             dense
-            @click="add_new_sales_account=true"
+            @click="add_new_opportunity=true"
                   split
                   color="primary"
                   no-caps
                   icon="add"
-                  label="New Sales Account"
+                  label="New Opportunity"
                 >
                 </q-btn>
               </q-item-section>
@@ -228,14 +323,26 @@
                             >
                                 <template v-slot:body-cell-combinedname="props">
                                   <q-td :props="props">
-                                    <a class="text-weight-medium" :href="'ViewAccount?partyId=' + props.row.partyId">{{props.row.combinedName}}</a>
+                                    <a class="text-weight-medium" :href="'ViewContact?partyId=' + props.row.partyId">{{props.row.combinedName}}</a>
                                   </q-td>
                                 </template>
-                                <template v-slot:body-cell-salesperson="props">
+                                <template v-slot:body-cell-email="props">
                                   <q-td :props="props">
-                                    <span v-for="item,index in props.row.sales_person_list">
-                                        {{item.firstName}} {{item.lastName}}<span v-if="index !== (props.row.sales_person_list.length-1)">,</span>
-                                    </span>
+                                      <span>
+                                        <span v-if="props.row.contactMechs" v-for="item,index in props.row.contactMechs">
+                                            {{item.infoString}}<span v-if="index !== (props.row.contactMechs.length-1)">, </span>
+                                        </span>
+                                      </span>
+                                  </q-td>
+                                </template>
+                                <template v-slot:body-cell-salesaccount="props">
+                                  <q-td :props="props">
+                                    <a class="text-weight-medium" :href="'ViewAccount?partyId=' + props.row.accountPartyId">{{props.row.account_name}}</a>
+                                  </q-td>
+                                </template>
+                                <template v-slot:body-cell-closedate="props">
+                                  <q-td :props="props">
+                                    {{formatDate(props.row.estimatedCloseDate)}}
                                   </q-td>
                                 </template>
                             </q-table>
@@ -249,8 +356,16 @@ module.exports = {
     data: function () {
         return {
             account_list: [],
-            new_sales_account_name: "",
-            add_new_sales_account: false,
+            new_uom: null,
+            new_sales_contact_account: null,
+            opportunity_name: "",
+            description: "",
+            new_sales_person: null,
+            new_opp_amount: "",
+            add_new_opportunity: false,
+            close_date: null,
+            account_options: [],
+            sales_person_options: [],
             pagination: {
                 page: 1,
                 rowsPerPage: 15,
@@ -262,30 +377,32 @@ module.exports = {
             filter: "",
             table_columns: [
                {
-                 name: 'combinedname',
-                 field: 'combinedName',
+                 name: 'salesaccount',
+                 field: 'account_name',
                  required: true,
-                 label: 'Account Name',
+                 label: 'Sales Account',
                  align: 'left',
                  sortable: true,
-                 style: 'min-width: 70%'
+                 style: 'min-width: 15%;width: 15%;'
                },
-               { name: 'salesperson', align: 'left', label: 'Sales Person',style: 'min-width: 30%', field: '', sortable: false },
+               { name: 'opportunity', align: 'left', label: 'Opportunity',style: 'min-width: 40%', field: 'name', sortable: true },
+               { name: 'amount', align: 'left', label: 'Amount',style: 'min-width: 15%;width: 15%;', field: 'estimatedAmount', sortable: true },
+               { name: 'closedate', align: 'left', label: 'Close Date',style: 'min-width: 15%;width: 15%;', field: 'estimatedCloseDate', sortable: true },
+               { name: 'salesperson', align: 'left', label: 'Sales Person',style: 'min-width: 15%;width: 15%;', field: '', sortable: true },
             ],
-            column_to_field_mapping: {"combinedName": "combinedname"},
+            column_to_field_mapping: {},
             open_find_options_drawer: false,
             mdl_filter_sales_person:null,
             mdl_filter_account:null,
-            mdl_filter_role:null,
             sales_person_options_master: [],
             sales_person_options: [],
-            role_options_master: [{"label":"Sales Account","value":"Account"},{"label":"Customer","value":"Customer"}],
-            role_options: [{"label":"Sales Account","value":"Account"},{"label":"Customer","value":"Customer"}],
+            currency_options_master: [],
+            currency_options: [],
             mdl_filter_order_by:null,
-            orderby_options_master: [{"label":"Sales Account (Asc)","value":"combinedname"},
-                                     {"label":"Sales Account (Desc)","value":"-combinedname"}],
-            orderby_options: [{"label":"Sales Account (Asc)","value":"combinedname"},
-                                     {"label":"Sales Account (Desc)","value":"-combinedname"}],
+            orderby_options_master: [{"label":"Party Name (Asc)","value":"combinedname"},
+                                     {"label":"Party Name (Desc)","value":"-combinedname"}],
+            orderby_options: [{"label":"Party Name (Asc)","value":"combinedname"},
+                                     {"label":"Party Name (Desc)","value":"-combinedname"}],
             open_saved_finds_drawer: false,
             saved_find_list: [],
             save_new_find: '',
@@ -294,16 +411,54 @@ module.exports = {
         }
     },
     methods: {
-        checkSalesPerson(sp_list) {
-            let sps = sp_list.filter(function(item){
-                return item.fromRoleTypeId === 'SalesRepresentative';
+        filterFnAccount(val, update, abort) {
+            let self = this;
+            if (val.length < 2) {
+                abort()
+                return
+            }
+            if (val === '') {
+                update(() => {
+                    self.account_options = [];
+                })
+                return
+            }
+            self.searchPartyList(val.toLowerCase(), "Account").then(function(resp){
+                update(() => {
+                    self.account_options = resp;
+                })
             });
-            if (sps.length > 0){
-                return true
+        },
+        filterFnSalesPerson(val, update, abort) {
+            let self = this;
+            if (val.length < 2) {
+                abort()
+                return
             }
-            else {
-                return false
+            if (val === '') {
+                update(() => {
+                    self.sales_person_options = [];
+                })
+                return
             }
+            self.searchPartyList(val.toLowerCase(), "SalesRepresentative").then(function(resp){
+                update(() => {
+                    self.sales_person_options = resp;
+                })
+            });
+        },
+        filterFnCurrency(val, update, abort) {
+            let self = this;
+            if (val === '') {
+                update(() => {
+                  this.currency_options = self.currency_options_master
+                })
+            return
+            }
+            update(() => {
+              const needle = val.toLowerCase()
+              this.currency_options = self.currency_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+            })
         },
         onPageChange (props) {
             let self = this;
@@ -329,8 +484,7 @@ module.exports = {
             if (self.filter_params) {
                 var allParams = JSON.parse(JSON.stringify(self.filter_params));
                 if (Object.keys(self.filter_params).indexOf("roleTypeId") === -1) {
-                    allParams["roleTypeId"] = "Account";
-                    self.mdl_filter_role = {"label":"Sales Account","value":"Account"};
+                    allParams["roleTypeId"] = "Contact";
                 }
                 allParams["pageIndex"] = page-1;
                 allParams["pageSize"] = fetchCount;
@@ -338,17 +492,20 @@ module.exports = {
             }
             else {
                 var allParams = $.extend({pageIndex: page-1, pageSize: fetchCount ,moquiSessionToken:self.$root.moquiSessionToken }, {});
-                allParams["roleTypeId"] = "Account";
+                allParams["roleTypeId"] = "Contact";
             }
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getAllAccounts", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:async function(resp) {
                     self.pagination.rowsNumber = resp.documentListCount;
                     self.account_list = await Promise.all(resp.documentList.map(async function(item){
-                        if (item.toRelationships && self.checkSalesPerson(item.toRelationships)) {
-                            await self.getAllSalesPerson(item.toRelationships).then(function(resp){
-                                item.sales_person_list = resp.spList;
-                              }, Promise.resolve([]))
+                        if (item.contactMechs) {
+                            item.contactMechs = item.contactMechs.filter(function(item){
+                                return item.contactMechPurposeId.toLowerCase().includes('email');
+                            })
                         }
+                        await self.getRelatedAccount(item.accountPartyId).then(function(resp){
+                                item["account_name"] = resp.party.organizationName;
+                              }, Promise.resolve([]))
                         return item;
                     }));
                     self.pagination.page = resp.documentListPageIndex+1;
@@ -358,25 +515,36 @@ module.exports = {
                 }
             });
         },
-        addNewSalesAccount() {
+        addNewOpportunity() {
             let self = this;
-              var allParams = $.extend({organizationName: self.new_sales_account_name,
-                                      moquiSessionToken:self.$root.moquiSessionToken }, {});
-              $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/createNewSalesAccount", headers:{Accept:'application/json'}, data:allParams,
-                  error:moqui.handleAjaxError, success:function(resp) {
-                      self.new_sales_account_name = "";
-                      self.add_new_sales_account = false;
+              var allParams = $.extend({moquiSessionToken:self.$root.moquiSessionToken }, {});
+              allParams["accountPartyId"] = self.new_sales_contact_account.value;
+              allParams["currencyUomId"] = self.new_uom.uomId;
+              allParams["estimatedAmount"] = self.new_opp_amount;
+              allParams["estimatedCloseDate"] = self.close_date;
+              allParams["partyId"] = self.new_sales_person ? self.new_sales_person.value : null;
+              allParams["opportunityName"] = self.opportunity_name;
+              allParams["description"] = self.description;
+              $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/opportunity/create", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                      self.add_new_opportunity = false;
+                      self.opportunity_name = "";
+                      self.description = "";
+                      self.new_opp_amount = "";
+                      self.close_date = null;
+                      self.new_sales_person = null;
+                      self.new_sales_contact_account = null;
                       setTimeout( () => {
-                        self.onPageChange({
-                          pagination: self.pagination,
-                        });
+                          self.onPageChange({
+                             pagination: self.pagination,
+                          });
                       }, 900 );
                       self.$q.notify({
-                        message: 'New sales account created successfully.',
+                        message: 'New opportunity created successfully.',
                         position: 'bottom-left',
                       });
-                  }
-              });
+                    }
+                });
         },
         formatDate (dt) {
             if (dt) {
@@ -384,28 +552,15 @@ module.exports = {
                 return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0');
             }
         },
-          filterFnRole (val, update) {
-            let self = this;
-              if (val === '') {
-                update(() => {
-                  this.role_options = self.role_options_master
-                })
-                return
-              }
-              update(() => {
-              const needle = val.toLowerCase()
-              this.role_options = self.role_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
-            })
-          },
           filterFnOrderBy (val, update) {
             let self = this;
-              if (val === '') {
+            if (val === '') {
                 update(() => {
                   this.orderby_options = self.orderby_options_master
                 })
-                return
-              }
-              update(() => {
+            return
+            }
+            update(() => {
               const needle = val.toLowerCase()
               this.orderby_options = self.orderby_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
             })
@@ -415,9 +570,6 @@ module.exports = {
             self.filter_params = {};
             if (self.mdl_filter_sales_person) {
                 self.filter_params["partyId"] = self.mdl_filter_sales_person.partyId;
-            }
-            if (self.mdl_filter_role) {
-                self.filter_params["roleTypeId"] = self.mdl_filter_role.value;
             }
             if (self.mdl_filter_account) {
                 self.filter_params["organizationName"] = self.mdl_filter_account;
@@ -440,7 +592,6 @@ module.exports = {
         resetFind() {
             let self = this;
             self.mdl_filter_sales_person = null;
-            self.mdl_filter_role = null;
             self.mdl_filter_account = null;
             self.mdl_filter_order_by = null;
             self.filter_params = {};
@@ -479,10 +630,26 @@ module.exports = {
               }
               return Math.floor(seconds) + " second(s) ago";
         },
+        getUOM () {
+            var self = this;
+            var allParms = { moquiSessionToken:self.$root.moquiSessionToken };
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getUOM", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.currency_options_master = resp.statusList.map(function(item){
+                        item.uom_label = item.description + " [" + item.uomId + "]";
+                        return item;
+                    });
+                    self.currency_options = JSON.parse(JSON.stringify(self.currency_options_master));
+                    self.new_uom = self.currency_options.find(function(item){
+                        return item.uomId === "USD"
+                    });
+                }
+            });
+        },
         getSavedFinds () {
             var self = this;
-            var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Account/FindAccount.xml.form_list$AccountList",
-                moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList",
+                    moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/saved_finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.saved_find_list = resp.savedFindList;
@@ -490,10 +657,20 @@ module.exports = {
                 }
             });
         },
+        searchPartyList (search_keyword, role_type) {
+            var self = this;
+            var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            allParms["hasAllParms"] = true;
+            allParms["pageIndex"] = 0;
+            allParms["term"] = search_keyword;
+            allParms["roleTypeId"] = role_type;
+            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError
+            });
+        },
         searchSavedFind(selected_item) {
             let self = this;
             self.mdl_filter_sales_person = null;
-            self.mdl_filter_role = null;
             self.mdl_filter_account = null;
             self.mdl_filter_order_by = null;
             self.filter_params = {};
@@ -505,16 +682,7 @@ module.exports = {
                 selected_item.fieldList.map(function(item){
                     if(item.fieldOperator == 'equals')
                     {
-                        if(item.fieldName=='roleTypeId')
-                        {
-                            let filtered_roles = self.role_options_master.filter(function(item_role){ return item_role.value == item.fieldValue});
-                            if(filtered_roles.length > 0)
-                            {
-                                self.mdl_filter_role = filtered_roles[0];
-                            }
-                            self.filter_params[item.fieldName] = item.fieldValue;
-                        }
-                        else if(item.fieldName=='organizationName')
+                        if(item.fieldName=='organizationName')
                         {
                             self.mdl_filter_account = item.fieldValue;
                             self.filter_params[item.fieldName] = item.fieldValue;
@@ -568,14 +736,11 @@ module.exports = {
             }
 
             var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
-             formLocation: 'component://Sales/screen/Sales/Account/FindAccount.xml.form_list$AccountList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
+             formLocation: 'component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_sales_person) {
                         vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.partyId);
-                    }
-                    if (vm.mdl_filter_role) {
-                        vm.storeSavedFindsFields(resp.formListFindId, "roleTypeId", vm.mdl_filter_role.value);
                     }
                     if (vm.mdl_filter_account) {
                         vm.storeSavedFindsFields(resp.formListFindId, "organizationName", vm.mdl_filter_account);
@@ -596,23 +761,16 @@ module.exports = {
 
             var allParms = $.extend({ formListFindId: formListFindId, fieldName: fieldName, fieldValue: fieldValue,
              fieldOperator: "equals" ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds_fields", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds_fields", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
 
                 }
             });
         },
-        async getAllSalesPerson(lst) {
+        async getRelatedAccount(partyId) {
             var vm = this;
-            let input_party_ids = [];
-            lst.forEach(function(item){
-                if (item.fromRoleTypeId === 'SalesRepresentative') {
-                    input_party_ids.push(parseInt(item.fromPartyId));
-                }
-                return item;
-            });
-            var allParms = $.extend({ partyIdList: JSON.stringify(input_party_ids), moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getAllSalesPerson", headers:{Accept:'application/json'}, data:allParms,
+            var allParms = $.extend({ partyId: partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyDetail", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError
             });
         }
@@ -621,6 +779,7 @@ module.exports = {
         this.onPageChange({
           pagination: this.pagination,
         });
+        this.getUOM();
         this.getSavedFinds();
         //this.storeSavedFinds();
     }

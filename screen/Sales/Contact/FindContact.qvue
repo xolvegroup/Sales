@@ -286,7 +286,6 @@
 module.exports = {
     data: function () {
         return {
-            logged_in_user: {},
             account_list: [],
             new_sales_contact_account: "",
             new_sales_contact_fname: "",
@@ -447,7 +446,7 @@ module.exports = {
               }
               update(() => {
               const needle = val.toLowerCase()
-              this.orderby_options = self.orderby_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+              this.orderby_options = self.orderby_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
             })
           },
         findOptions() {
@@ -514,15 +513,6 @@ module.exports = {
                 return Math.floor(interval) + " minute(s) ago";
               }
               return Math.floor(seconds) + " second(s) ago";
-        },
-        fetchLoggedInUser() {
-            let self = this;
-            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/wm/loggedInUser", headers:{Accept:'application/json'}, data:allParams,
-                error:moqui.handleAjaxError, success:function(resp) {
-                    self.logged_in_user = resp.loggedInUser;
-                }
-            });
         },
         getSavedFinds () {
             var self = this;
@@ -615,7 +605,7 @@ module.exports = {
 
             var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
              formLocation: 'component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_sales_person) {
                         vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.partyId);
@@ -639,7 +629,7 @@ module.exports = {
 
             var allParms = $.extend({ formListFindId: formListFindId, fieldName: fieldName, fieldValue: fieldValue,
              fieldOperator: "equals" ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds_fields", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds_fields", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
 
                 }
@@ -654,7 +644,6 @@ module.exports = {
         }
     },
     created: function () {
-        this.fetchLoggedInUser();
         this.onPageChange({
           pagination: this.pagination,
         });

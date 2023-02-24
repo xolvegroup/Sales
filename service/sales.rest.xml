@@ -68,6 +68,12 @@ along with this software (see the LICENSE.md file). If not, see
     <resource name="saved_finds" require-authentication="anonymous-view">
         <method type="get"><service name="sales.SalesServices.get#SavedFinds"/></method>
     </resource>
+    <resource name="add_saved_finds" require-authentication="anonymous-all">
+        <method type="post"><service name="sales.SalesServices.post#SavedFinds"/></method>
+    </resource>
+    <resource name="add_saved_finds_fields" require-authentication="anonymous-all">
+        <method type="post"><service name="sales.SalesServices.post#SavedFindsFields"/></method>
+    </resource>
     <resource name="getPartyContactInfoList" require-authentication="anonymous-view">
         <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfoList"/></method>
     </resource>
@@ -142,5 +148,14 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="add" require-authentication="anonymous-all">
             <method type="post"><service name="mantle.sales.AccountServices.add#Contact"/></method>
         </resource>
+    </resource>
+    <resource name="opportunity" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.search#Opportunity"/></method>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesServices.create#Opportunity"/></method>
+        </resource>
+    </resource>
+    <resource name="getUOM" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.get#UOM"/></method>
     </resource>
 </resource>
