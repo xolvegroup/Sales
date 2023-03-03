@@ -48,7 +48,7 @@
                     <div class="col-12 q-pb-lg" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-workEffortId' && mdl_filter_order_by !== null)">
                            <div class="row">
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_sales_person">
-                                    <span class="text-subtitle2">User : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_sales_person.userFullName }}</span>
+                                    <span class="text-subtitle2">User : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_sales_person.label }}</span>
                                 </div>
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_role">
                                     <span class="text-subtitle2">Role : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_role.label }}</span>
@@ -414,7 +414,7 @@ module.exports = {
             let self = this;
             self.filter_params = {};
             if (self.mdl_filter_sales_person) {
-                self.filter_params["partyId"] = self.mdl_filter_sales_person.partyId;
+                self.filter_params["partyId"] = self.mdl_filter_sales_person.value;
             }
             if (self.mdl_filter_role) {
                 self.filter_params["roleTypeId"] = self.mdl_filter_role.value;
@@ -572,7 +572,7 @@ module.exports = {
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_sales_person) {
-                        vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.partyId);
+                        vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.value);
                     }
                     if (vm.mdl_filter_role) {
                         vm.storeSavedFindsFields(resp.formListFindId, "roleTypeId", vm.mdl_filter_role.value);

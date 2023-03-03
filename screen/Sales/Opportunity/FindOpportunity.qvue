@@ -147,11 +147,17 @@
                 <div class="row q-mt-md q-col-gutter-md detail_cls">
                     <div class="col-12 q-pb-lg" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-workEffortId' && mdl_filter_order_by !== null)">
                            <div class="row">
-                                <div class="col-6 q-pb-sm" v-if="mdl_filter_sales_person">
-                                    <span class="text-subtitle2">User : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_sales_person.userFullName }}</span>
-                                </div>
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_account">
-                                    <span class="text-subtitle2">Sales Account : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_account }}</span>
+                                    <span class="text-subtitle2">Sales Account : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_account.label }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_opportunity">
+                                    <span class="text-subtitle2">Opportunity : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_opportunity }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_close_date">
+                                    <span class="text-subtitle2">Close Date : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_close_date }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_sales_person">
+                                    <span class="text-subtitle2">Close Date : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_sales_person.label }}</span>
                                 </div>
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_order_by">
                                     <span class="text-subtitle2">Order By : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_order_by.label }}</span>
@@ -201,7 +207,7 @@
                     </div>
                 </div>
                 <div class="row q-mt-md q-col-gutter-md detail_cls">
-                    <!--<div class="col-12">
+                    <div class="col-12">
                                     <q-select
                                         dense
                                         :class="!$q.dark.isActive?'bg-white':''"
@@ -223,9 +229,49 @@
                                             </q-item>
                                         </template>
                                     </q-select>
-                                    <q-input  v-model="mdl_filter_account" outlined label="Sales Account" style="margin:0;padding:0;background-color:white;" dense>
+                    </div>
+                    <div class="col-12">
+                            <q-input  v-model="mdl_filter_opportunity" outlined label="Opportunity" style="margin:0;padding:0;background-color:white;" dense>
                                     </q-input>
-                    </div>-->
+                    </div>
+                    <div class="col-12">
+                            <q-input class="bg-white" label="Close Date" outlined dense v-model="mdl_filter_close_date">
+                                <template v-slot:append>
+                                  <q-icon name="event" class="cursor-pointer">
+                                    <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                      <q-date mask="YYYY-MM-DD" v-model="mdl_filter_close_date">
+                                        <div class="row items-center justify-end">
+                                          <q-btn v-close-popup label="Close" color="primary" flat />
+                                        </div>
+                                      </q-date>
+                                    </q-popup-proxy>
+                                  </q-icon>
+                                </template>
+                              </q-input>
+                    </div>
+                    <div class="col-12">
+                        <q-select
+                            dense
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            label="Sales Person"
+                            outlined
+                            v-model="mdl_filter_sales_person"
+                            use-input
+                            input-debounce="700"
+                            option-value="value"
+                            option-label="label"
+                            :options="sales_person_options"
+                            @filter="filterFnSalesPerson"
+                            >
+                            <template v-slot:no-option>
+                                <q-item>
+                                  <q-item-section class="text-grey">
+                                    No results
+                                  </q-item-section>
+                                </q-item>
+                            </template>
+                        </q-select>
+                    </div>
                     <div class="col-12">
                         <q-select
                             label="Order By"
@@ -326,6 +372,11 @@
                                     <a class="text-weight-medium" :href="'ViewContact?partyId=' + props.row.partyId">{{props.row.combinedName}}</a>
                                   </q-td>
                                 </template>
+                                <template v-slot:body-cell-opportunity="props">
+                                  <q-td :props="props">
+                                    <a class="text-weight-medium" :href="'ViewOpportunity?salesOpportunityId=' + props.row._id">{{props.row.name}}</a>
+                                  </q-td>
+                                </template>
                                 <template v-slot:body-cell-email="props">
                                   <q-td :props="props">
                                       <span>
@@ -342,7 +393,7 @@
                                 </template>
                                 <template v-slot:body-cell-closedate="props">
                                   <q-td :props="props">
-                                    {{formatDate(props.row.estimatedCloseDate)}}
+                                    {{`formatDate`(props.row.estimatedCloseDate)}}
                                   </q-td>
                                 </template>
                             </q-table>
@@ -394,15 +445,33 @@ module.exports = {
             open_find_options_drawer: false,
             mdl_filter_sales_person:null,
             mdl_filter_account:null,
+            mdl_filter_opportunity:"",
+            mdl_filter_close_date:null,
             sales_person_options_master: [],
             sales_person_options: [],
             currency_options_master: [],
             currency_options: [],
             mdl_filter_order_by:null,
-            orderby_options_master: [{"label":"Party Name (Asc)","value":"combinedname"},
-                                     {"label":"Party Name (Desc)","value":"-combinedname"}],
-            orderby_options: [{"label":"Party Name (Asc)","value":"combinedname"},
-                                     {"label":"Party Name (Desc)","value":"-combinedname"}],
+            orderby_options_master: [{"label":"Sales Account (Asc)","value":"accountPartyId"},
+                                     {"label":"Sales Account (Desc)","value":"-accountPartyId"},
+                                     {"label":"Opportunity (Asc)","value":"name"},
+                                     {"label":"Opportunity (Desc)","value":"-name"},
+                                     {"label":"Amount (Asc)","value":"estimatedAmount"},
+                                     {"label":"Amount (Desc)","value":"-estimatedAmount"},
+                                     {"label":"Close Date (Asc)","value":"estimatedCloseDate"},
+                                     {"label":"Close Date (Desc)","value":"-estimatedCloseDate"},
+                                     {"label":"Sales Person (Asc)","value":"partyId"},
+                                     {"label":"Sales Person (Desc)","value":"-partyId"}],
+            orderby_options: [{"label":"Sales Account (Asc)","value":"accountPartyId"},
+                                     {"label":"Sales Account (Desc)","value":"-accountPartyId"},
+                                     {"label":"Opportunity (Asc)","value":"name"},
+                                     {"label":"Opportunity (Desc)","value":"-name"},
+                                     {"label":"Amount (Asc)","value":"estimatedAmount"},
+                                     {"label":"Amount (Desc)","value":"-estimatedAmount"},
+                                     {"label":"Close Date (Asc)","value":"estimatedCloseDate"},
+                                     {"label":"Close Date (Desc)","value":"-estimatedCloseDate"},
+                                     {"label":"Sales Person (Asc)","value":"partyId"},
+                                     {"label":"Sales Person (Desc)","value":"-partyId"}],
             open_saved_finds_drawer: false,
             saved_find_list: [],
             save_new_find: '',
@@ -483,16 +552,12 @@ module.exports = {
             const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage;
             if (self.filter_params) {
                 var allParams = JSON.parse(JSON.stringify(self.filter_params));
-                if (Object.keys(self.filter_params).indexOf("roleTypeId") === -1) {
-                    allParams["roleTypeId"] = "Contact";
-                }
                 allParams["pageIndex"] = page-1;
                 allParams["pageSize"] = fetchCount;
                 allParams["moquiSessionToken"] = self.$root.moquiSessionToken;
             }
             else {
                 var allParams = $.extend({pageIndex: page-1, pageSize: fetchCount ,moquiSessionToken:self.$root.moquiSessionToken }, {});
-                allParams["roleTypeId"] = "Contact";
             }
             $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:async function(resp) {
@@ -569,10 +634,16 @@ module.exports = {
             let self = this;
             self.filter_params = {};
             if (self.mdl_filter_sales_person) {
-                self.filter_params["partyId"] = self.mdl_filter_sales_person.partyId;
+                self.filter_params["partyId"] = self.mdl_filter_sales_person.value;
             }
             if (self.mdl_filter_account) {
-                self.filter_params["organizationName"] = self.mdl_filter_account;
+                self.filter_params["accountPartyId"] = self.mdl_filter_account.value;
+            }
+            if (self.mdl_filter_opportunity) {
+                self.filter_params["name"] = self.mdl_filter_opportunity;
+            }
+            if (self.mdl_filter_close_date) {
+                self.filter_params["estimatedCloseDate"] = self.mdl_filter_close_date;
             }
             if (self.mdl_filter_order_by) {
                 if (self.mdl_filter_order_by.value.startsWith("-")) {
@@ -593,6 +664,8 @@ module.exports = {
             let self = this;
             self.mdl_filter_sales_person = null;
             self.mdl_filter_account = null;
+            self.mdl_filter_opportunity = "";
+            self.mdl_filter_close_date = null;
             self.mdl_filter_order_by = null;
             self.filter_params = {};
             self.mdl_select_find = null;
@@ -648,7 +721,7 @@ module.exports = {
         },
         getSavedFinds () {
             var self = this;
-            var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList",
+            var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Opportunity/FindOpportunity.xml.form_list$OpportunityList",
                     moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/saved_finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
@@ -672,6 +745,8 @@ module.exports = {
             let self = this;
             self.mdl_filter_sales_person = null;
             self.mdl_filter_account = null;
+            self.mdl_filter_opportunity = null;
+            self.mdl_filter_close_date = null;
             self.mdl_filter_order_by = null;
             self.filter_params = {};
 
@@ -682,9 +757,24 @@ module.exports = {
                 selected_item.fieldList.map(function(item){
                     if(item.fieldOperator == 'equals')
                     {
-                        if(item.fieldName=='organizationName')
+                        if(item.fieldName=='accountPartyId')
                         {
-                            self.mdl_filter_account = item.fieldValue;
+                            self.searchPartyList(item.fieldValue, "Account").then(function(resp){
+                                    if(resp.length > 0)
+                                    {
+                                        self.mdl_filter_account = resp[0];;
+                                    }
+                              });
+                              self.filter_params[item.fieldName] = item.fieldValue;
+                        }
+                        else if(item.fieldName=='name')
+                        {
+                            self.mdl_filter_opportunity = item.fieldValue;
+                            self.filter_params[item.fieldName] = item.fieldValue;
+                        }
+                        else if(item.fieldName=='estimatedCloseDate')
+                        {
+                            self.mdl_filter_close_date = item.fieldValue;
                             self.filter_params[item.fieldName] = item.fieldValue;
                         }
                     }
@@ -736,14 +826,20 @@ module.exports = {
             }
 
             var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
-             formLocation: 'component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+             formLocation: 'component://Sales/screen/Sales/Opportunity/FindOpportunity.xml.form_list$OpportunityList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_sales_person) {
-                        vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.partyId);
+                        vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.value);
                     }
                     if (vm.mdl_filter_account) {
-                        vm.storeSavedFindsFields(resp.formListFindId, "organizationName", vm.mdl_filter_account);
+                        vm.storeSavedFindsFields(resp.formListFindId, "accountPartyId", vm.mdl_filter_account.value);
+                    }
+                    if (vm.mdl_filter_opportunity) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "name", vm.mdl_filter_opportunity);
+                    }
+                    if (vm.mdl_filter_close_date) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "estimatedCloseDate", vm.mdl_filter_close_date);
                     }
                     setTimeout( () => {
                         vm.getSavedFinds();

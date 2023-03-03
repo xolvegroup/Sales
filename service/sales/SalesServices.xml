@@ -339,6 +339,10 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="accountPartyId"/>
             <parameter name="name"/>
             <parameter name="partyId"/>
+            <parameter name="orderByField"/>
+            <parameter name="pageIndex" type="Integer" default="0"/>
+            <parameter name="pageSize" type="Integer" default="20"/>
+            <parameter name="pageNoLimit" type="Boolean" default="false"/>
         </in-parameters>
         <out-parameters>
             <parameter name="queryString"/>
@@ -383,7 +387,9 @@ along with this software (see the LICENSE.md file). If not, see
             ]]></script>
             <if condition="!queryString"><set field="queryString" value="*:*"/></if>
                 <!--<service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context" in-map="context"/>-->
-                <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
+            <set field="orderByFields" from="orderByField ? [orderByField.replace('combinedName', 'combinedName.keyword').replace('username', 'userAccounts.username.keyword')] : null"/>
+
+            <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
                               in-map="[indexName:indexName, documentType:documentType, queryString:queryString,orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
                              pageIndex:pageIndex, pageSize:pageSize, pageNoLimit:pageNoLimit]"/>
                 <!-- The following call is taken from PartyServices search#Party.
@@ -524,6 +530,40 @@ along with this software (see the LICENSE.md file). If not, see
                             note_item.put("added_by",assignedUserFirstName + ' ' + assignedUserLastName)
                         </script>
                     </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="get" noun="OpportunityNoteList">
+        <in-parameters>
+            <parameter name="salesOpportunityId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="opportunityNoteList"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityNote" list="tmpOpportunityNoteList">
+                <econdition field-name="salesOpportunityId"/>
+                <order-by field-name="-noteDate"/>
+            </entity-find>
+            <set field="opportunityNoteList" from="[]"/>
+            <if condition="tmpOpportunityNoteList">
+                <iterate list="tmpOpportunityNoteList" entry="note">
+                    <set field="note_item" from="new HashMap()"/>
+                    <script>
+                        note_item.putAll(note)
+                        opportunityNoteList.add(note_item)
+                    </script>
+<!--                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="partyDetail">-->
+<!--                        <field-map field-name="partyId" from="note.userId"/>-->
+<!--                    </entity-find-one>-->
+<!--                    <if condition="partyDetail">-->
+<!--                        <set field="assignedUserFirstName" from="partyDetail.firstName"/>-->
+<!--                        <set field="assignedUserLastName" from="partyDetail.lastName"/>-->
+<!--                        <script>-->
+<!--                            note_item.put("added_by",assignedUserFirstName + ' ' + assignedUserLastName)-->
+<!--                        </script>-->
+<!--                    </if>-->
                 </iterate>
             </if>
         </actions>
@@ -768,6 +808,57 @@ along with this software (see the LICENSE.md file). If not, see
                 <econdition field-name="uomTypeEnumId" value="UT_CURRENCY_MEASURE"/>
                 <order-by field-name="description"/>
             </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="OpportunityTasks">
+        <in-parameters>
+            <parameter name="salesOpportunityId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="weList"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="SalesOpportunityWorkEffort" list="tmpWeList">
+                <econdition field-name="salesOpportunityId"/>
+            </entity-find>
+            <set field="weList" from="[]"/>
+            <if condition="tmpWeList">
+                <iterate list="tmpWeList" entry="we">
+                    <set field="item" from="new HashMap()"/>
+                    <script>
+                        item.putAll(we)
+                        weList.add(item)
+                    </script>
+                    <entity-find-one entity-name="WorkEffort" value-field="we_obj">
+                        <field-map field-name="workEffortId" from="we.workEffortId"/>
+                    </entity-find-one>
+                    <if condition="we_obj">
+                        <set field="workEffortName" from="we_obj.workEffortName"/>
+                        <set field="statusId" from="we_obj.statusId"/>
+                        <set field="description" from="we_obj.description"/>
+                        <set field="estimatedCompletionDate" from="we_obj.estimatedCompletionDate"/>
+                        <script>
+                            item.put("workEffortName",workEffortName)
+                            item.put("statusId",statusId)
+                            item.put("description",description)
+                            item.put("estimatedCompletionDate",estimatedCompletionDate)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="get" noun="SingleSalesOpportunity">
+        <in-parameters>
+            <parameter name="salesOpportunityId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="opportunity" />
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.sales.opportunity.SalesOpportunity" value-field="opportunity">
+                <econdition field-name="salesOpportunityId" from="salesOpportunityId"/>
+            </entity-find-one>
         </actions>
     </service>
 </services>

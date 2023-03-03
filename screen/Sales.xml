@@ -4,6 +4,7 @@
     <subscreens default-item="Account">
         <subscreens-item name="ViewAccount" menu-title="View Account" menu-index="101" location="component://Sales/screen/Sales/ViewAccount.xml" menu-include="false"/>
         <subscreens-item name="ViewContact" menu-title="View Contact" menu-index="101" location="component://Sales/screen/Sales/ViewContact.xml" menu-include="false"/>
+        <subscreens-item name="ViewOpportunity" menu-title="View Opportunity" menu-index="101" location="component://Sales/screen/Sales/ViewOpportunity.xml" menu-include="false"/>
     </subscreens>
     <widgets>
         <subscreens-panel id="SalesPanel" type="popup"/>

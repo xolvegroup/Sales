@@ -154,6 +154,21 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="create" require-authentication="anonymous-all">
             <method type="post"><service name="sales.SalesServices.create#Opportunity"/></method>
         </resource>
+        <resource name="create_note" require-authentication="anonymous-all">
+            <method type="post"><service name="create#mantle.sales.opportunity.SalesOpportunityNote"/></method>
+        </resource>
+        <resource name="update_note" require-authentication="anonymous-all">
+            <method type="post"><service name="update#mantle.sales.opportunity.SalesOpportunityNote"/></method>
+        </resource>
+        <resource name="notes" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.get#OpportunityNoteList"/></method>
+        </resource>
+        <resource name="single_opportunity" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.get#SingleSalesOpportunity"/></method>
+        </resource>
+        <resource name="tasks" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.get#OpportunityTasks"/></method>
+        </resource>
     </resource>
     <resource name="getUOM" require-authentication="anonymous-view">
         <method type="get"><service name="sales.SalesServices.get#UOM"/></method>
