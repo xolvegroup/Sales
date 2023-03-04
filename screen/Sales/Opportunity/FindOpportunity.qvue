@@ -393,7 +393,7 @@
                                 </template>
                                 <template v-slot:body-cell-closedate="props">
                                   <q-td :props="props">
-                                    {{`formatDate`(props.row.estimatedCloseDate)}}
+                                    {{formatDate(props.row.estimatedCloseDate)}}
                                   </q-td>
                                 </template>
                             </q-table>
