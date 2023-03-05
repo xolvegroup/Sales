@@ -340,7 +340,7 @@ module.exports = {
                 var allParams = $.extend({pageIndex: page-1, pageSize: fetchCount ,moquiSessionToken:self.$root.moquiSessionToken }, {});
                 allParams["roleTypeId"] = "Account";
             }
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getAllAccounts", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/account", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:async function(resp) {
                     self.pagination.rowsNumber = resp.documentListCount;
                     self.account_list = await Promise.all(resp.documentList.map(async function(item){
@@ -362,7 +362,7 @@ module.exports = {
             let self = this;
               var allParams = $.extend({organizationName: self.new_sales_account_name,
                                       moquiSessionToken:self.$root.moquiSessionToken }, {});
-              $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/createNewSalesAccount", headers:{Accept:'application/json'}, data:allParams,
+              $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/account/create", headers:{Accept:'application/json'}, data:allParams,
                   error:moqui.handleAjaxError, success:function(resp) {
                       self.new_sales_account_name = "";
                       self.add_new_sales_account = false;
@@ -483,7 +483,7 @@ module.exports = {
             var self = this;
             var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Account/FindAccount.xml.form_list$AccountList",
                 moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/saved_finds", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.saved_find_list = resp.savedFindList;
                     self.select_find_options = resp.savedFindList;
@@ -569,7 +569,7 @@ module.exports = {
 
             var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
              formLocation: 'component://Sales/screen/Sales/Account/FindAccount.xml.form_list$AccountList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/add", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_sales_person) {
                         vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.value);
@@ -596,7 +596,7 @@ module.exports = {
 
             var allParms = $.extend({ formListFindId: formListFindId, fieldName: fieldName, fieldValue: fieldValue,
              fieldOperator: "equals" ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds_fields", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/addFields", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
 
                 }
@@ -612,7 +612,7 @@ module.exports = {
                 return item;
             });
             var allParms = $.extend({ partyIdList: JSON.stringify(input_party_ids), moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getAllSalesPerson", headers:{Accept:'application/json'}, data:allParms,
+            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/account/getAllSalesPerson", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError
             });
         }

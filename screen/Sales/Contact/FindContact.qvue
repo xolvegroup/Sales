@@ -518,7 +518,7 @@ module.exports = {
             var self = this;
             var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList",
                     moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/saved_finds", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.saved_find_list = resp.savedFindList;
                     self.select_find_options = resp.savedFindList;
@@ -532,7 +532,7 @@ module.exports = {
             allParms["pageIndex"] = 0;
             allParms["term"] = search_keyword;
             allParms["roleTypeId"] = "Account";
-            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
+            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError
             });
         },
@@ -605,7 +605,7 @@ module.exports = {
 
             var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
              formLocation: 'component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/add", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_sales_person) {
                         vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.value);
@@ -629,7 +629,7 @@ module.exports = {
 
             var allParms = $.extend({ formListFindId: formListFindId, fieldName: fieldName, fieldValue: fieldValue,
              fieldOperator: "equals" ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/add_saved_finds_fields", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/addFields", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
 
                 }

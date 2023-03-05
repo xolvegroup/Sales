@@ -706,7 +706,7 @@ module.exports = {
         getUOM () {
             var self = this;
             var allParms = { moquiSessionToken:self.$root.moquiSessionToken };
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getUOM", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getUOM", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.currency_options_master = resp.statusList.map(function(item){
                         item.uom_label = item.description + " [" + item.uomId + "]";
@@ -723,7 +723,7 @@ module.exports = {
             var self = this;
             var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Opportunity/FindOpportunity.xml.form_list$OpportunityList",
                     moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/saved_finds", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.saved_find_list = resp.savedFindList;
                     self.select_find_options = resp.savedFindList;
@@ -737,7 +737,7 @@ module.exports = {
             allParms["pageIndex"] = 0;
             allParms["term"] = search_keyword;
             allParms["roleTypeId"] = role_type;
-            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
+            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError
             });
         },
@@ -827,7 +827,7 @@ module.exports = {
 
             var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
              formLocation: 'component://Sales/screen/Sales/Opportunity/FindOpportunity.xml.form_list$OpportunityList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/add", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_sales_person) {
                         vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.value);
@@ -857,7 +857,7 @@ module.exports = {
 
             var allParms = $.extend({ formListFindId: formListFindId, fieldName: fieldName, fieldValue: fieldValue,
              fieldOperator: "equals" ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/wm/add_saved_finds_fields", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/addFields", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
 
                 }
@@ -866,7 +866,7 @@ module.exports = {
         async getRelatedAccount(partyId) {
             var vm = this;
             var allParms = $.extend({ partyId: partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyDetail", headers:{Accept:'application/json'}, data:allParms,
+            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getDetail", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError
             });
         }

@@ -801,7 +801,7 @@ module.exports = {
         getStatuses () {
             var self = this;
             var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/statuses", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks/statuses", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.status_options_master = resp.statusList;
                     self.status_options = resp.statusList;
@@ -811,7 +811,7 @@ module.exports = {
         getOrderStatuses () {
             var self = this;
             var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getOrderStatuses", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/account/getOrderStatuses", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.order_status_options = resp.statusList;
                     self.getSalesOrders();
@@ -824,7 +824,7 @@ module.exports = {
               get: (searchParams, prop) => searchParams.get(prop),
             });
             var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyDetail", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getDetail", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.current_party = resp.party;
                 }
@@ -882,7 +882,7 @@ module.exports = {
             allParams["partyId"] = params.partyId;
             allParams["contactMechPurposeId"] = self.item_to_delete.telecomContactMechPurposeId || self.item_to_delete.emailContactMechPurposeId || self.item_to_delete.webContactMechPurposeId;
             allParams["contactMechId"] = self.item_to_delete.telecomContactMechId || self.item_to_delete.emailContactMechId || self.item_to_delete.webContactMechId;
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/removePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/removeContactInfo", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.item_to_delete = {};
                     self.delete_contact = false;
@@ -902,7 +902,7 @@ module.exports = {
             var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
             allParams["partyId"] = params.partyId;
             allParams["noteText"] = window.add_note_editor.getData();
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/createPartyNote", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/createNote", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.new_note = "";
                     self.add_note_modal = false;
@@ -924,7 +924,7 @@ module.exports = {
             allParams["accountPartyId"] = params.partyId;
             allParams["workEffortName"] = self.new_task_name;
             allParams["description"] = window.add_task_editor.getData();
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/createTask", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/tasks/create", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.new_note = "";
                     self.add_task_modal = false;
@@ -947,7 +947,7 @@ module.exports = {
             });
             self.note_edit_item["moquiSessionToken"] = self.$root.moquiSessionToken;
             self.note_edit_item["noteText"] = window.edit_note_editor.getData();
-            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/updatePartyNote", headers:{Accept:'application/json'}, data:self.note_edit_item,
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/updateNote", headers:{Accept:'application/json'}, data:self.note_edit_item,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.note_edit_item = {};
                     self.is_edit_note = false;
@@ -1017,7 +1017,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyContactInfoList", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getContactInfoList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         if (Object.keys(resp).indexOf("emailAddressList") > -1) {
                             self.emailAddressList = resp.emailAddressList;
@@ -1037,7 +1037,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPartyNoteList", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getNoteList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.partyNoteList = resp.partyNoteList;
                     }
@@ -1051,6 +1051,9 @@ module.exports = {
                 });
                 if (self.task_edit_item.estimatedCompletionDate){
                     self.edit_due_date = self.formatDate(self.task_edit_item.estimatedCompletionDate);
+                }
+                else {
+                    self.edit_due_date = null;
                 }
                 self.edit_task_modal = true;
             },
@@ -1067,7 +1070,10 @@ module.exports = {
                 if (self.edit_due_date) {
                     self.task_edit_item["estimatedCompletionDate"] = self.edit_due_date
                 }
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/updateTask", headers:{Accept:'application/json'}, data:self.task_edit_item,
+                else {
+                    self.task_edit_item["estimatedCompletionDate"] = null;
+                }
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/tasks/update", headers:{Accept:'application/json'}, data:self.task_edit_item,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.task_edit_item = {};
                         self.edit_task_modal = false;
@@ -1085,7 +1091,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/gatAllTask", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.task_list = resp.allTasks;
                     }
@@ -1094,7 +1100,7 @@ module.exports = {
             getPhoneOptions () {
                 var self = this;
                 var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getPhoneOptions", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getPhoneOptions", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.phone_purpose_options_master = JSON.parse(JSON.stringify(resp.phoneOptions));
                         self.phone_purpose_options = JSON.parse(JSON.stringify(resp.phoneOptions));
@@ -1107,7 +1113,7 @@ module.exports = {
             getWebOptions () {
                 var self = this;
                 var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getWebOptions", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getWebOptions", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.url_purpose_options_master = JSON.parse(JSON.stringify(resp.webOptions));
                         self.url_purpose_options = JSON.parse(JSON.stringify(resp.webOptions));
@@ -1120,7 +1126,7 @@ module.exports = {
             getEmailOptions () {
                 var self = this;
                 var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/getEmailOptions", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getEmailOptions", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.email_purpose_options_master = JSON.parse(JSON.stringify(resp.emailOptions));
                         self.email_purpose_options = JSON.parse(JSON.stringify(resp.emailOptions));
@@ -1136,7 +1142,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/getContactList", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/account/getContactList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.contact_list = resp.contactList;
                         self.contact_count = resp.relationshipCount;
@@ -1149,7 +1155,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/getSalesOpportunity", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/account/getSalesOpportunity", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.oppy_list = resp.oppyList;
                     }
@@ -1161,7 +1167,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/getSalesOrders", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/account/getSalesOrders", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.sales_orders = resp.orderList.map(function(item){
                             item["status_name"] = self.order_status_options.find(function(item_actual_status){
@@ -1188,7 +1194,7 @@ module.exports = {
                 allParams["areaCode"] = self.mdl_phone.areaCode;
                 allParams["contactNumber"] = self.mdl_phone.contactNumber;
                 allParams["telecomExtension"] = self.mdl_phone.telecomExtension;
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.mdl_phone = {};
                         self.add_phone_modal = false;
@@ -1209,7 +1215,7 @@ module.exports = {
                 allParams["contactNumber"] = self.edit_mdl_phone.telecomNumber.contactNumber;
                 allParams["telecomExtension"] = self.edit_mdl_phone.telecomPartyContactMech.extension;
                 allParams["telecomContactMechId"] = self.edit_mdl_phone.telecomContactMechId;
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.edit_mdl_phone = {};
                         self.edit_phone_modal = false;
@@ -1230,7 +1236,7 @@ module.exports = {
                 allParams["partyId"] = params.partyId;
                 allParams["webContactMechPurposeId"] = self.mdl_filter_url_purpose.contactMechPurposeId;
                 allParams["webAddress"] = self.mdl_web_url;
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.mdl_web_url = "";
                         self.add_url_modal = false;
@@ -1248,7 +1254,7 @@ module.exports = {
                 allParams["webContactMechPurposeId"] = self.edit_mdl_web_url.webContactMechPurposeId;
                 allParams["webAddress"] = self.edit_mdl_web_url.webAddress;
                 allParams["webContactMechId"] = self.edit_mdl_web_url.webContactMechId;
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.mdl_web_url = "";
                         self.edit_url_modal = false;
@@ -1269,7 +1275,7 @@ module.exports = {
                 allParams["partyId"] = params.partyId;
                 allParams["emailContactMechPurposeId"] = self.mdl_filter_email_purpose.contactMechPurposeId;
                 allParams["emailAddress"] = self.mdl_email;
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.mdl_email = "";
                         self.add_email_modal = false;
@@ -1287,7 +1293,7 @@ module.exports = {
                 allParams["emailContactMechPurposeId"] = self.mdl_filter_email_purpose.contactMechPurposeId;
                 allParams["emailAddress"] = self.edit_mdl_email.emailAddress;
                 allParams["emailContactMechId"] = self.edit_mdl_email.emailContactMechId;
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/storePartyContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.edit_mdl_email = {};
                         self.edit_email_modal = false;
