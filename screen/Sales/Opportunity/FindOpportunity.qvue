@@ -526,7 +526,7 @@ module.exports = {
             }
             update(() => {
               const needle = val.toLowerCase()
-              this.currency_options = self.currency_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+              this.currency_options = self.currency_options_master.filter(v => v.uom_label.toLowerCase().indexOf(needle) > -1)
             })
         },
         onPageChange (props) {

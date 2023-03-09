@@ -854,11 +854,74 @@ along with this software (see the LICENSE.md file). If not, see
         </in-parameters>
         <out-parameters>
             <parameter name="opportunity" />
+            <parameter name="stage" />
         </out-parameters>
         <actions>
             <entity-find-one entity-name="mantle.sales.opportunity.SalesOpportunity" value-field="opportunity">
+                <select-field field-name="lastUpdatedStamp,opportunityName,description,opportunityStageId,estimatedCloseDate,accountPartyId,currencyUomId,estimatedAmount,salesOpportunityId" />
                 <econdition field-name="salesOpportunityId" from="salesOpportunityId"/>
             </entity-find-one>
+            <entity-find-one entity-name="mantle.sales.opportunity.SalesOpportunityStage" value-field="stage">
+                <field-map field-name="opportunityStageId" from="opportunity.opportunityStageId"/>
+            </entity-find-one>
+        </actions>
+    </service>
+    <service verb="get" noun="OpportunityContacts">
+        <in-parameters>
+            <parameter name="salesOpportunityId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="contactList" />
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityParty" list="tmpContactList">
+                <econdition field-name="salesOpportunityId" from="salesOpportunityId"/>
+                <econdition field-name="roleTypeId" value="Contact"/>
+            </entity-find>
+            <set field="contactList" from="[]"/>
+            <if condition="tmpContactList">
+                <iterate list="tmpContactList" entry="ct">
+                    <set field="cnt" from="new HashMap()"/>
+                    <script>
+                        cnt.putAll(ct)
+                        contactList.add(cnt)
+                    </script>
+                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="contact_obj">
+                        <field-map field-name="partyId" from="ct.partyId"/>
+                    </entity-find-one>
+                    <if condition="contact_obj">
+                        <set field="first_name" from="contact_obj.firstName"/>
+                        <set field="last_name" from="contact_obj.lastName"/>
+                        <script>
+                            cnt.put("contact_person",first_name + ' ' + last_name)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="get" noun="OppContactOptions">
+        <in-parameters>
+            <parameter name="accountPartyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="contactList" />
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyFromAndRelationship" list="contactList">
+                <econdition field-name="toPartyId" from="accountPartyId"/>
+                <econdition field-name="fromRoleTypeId" value="Contact"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="StageOptions">
+        <out-parameters>
+            <parameter name="stageList" />
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityStage" list="stageList">
+                <order-by field-name="sequenceNum"/>
+            </entity-find>
         </actions>
     </service>
 </services>

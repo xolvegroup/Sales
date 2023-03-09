@@ -156,6 +156,9 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="create" require-authentication="anonymous-all">
             <method type="post"><service name="sales.SalesServices.create#Opportunity"/></method>
         </resource>
+        <resource name="update" require-authentication="anonymous-all">
+            <method type="post"><service name="update#mantle.sales.opportunity.SalesOpportunity"/></method>
+        </resource>
         <resource name="createNote" require-authentication="anonymous-all">
             <method type="post"><service name="create#mantle.sales.opportunity.SalesOpportunityNote"/></method>
         </resource>
@@ -173,6 +176,21 @@ along with this software (see the LICENSE.md file). If not, see
         </resource>
         <resource name="getUOM" require-authentication="anonymous-view">
             <method type="get"><service name="sales.SalesServices.get#UOM"/></method>
+        </resource>
+        <resource name="contacts" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.get#OpportunityContacts"/></method>
+        </resource>
+        <resource name="contactOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.get#OppContactOptions"/></method>
+        </resource>
+        <resource name="removeContact" require-authentication="anonymous-all">
+            <method type="post"><service name="delete#mantle.sales.opportunity.SalesOpportunityParty"/></method>
+        </resource>
+        <resource name="addParty" require-authentication="anonymous-all">
+            <method type="post"><service name="create#mantle.sales.opportunity.SalesOpportunityParty"/></method>
+        </resource>
+        <resource name="stageOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.get#StageOptions"/></method>
         </resource>
     </resource>
 </resource>
