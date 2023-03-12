@@ -587,7 +587,7 @@
                             :class="!$q.dark.isActive?'bg-white':''"
                             label="Sales Person"
                             outlined
-                            v-model="edit_opp_obj.edit_sales_person"
+                            v-model="edit_sales_person"
                             use-input
                             input-debounce="700"
                             option-value="value"
@@ -633,6 +633,7 @@ module.exports = {
             edit_opportunity: false,
             edit_opp_obj: {},
             edit_opp_account: null,
+            edit_sales_person: null,
             tab: 'Notes',
             edit_opp_amount: "",
             add_contact: false,
@@ -941,7 +942,7 @@ module.exports = {
                     else {
                         self.current_close_date_in_edit = null;
                     }
-                    self.edit_opp_obj.edit_sales_person = null;
+                    self.edit_sales_person = null;
                     self.searchPartyList(self.edit_opp_obj.accountPartyId, "Account").then(function(resp){
                         if(resp.length > 0)
                         {
@@ -1087,7 +1088,7 @@ module.exports = {
             self.note_edit_item["opportunityName"] = self.edit_opp_obj.opportunityName;
             self.note_edit_item["description"] = self.edit_opp_obj.description;
             self.note_edit_item["opportunityStageId"] = self.stage_in_edit.opportunityStageId;
-            self.note_edit_item["partyId"] = self.edit_opp_obj.edit_sales_person ? self.edit_opp_obj.edit_sales_person.value : null;
+            self.note_edit_item["partyId"] = self.edit_sales_person ? self.edit_sales_person.value : null;
 
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/opportunity/update", headers:{Accept:'application/json'}, data:self.note_edit_item,
                 error:moqui.handleAjaxError, success:function(resp) {
