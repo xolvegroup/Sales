@@ -25,7 +25,7 @@
                     </q-item-section>
 
                     <q-item-section>
-                        {{current_opportunity.estimatedAmount}}
+                        {{formatted_estimated_amount}}
                     </q-item-section>
                   </q-item>
                   <q-item style="min-height:unset" class="q-py-none q-px-sm">
@@ -57,6 +57,25 @@
                   </q-item>
               </q-list>
               </q-card-section>
+            </q-card>
+            <q-card flat bordered class="detail_cls my-card q-mt-md">
+                <q-card-section>
+                    <div class="text-h6"><span class="q-mt-sm inline-block">Sales Team</span> <q-btn @click="add_sales_person=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Sales Person</q-btn></div>
+                  </q-card-section>
+
+                  <q-card-section class="q-pt-none">
+                        <q-list dense separator>
+                          <q-item :key="item.toPartyId" v-for="item in sales_team" style="min-height:unset" class="q-py-none q-px-sm">
+                            <q-item-section>
+                              <q-item-label> <a :href="'ViewContact?partyId=' + item.partyId">{{item.contact_person.replace('null', '')}}</a> </q-item-label>
+                            </q-item-section>
+
+                            <q-item-section style="display:block;" side top>
+                              <q-btn outline @click="confirmRemoveContact(item, 'SalesRepresentative')" dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                            </q-item-section>
+                          </q-item>
+                      </q-list>
+                  </q-card-section>
             </q-card>
         </div>
         <div class="col-6 q-px-md">
@@ -169,7 +188,7 @@
                             </q-item-section>
 
                             <q-item-section style="display:block;" side top>
-                              <q-btn outline @click="confirmRemoveContact(item)" dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                              <q-btn outline @click="confirmRemoveContact(item, 'Contact')" dense icon="delete" class="text-capitalize text-primary"></q-btn>
                             </q-item-section>
                           </q-item>
                       </q-list>
@@ -336,7 +355,10 @@
       <q-card style="max-width: 450px" class="q-pa-md">
         <q-card-section class="row items-center">
           <q-avatar icon="delete" color="red" text-color="white"></q-avatar>
-          <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to remove this contact?</span>
+          <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to remove this
+          <span v-if="item_to_delete && item_to_delete.roleTypeIdInDelete == 'Contact'">Contact</span>
+          <span v-if="item_to_delete && item_to_delete.roleTypeIdInDelete == 'SalesRepresentative'">Sales Person</span>
+          ?</span>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -394,7 +416,61 @@
 
             <q-separator></q-separator>
             <q-card-actions class="q-pa-md" align="left">
-              <q-btn :disable="!(new_contact_in_opp)" @click="addParty()" outline dense label="Add" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn :disable="!(new_contact_in_opp)" @click="addParty('Contact')" outline dense label="Add" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="add_sales_person">
+          <q-card class="q-pa-none detail_cls" style="width: 50vw; max-width: 50vw;">
+            <q-card-section>
+              <div class="row q-px-md q-py-sm">
+                <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                    Add Sales Person
+                </div>
+                <div class="col-1">
+                    <q-btn flat round dense icon="close" class="float-right" v-close-popup></q-btn>
+                </div>
+            </div>
+            </q-card-section>
+            <q-separator></q-separator>
+
+            <q-card-section class="q-ma-md edit_page">
+                <div class="row q-col-gutter-md detail_cls">
+                    <div class="col-12 text-caption">
+                        Sales people must first be setup by an administrator to appear in this list.
+                    </div>
+                    <div class="col-12">
+                        <div class="col-12">
+                            <q-select
+                                dense
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                label="Sales Person"
+                                outlined
+                                v-model="new_sales_person_in_opp"
+                                use-input
+                                input-debounce="700"
+                                option-value="partyId"
+                                option-label="label"
+                                :options="sales_team_options"
+                                @filter="filterFnSalesTeam"
+                                >
+                                <template v-slot:no-option>
+                                    <q-item>
+                                      <q-item-section class="text-grey">
+                                        No results
+                                      </q-item-section>
+                                    </q-item>
+                                </template>
+                            </q-select>
+                    </div>
+                    </div>
+                </div>
+            </q-card-section>
+
+            <q-separator></q-separator>
+            <q-card-actions class="q-pa-md" align="left">
+              <q-btn :disable="!(new_sales_person_in_opp)" @click="addParty('SalesRepresentative')" outline dense label="Add" class="text-capitalize q-mb-md" color="primary"></q-btn>
               <q-btn v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
             </q-card-actions>
           </q-card>
@@ -570,9 +646,12 @@ module.exports = {
             phone_purpose_options: [],
             status: null,
             stage_in_edit:null,
+            formatted_estimated_amount: "",
             new_contact_in_opp:null,
+            new_sales_person_in_opp:null,
             add_note_modal: false,
             add_task_modal:false,
+            add_sales_person:false,
             edit_task_modal:false,
             currency_options_master: [],
             close_date: null,
@@ -582,9 +661,12 @@ module.exports = {
             partyNoteList: [],
             status_options_master: [],
             opp_contacts: [],
+            sales_team: [],
             sales_person_options: [],
             account_options: [],
             status_options: [],
+            sales_team_options_master: [],
+            sales_team_options: [],
             item_to_delete: {},
             note_edit_item: {},
             current_opportunity: {},
@@ -735,6 +817,19 @@ module.exports = {
               this.contact_options = self.contact_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
             })
           },
+        filterFnSalesTeam (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.sales_team_options = self.sales_team_options_master
+                })
+                return
+              }
+              update(() => {
+                  const needle = val.toLowerCase()
+                  this.sales_team_options = self.sales_team_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                })
+          },
         getStatusName(id) {
             if (id) {
                 let status_name = this.status_options_master.find(function(item){
@@ -755,28 +850,41 @@ module.exports = {
                 }
             });
         },
-        confirmRemoveContact(item) {
+        confirmRemoveContact(item, role_type) {
             this.item_to_delete = JSON.parse(JSON.stringify(item));
+            this.item_to_delete["roleTypeIdInDelete"] = role_type;
             this.remove_contact_from_opp = true;
         },
-        addParty() {
+        addParty(role_type) {
             var self = this;
             const params = new Proxy(new URLSearchParams(window.location.search), {
               get: (searchParams, prop) => searchParams.get(prop),
             });
             var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
             allParams["salesOpportunityId"] = params.salesOpportunityId;
-            allParams["roleTypeId"] = "Contact";
-            allParams["partyId"] = self.new_contact_in_opp.fromPartyId;
+            allParams["roleTypeId"] = role_type;
+            if (role_type === "SalesRepresentative") {
+                allParams["partyId"] = self.new_sales_person_in_opp.partyId;
+            }
+            else {
+                allParams["partyId"] = self.new_contact_in_opp.fromPartyId;
+            }
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/opportunity/addParty", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.new_contact_in_opp = null;
+                    self.new_sales_person_in_opp = null;
                     self.add_contact = false;
+                    self.add_sales_person = false;
                     self.$q.notify({
                         message: 'Added successfully.',
                         position: 'bottom-left',
                       });
-                    self.getOpportunityContacts();
+                    if (role_type === "SalesRepresentative") {
+                        self.getSalesTeam();
+                    }
+                    else {
+                        self.getOpportunityContacts();
+                    }
                 }
             });
         },
@@ -789,16 +897,21 @@ module.exports = {
             allParams["salesOpportunityId"] = params.salesOpportunityId;
             allParams["partyId"] = self.item_to_delete.partyId;
             allParams["fromDate"] = self.item_to_delete.fromDate;
-            allParams["roleTypeId"] = "Contact";
+            allParams["roleTypeId"] = self.item_to_delete["roleTypeIdInDelete"];
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/opportunity/removeContact", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
-                    self.item_to_delete = {};
                     self.remove_contact_from_opp = false;
                     self.$q.notify({
                         message: 'Deleted successfully.',
                         position: 'bottom-left',
                       });
-                    self.getOpportunityContacts();
+                    if (self.item_to_delete["roleTypeIdInDelete"] === "SalesRepresentative") {
+                        self.getSalesTeam();
+                    }
+                    else {
+                        self.getOpportunityContacts();
+                    }
+                    self.item_to_delete = {};
                 }
             });
         },
@@ -811,6 +924,7 @@ module.exports = {
             $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/singleOpportunity", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.current_opportunity = resp.opportunity;
+                    self.formatted_estimated_amount = resp.formatted_estimated_amount;
                     self.current_opportunity["stage"] = resp.stage;
                     if (self.current_opportunity["stage"]) {
                         self.stage_in_edit = self.stage_options_master.find(function(item){
@@ -1071,10 +1185,35 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParms = $.extend({ salesOpportunityId: params.salesOpportunityId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                var allParms = $.extend({ roleTypeId: "Contact", salesOpportunityId: params.salesOpportunityId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/contacts", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         vm.opp_contacts = resp.contactList;
+                    }
+                });
+            },
+            getSalesTeam() {
+                var vm = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = $.extend({ roleTypeId: "SalesRepresentative", salesOpportunityId: params.salesOpportunityId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/contacts", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        vm.sales_team = resp.contactList;
+                    }
+                });
+            },
+            getSalesPersonOptions () {
+                var self = this;
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/salesTeamOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.sales_team_options_master = resp.personOptions.map(function(item){
+                            item["label"] = (item.firstName || '') + " " + (item.lastName || '');
+                            return item;
+                        });
+                        self.sales_team_options = JSON.parse(JSON.stringify(self.sales_team_options_master));
                     }
                 });
             }
@@ -1083,8 +1222,9 @@ module.exports = {
         let self = this;
         self.getStatuses();
         self.getOpportunityContacts();
+        self.getSalesTeam();
         self.getUOM();
-        self.getStageOptions();
+        self.getSalesPersonOptions();
         setTimeout( () => {
             this.getPartyNoteList();
             this.getTaskList();

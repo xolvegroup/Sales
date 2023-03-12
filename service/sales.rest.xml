@@ -192,5 +192,8 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="stageOptions" require-authentication="anonymous-view">
             <method type="get"><service name="sales.SalesServices.get#StageOptions"/></method>
         </resource>
+        <resource name="salesTeamOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.get#SalesPersonOptions"/></method>
+        </resource>
     </resource>
 </resource>
