@@ -399,6 +399,13 @@ along with this software (see the LICENSE.md file). If not, see
                              orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
                              pageIndex:pageIndex, pageSize:pageSize, pageNoLimit:pageNoLimit]"/>
                 -->
+            <if condition="documentList">
+                <iterate list="documentList" entry="doc">
+                        <script>
+                            doc.put("formatted_estimated_amount",ec.l10n.formatCurrency(doc.estimatedAmount ?: 0, doc?.currencyUomId))
+                        </script>
+                </iterate>
+            </if>
         </actions>
     </service>
     <service verb="get" noun="PartyDetail">
