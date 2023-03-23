@@ -2,15 +2,13 @@
     <div>
         <div class="row q-mt-md">
         <div class="col-3">
-            <q-card flat bordered class="detail_cls my-card">
-              <q-card-section>
-                <div class="text-h6 q-px-sm" v-if="current_party">{{current_opportunity.opportunityName}}
-                    <q-btn @click="edit_opportunity = true" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
-                </div>
+            <q-card v-if="current_opportunity" flat bordered class="custom_style  detail_cls my-card">
+              <q-card-section class="q-pt-none text-weight-medium">
+                Opportunity: <q-chip :label="current_opportunity.opportunityName" color="grey" text-color="white"></q-chip><q-btn @click="edit_opportunity = true" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
               </q-card-section>
-              <q-card-section class="q-pt-none q-px-sm">
+              <q-card-section class="q-pt-none q-px-none">
                 <q-list>
-                  <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                  <q-item style="min-height:unset" class="q-pa-none">
                     <q-item-section top class="text-weight-medium col-4">
                         Sales Account:
                     </q-item-section>
@@ -19,7 +17,7 @@
                         {{current_opportunity.acc_name}}
                     </q-item-section>
                   </q-item>
-                  <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                  <q-item style="min-height:unset" class="q-pa-none">
                     <q-item-section top class="text-weight-medium col-4">
                         Amount:
                     </q-item-section>
@@ -28,7 +26,7 @@
                         {{formatted_estimated_amount}}
                     </q-item-section>
                   </q-item>
-                  <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                  <q-item style="min-height:unset" class="q-pa-none">
                     <q-item-section top class="text-weight-medium col-4">
                         Stage:
                     </q-item-section>
@@ -37,7 +35,7 @@
                     {{current_opportunity.stage.description}}
                     </q-item-section>
                   </q-item>
-                  <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                  <q-item style="min-height:unset" class="q-pa-none">
                     <q-item-section top class="text-weight-medium col-4">
                         Close Date:
                     </q-item-section>
@@ -46,7 +44,7 @@
                         {{formatDate(current_opportunity.estimatedCloseDate)}}
                     </q-item-section>
                   </q-item>
-                  <q-item style="min-height:unset" class="q-py-none q-px-sm">
+                  <q-item style="min-height:unset" class="q-pa-none">
                     <q-item-section top class="text-weight-medium col-4">
                         Description:
                     </q-item-section>
@@ -58,12 +56,12 @@
               </q-list>
               </q-card-section>
             </q-card>
-            <q-card flat bordered class="detail_cls my-card q-mt-md">
+            <q-card flat bordered class="custom_style detail_cls my-card q-mt-md">
                 <q-card-section>
                     <div class="text-h6"><span class="q-mt-sm inline-block">Sales Team</span> <q-btn @click="add_sales_person=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Sales Person</q-btn></div>
                   </q-card-section>
 
-                  <q-card-section class="q-pt-none">
+                  <q-card-section class="q-pt-none q-px-none">
                         <q-list dense separator>
                           <q-item :key="item.toPartyId" v-for="item in sales_team" style="min-height:unset" class="q-py-none q-px-sm">
                             <q-item-section>
@@ -79,14 +77,15 @@
             </q-card>
         </div>
         <div class="col-6 q-px-md">
+        <q-card flat bordered class="custom_style detail_cls my-card">
             <q-tabs
                 v-model="tab"
                   dense
                   class="text-grey-8"
                   active-color="primary"
                   indicator-color="primary"
-                  align="left"
-                  shrink stretch
+                  align="justify"
+                  narrow-indicator
               >
                 <q-tab name="Notes" class="text-capitalize" label="Notes"></q-tab>
                 <q-tab name="Tasks" class="text-capitalize" label="Tasks" ></q-tab>
@@ -94,16 +93,16 @@
 
               <q-separator class="q-px-none"></q-separator>
 
-              <q-tab-panels v-model="tab" animated>
+              <q-tab-panels class="bg-transparent" v-model="tab" animated>
                   <q-tab-panel class="q-px-none" name="Notes">
 
-                    <q-card flat bordered class="detail_cls my-card">
+                    <q-card flat class="detail_cls my-card">
                       <q-card-section style="display:flow-root">
                         <div class="text-h6 text-primary float-left q-pt-sm">Notes</div>
                         <q-btn @click="add_note_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Note</q-btn>
                       </q-card-section>
 
-                      <q-card-section class="q-pt-none" style="padding: 0px">
+                      <q-card-section class="q-pt-none custom_height_with_scroll_main" style="padding: 0px">
                             <q-list separator>
                               <q-item class="q-py-md" :key="item.noteDate" v-for="item in partyNoteList">
                                 <q-item-section>
@@ -126,7 +125,7 @@
 
                   <q-tab-panel class="q-px-none" name="Tasks">
 
-                    <q-card flat bordered class="detail_cls my-card">
+                    <q-card flat class="detail_cls my-card">
                       <q-card-section style="display:flow-root">
                         <div class="text-h6 text-primary float-left q-pt-sm">Tasks</div>
                         <q-btn @click="add_task_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">New Task</q-btn>
@@ -138,13 +137,14 @@
                         </div>
                       </q-card-section>
 
-                      <q-card-section class="q-pt-none" style="padding: 0px">
+                      <q-card-section class="custom_height_with_scroll_main q-pt-none" style="padding: 0px">
                             <q-table
                               :data="task_list"
                               :columns="task_columns"
                               row-key="name"
                               hide-bottom
                               flat
+                              class="bg-transparent"
                               :pagination.sync="pagination"
                             >
                                 <template v-slot:body-cell-action="props">
@@ -175,14 +175,14 @@
                 </q-tab-panels>
         </div>
         <div class="col-3">
-            <q-card flat bordered class="detail_cls my-card">
-                <q-card-section>
+            <q-card flat bordered class="custom_style detail_cls my-card">
+                <q-card-section class="q-pt-none">
                     <div class="text-h6"><span class="q-mt-sm inline-block">Contacts</span> <q-btn @click="add_contact=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Contact</q-btn></div>
                   </q-card-section>
 
-                  <q-card-section class="q-pt-none">
+                  <q-card-section class="q-pt-none q-px-none">
                         <q-list dense separator>
-                          <q-item :key="item.toPartyId" v-for="item in opp_contacts" style="min-height:unset" class="q-py-none q-px-sm">
+                          <q-item :key="item.toPartyId" v-for="item in opp_contacts" style="min-height:unset" class="q-pa-none ">
                             <q-item-section>
                               <q-item-label> <a :href="'ViewContact?partyId=' + item.partyId">{{item.contact_person.replace('null', '')}}</a> </q-item-label>
                             </q-item-section>
@@ -1258,5 +1258,19 @@ module.exports = {
     }
     .ck-balloon-panel_visible {
         z-index: 10000 !important;
+    }
+    .custom_style {
+        border-radius: 1rem;
+        background: #ECF2FF;
+    }
+    .custom_height_with_scroll {
+        max-height: 180px;
+        overflow-x: hidden !important;
+        overflow-y: auto;
+    }
+    .custom_height_with_scroll_main {
+        max-height: 80vh;
+        overflow-x: hidden !important;
+        overflow-y: auto;
     }
 </style>
