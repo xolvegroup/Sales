@@ -2,7 +2,7 @@
     <div>
         <div class="row q-mt-md">
         <div class="col-3">
-            <q-card v-if="current_opportunity" flat bordered class="custom_style  detail_cls my-card">
+            <q-card v-if="current_opportunity" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius  detail_cls my-card">
               <q-card-section class="q-pt-none text-weight-medium">
                 Opportunity: <q-chip :label="current_opportunity.opportunityName" color="grey" text-color="white"></q-chip><q-btn @click="edit_opportunity = true" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
               </q-card-section>
@@ -56,7 +56,7 @@
               </q-list>
               </q-card-section>
             </q-card>
-            <q-card flat bordered class="custom_style detail_cls my-card q-mt-md">
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card q-mt-md">
                 <q-card-section>
                     <div class="text-h6"><span class="q-mt-sm inline-block">Sales Team</span> <q-btn @click="add_sales_person=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Sales Person</q-btn></div>
                   </q-card-section>
@@ -77,7 +77,7 @@
             </q-card>
         </div>
         <div class="col-6 q-px-md">
-        <q-card flat bordered class="custom_style detail_cls my-card">
+        <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card">
             <q-tabs
                 v-model="tab"
                   dense
@@ -175,7 +175,7 @@
                 </q-tab-panels>
         </div>
         <div class="col-3">
-            <q-card flat bordered class="custom_style detail_cls my-card">
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card">
                 <q-card-section class="q-pt-none">
                     <div class="text-h6"><span class="q-mt-sm inline-block">Contacts</span> <q-btn @click="add_contact=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Contact</q-btn></div>
                   </q-card-section>
@@ -1260,8 +1260,10 @@ module.exports = {
         z-index: 10000 !important;
     }
     .custom_style {
-        border-radius: 1rem;
         background: #ECF2FF;
+    }
+    .custom_radius {
+        border-radius: 1rem;
     }
     .custom_height_with_scroll {
         max-height: 180px;

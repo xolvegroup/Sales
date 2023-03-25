@@ -2,12 +2,12 @@
     <div>
         <div class="row q-mt-md">
         <div class="col-3">
-            <q-card v-if="current_party" flat bordered class="custom_style text-weight-medium detail_cls q-pa-sm my-card">
-                Contact: <q-chip :label="current_party.firstName + current_party.lastName" color="grey" text-color="white"></q-chip>
+            <q-card v-if="current_party" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius text-weight-medium detail_cls q-pa-sm my-card">
+                Contact: <q-chip :label="(current_party.firstName||'') + (current_party.lastName||'')" color="grey" text-color="white"></q-chip>
             </q-card>
 
 
-            <q-card v-if="webAddressList.length > 0" flat bordered class="custom_style detail_cls q-mt-md my-card">
+            <q-card v-if="webAddressList.length > 0" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls q-mt-md my-card">
               <q-card-section class="custom_height_with_scroll q-pt-none q-px-sm">
                 <q-list>
                               <q-item :key="item.webContactMechId" v-for="item in webAddressList" style="min-height:unset" class="q-py-none q-px-sm">
@@ -23,7 +23,7 @@
 </q-list>
               </q-card-section>
             </q-card>
-            <q-card v-if="emailAddressList.length > 0" flat bordered class="custom_style detail_cls q-mt-md my-card">
+            <q-card v-if="emailAddressList.length > 0" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls q-mt-md my-card">
               <q-card-section class="custom_height_with_scroll q-pt-none q-px-sm">
                 <q-list>
 
@@ -41,7 +41,7 @@
               </q-card-section>
             </q-card>
 
-            <q-card v-if="telecomNumberList.length > 0" flat bordered class="custom_style detail_cls q-mt-md my-card">
+            <q-card v-if="telecomNumberList.length > 0" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls q-mt-md my-card">
               <q-card-section class="custom_height_with_scroll q-pt-none q-px-sm">
                 <q-list>
 
@@ -93,7 +93,7 @@
 
         </div>
         <div class="col-6 q-px-md">
-        <q-card flat bordered class="custom_style detail_cls my-card">
+        <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card">
             <q-tabs
                 v-model="tab"
                   dense
@@ -212,7 +212,7 @@
             </q-card>
         </div>
         <div class="col-3">
-            <q-card flat bordered class="custom_style detail_cls my-card">
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card">
               <q-card-section class="q-pt-none">
                 <div class="text-h6"><span class="q-mt-sm inline-block">Sales Accounts</span> <q-btn @click="add_new_sales_contact=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add to Sales Account</q-btn></div>
               </q-card-section>
@@ -1423,8 +1423,10 @@ module.exports = {
         z-index: 10000 !important;
     }
     .custom_style {
-        border-radius: 1rem;
         background: #ECF2FF;
+    }
+    .custom_radius {
+        border-radius: 1rem;
     }
     .custom_height_with_scroll {
         max-height: 180px;

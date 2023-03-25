@@ -63,7 +63,7 @@
                         </q-select>
                     </div>
                     <div class="col-6">
-                        <q-input  v-model="new_opp_amount" outlined label="Amount" style="margin:0;padding:0;background-color:white;" dense>
+                        <q-input  v-model="new_opp_amount" outlined label="Amount" style="margin:0;padding:0;" dense>
                                         </q-input>
                     </div>
                     <div class="col-6">
@@ -107,12 +107,12 @@
                         </q-select>
                     </div>
                     <div class="col-12">
-                        <q-input  v-model="opportunity_name" outlined label="Opportunity Name" style="margin:0;padding:0;background-color:white;" dense>
+                        <q-input  v-model="opportunity_name" outlined label="Opportunity Name" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
 
                     <div class="col-12">
-                        <q-input type="textarea" v-model="description" outlined label="Description" style="margin:0;padding:0;background-color:white;" dense>
+                        <q-input type="textarea" v-model="description" outlined label="Description" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
                 </div>
@@ -165,7 +165,7 @@
                            </div>
                            <div class="row q-mt-sm">
                                 <div class="col-8 q-pr-lg">
-                                    <q-input  v-model="save_new_find" outlined label="Description" style="margin:0;padding:0;background-color:white;" dense>
+                                    <q-input  v-model="save_new_find" outlined label="Description" style="margin:0;padding:0;" dense>
                                     </q-input>
                                 </div>
                                 <div class="col-4" style="padding-top:2px;">
@@ -179,7 +179,7 @@
                 </div>
                 <div class="row q-py-sm q-my-lg" v-for="item in saved_find_list">
                     <div class="col-8 q-pr-lg">
-                        <q-input  :value="item.description" outlined label="Description" style="margin:0;padding:0;background-color:white;" dense>
+                        <q-input  :value="item.description" outlined label="Description" style="margin:0;padding:0;" dense>
                         </q-input>
                     </div>
                     <div class="col-4" style="padding-top:2px;">
@@ -231,11 +231,11 @@
                                     </q-select>
                     </div>
                     <div class="col-12">
-                            <q-input  v-model="mdl_filter_opportunity" outlined label="Opportunity" style="margin:0;padding:0;background-color:white;" dense>
+                            <q-input  v-model="mdl_filter_opportunity" outlined label="Opportunity" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
                     <div class="col-12">
-                            <q-input class="bg-white" label="Close Date" outlined dense v-model="mdl_filter_close_date">
+                            <q-input :class="!$q.dark.isActive?'bg-white':''" label="Close Date" outlined dense v-model="mdl_filter_close_date">
                                 <template v-slot:append>
                                   <q-icon name="event" class="cursor-pointer">
                                     <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
@@ -306,7 +306,7 @@
           </div>
     </q-drawer>
           <div>
-        <q-item class="q-pa-none q-pt-xs">
+        <q-item class="q-pa-none q-pt-xs q-px-xs">
               <q-item-section>
                 <q-btn
                 style="width: 175px;"
@@ -314,7 +314,8 @@
             dense
             @click="add_new_opportunity=true"
                   split
-                  color="primary"
+                  outline rounded
+                  color=""
                   no-caps
                   icon="add"
                   label="New Opportunity"
@@ -352,7 +353,7 @@
               </q-item-section>
             </q-item>
                     <q-card flat class="q-mt-sm">
-                      <q-card-section style="padding: 0px;">
+                      <q-card-section class="q-px-xs">
                         <q-table
                         bordered
                         flat
@@ -366,6 +367,7 @@
                               separator="cell"
                               dense
                               :pagination.sync="pagination"
+                              :card-class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'"
                             >
                                 <template v-slot:body-cell-combinedname="props">
                                   <q-td :props="props">
@@ -918,5 +920,11 @@ module.exports = {
     }
     .max_width_700 {
         max-width: 700px !important;
+    }
+    .custom_style {
+        background: #ECF2FF;
+    }
+    .custom_radius {
+        border-radius: 1rem;
     }
 </style>

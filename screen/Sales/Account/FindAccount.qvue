@@ -15,7 +15,7 @@
             <q-separator></q-separator>
 
             <q-card-section class="q-ma-md edit_page">
-                <q-input  v-model="new_sales_account_name" outlined label="Sales Account" style="margin:0;padding:0;background-color:white;" dense>
+                <q-input  v-model="new_sales_account_name" outlined label="Sales Account" style="margin:0;padding:0;" dense>
                                     </q-input>
             </q-card-section>
 
@@ -62,7 +62,7 @@
                            </div>
                            <div class="row q-mt-sm">
                                 <div class="col-8 q-pr-lg">
-                                    <q-input  v-model="save_new_find" outlined label="Description" style="margin:0;padding:0;background-color:white;" dense>
+                                    <q-input  v-model="save_new_find" outlined label="Description" style="margin:0;padding:0;" dense>
                                     </q-input>
                                 </div>
                                 <div class="col-4" style="padding-top:2px;">
@@ -76,7 +76,7 @@
                 </div>
                 <div class="row q-py-sm q-my-lg" v-for="item in saved_find_list">
                     <div class="col-8 q-pr-lg">
-                        <q-input  :value="item.description" outlined label="Description" style="margin:0;padding:0;background-color:white;" dense>
+                        <q-input  :value="item.description" outlined label="Description" style="margin:0;padding:0;" dense>
                         </q-input>
                     </div>
                     <div class="col-4" style="padding-top:2px;">
@@ -128,7 +128,7 @@
                           </q-select>
                     </div>
                     <div class="col-12">
-                    <q-input  v-model="mdl_filter_account" outlined label="Sales Account" style="margin:0;padding:0;background-color:white;" dense>
+                    <q-input  v-model="mdl_filter_account" outlined label="Sales Account" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
                     <div class="col-12">
@@ -165,7 +165,7 @@
           </div>
     </q-drawer>
           <div>
-        <q-item class="q-pa-none q-pt-xs">
+        <q-item class="q-pa-none q-pt-xs q-px-xs">
               <q-item-section>
                 <q-btn
                 style="width: 175px;"
@@ -173,7 +173,8 @@
             dense
             @click="add_new_sales_account=true"
                   split
-                  color="primary"
+                  outline rounded
+                  color=""
                   no-caps
                   icon="add"
                   label="New Sales Account"
@@ -211,7 +212,7 @@
               </q-item-section>
             </q-item>
                     <q-card flat class="q-mt-sm">
-                      <q-card-section style="padding: 0px;">
+                      <q-card-section class="q-px-xs">
                         <q-table
                         bordered
                         flat
@@ -225,6 +226,7 @@
                               separator="cell"
                               dense
                               :pagination.sync="pagination"
+                              :card-class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'"
                             >
                                 <template v-slot:body-cell-combinedname="props">
                                   <q-td :props="props">
@@ -641,5 +643,21 @@ module.exports = {
     }
     .max_width_700 {
         max-width: 700px !important;
+    }
+    .custom_height_with_scroll {
+        max-height: 180px;
+        overflow-x: hidden !important;
+        overflow-y: auto;
+    }
+    .custom_height_with_scroll_main {
+        max-height: 80vh;
+        overflow-x: hidden !important;
+        overflow-y: auto;
+    }
+    .custom_style {
+        background: #ECF2FF;
+    }
+    .custom_radius {
+        border-radius: 1rem;
     }
 </style>
