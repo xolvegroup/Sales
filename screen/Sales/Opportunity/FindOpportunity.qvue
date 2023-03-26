@@ -8,7 +8,7 @@
                     New Opportunity
                 </div>
                 <div class="col-1">
-                    <q-btn flat round dense icon="close" class="float-right" v-close-popup></q-btn>
+                    <q-btn flat rounded dense icon="close" class="float-right" v-close-popup></q-btn>
                 </div>
             </div>
             </q-card-section>
@@ -17,9 +17,9 @@
             <q-card-section class="q-ma-md edit_page">
                 <div class="row q-col-gutter-md detail_cls">
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                             dense
-                            :class="!$q.dark.isActive?'bg-white':''"
+                            :input-class="!$q.dark.isActive?'bg-white':''"
                             label="Sales Account"
                             outlined
                             v-model="new_sales_contact_account"
@@ -40,9 +40,9 @@
                         </q-select>
                     </div>
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                             dense
-                            :class="!$q.dark.isActive?'bg-white':''"
+                            :input-class="!$q.dark.isActive?'bg-white':''"
                             label="Currency"
                             outlined
                             v-model="new_uom"
@@ -63,18 +63,18 @@
                         </q-select>
                     </div>
                     <div class="col-6">
-                        <q-input  v-model="new_opp_amount" outlined label="Amount" style="margin:0;padding:0;" dense>
+                        <q-input rounded v-model="new_opp_amount" outlined label="Amount" style="margin:0;padding:0;" dense>
                                         </q-input>
                     </div>
                     <div class="col-6">
                         <div class="col-6">
-                            <q-input label="Close Date" outlined dense v-model="close_date">
+                            <q-input rounded label="Close Date" outlined dense v-model="close_date">
                                 <template v-slot:append>
                                   <q-icon name="event" class="cursor-pointer">
                                     <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
                                       <q-date mask="YYYY-MM-DD" v-model="close_date">
                                         <div class="row items-center justify-end">
-                                          <q-btn v-close-popup label="Close" color="primary" flat />
+                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
                                         </div>
                                       </q-date>
                                     </q-popup-proxy>
@@ -84,9 +84,9 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                             dense
-                            :class="!$q.dark.isActive?'bg-white':''"
+                            :input-class="!$q.dark.isActive?'bg-white':''"
                             label="Sales Person"
                             outlined
                             v-model="new_sales_person"
@@ -107,12 +107,12 @@
                         </q-select>
                     </div>
                     <div class="col-12">
-                        <q-input  v-model="opportunity_name" outlined label="Opportunity Name" style="margin:0;padding:0;" dense>
+                        <q-input rounded v-model="opportunity_name" outlined label="Opportunity Name" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
 
                     <div class="col-12">
-                        <q-input type="textarea" v-model="description" outlined label="Description" style="margin:0;padding:0;" dense>
+                        <q-input rounded type="textarea" v-model="description" outlined label="Description" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
                 </div>
@@ -121,8 +121,8 @@
 
             <q-separator></q-separator>
             <q-card-actions class="q-pa-md" align="left">
-              <q-btn :disable="!(new_sales_contact_account && opportunity_name)" @click="addNewOpportunity()" outline dense label="Create" class="text-capitalize q-mb-md" color="primary"></q-btn>
-              <q-btn v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+              <q-btn rounded :disable="!(new_sales_contact_account && opportunity_name)" @click="addNewOpportunity()" outline dense label="Create" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn rounded v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -133,6 +133,7 @@
             overlay
             :width="550"
             :breakpoint="550"
+            class="right_options_popup"
             :content-class="!$q.dark.isActive?'bg-grey-3':'bg-black'"
           >
           <div class="q-pa-sm q-px-md">
@@ -141,7 +142,7 @@
                         Saved Finds
                     </div>
                     <div class="col-1">
-                        <q-btn flat round dense icon="close" @click="open_saved_finds_drawer=false"></q-btn>
+                        <q-btn rounded flat dense icon="close" @click="open_saved_finds_drawer=false"></q-btn>
                     </div>
                 </div>
                 <div class="row q-mt-md q-col-gutter-md detail_cls">
@@ -165,11 +166,11 @@
                            </div>
                            <div class="row q-mt-sm">
                                 <div class="col-8 q-pr-lg">
-                                    <q-input  v-model="save_new_find" outlined label="Description" style="margin:0;padding:0;" dense>
+                                    <q-input rounded v-model="save_new_find" outlined label="Description" style="margin:0;padding:0;" dense>
                                     </q-input>
                                 </div>
                                 <div class="col-4" style="padding-top:2px;">
-                                    <q-btn @click="storeSavedFinds()" class="text-blue q-px-sm q-ml-sm text-capitalize" outline dense icon="search" label="Save New Find"></q-btn>
+                                    <q-btn rounded @click="storeSavedFinds()" class="text-blue q-px-sm q-ml-sm text-capitalize" outline dense icon="search" label="Save New Find"></q-btn>
                                 </div>
                            </div>
                     </div>
@@ -179,11 +180,11 @@
                 </div>
                 <div class="row q-py-sm q-my-lg" v-for="item in saved_find_list">
                     <div class="col-8 q-pr-lg">
-                        <q-input  :value="item.description" outlined label="Description" style="margin:0;padding:0;" dense>
+                        <q-input rounded :value="item.description" outlined style="margin:0;padding:0;" dense>
                         </q-input>
                     </div>
                     <div class="col-4" style="padding-top:2px;">
-                        <q-btn @click="searchSavedFind(item)" style="width: 70px" class="text-blue q-px-sm q-ml-sm text-capitalize" outline dense icon="search" label="Find"></q-btn>
+                        <q-btn rounded @click="searchSavedFind(item)" style="width: 70px" class="text-blue q-px-sm q-ml-sm text-capitalize" outline dense icon="search" label="Find"></q-btn>
                     </div>
                 </div>
           </div>
@@ -195,6 +196,7 @@
             overlay
             :width="400"
             :breakpoint="400"
+            class="right_options_popup"
             :content-class="!$q.dark.isActive?'bg-grey-3':'bg-black'"
           >
           <div class="q-pa-sm q-px-md">
@@ -203,14 +205,14 @@
                         Find Options
                     </div>
                     <div class="col-1">
-                        <q-btn flat round dense icon="close" @click="open_find_options_drawer=false"></q-btn>
+                        <q-btn flat rounded dense icon="close" @click="open_find_options_drawer=false"></q-btn>
                     </div>
                 </div>
                 <div class="row q-mt-md q-col-gutter-md detail_cls">
                     <div class="col-12">
-                                    <q-select
+                                    <q-select rounded 
                                         dense
-                                        :class="!$q.dark.isActive?'bg-white':''"
+                                        :input-class="!$q.dark.isActive?'bg-white':''"
                                         label="Sales Account"
                                         outlined
                                         v-model="mdl_filter_account"
@@ -231,17 +233,17 @@
                                     </q-select>
                     </div>
                     <div class="col-12">
-                            <q-input  v-model="mdl_filter_opportunity" outlined label="Opportunity" style="margin:0;padding:0;" dense>
+                            <q-input rounded v-model="mdl_filter_opportunity" outlined label="Opportunity" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
                     <div class="col-12">
-                            <q-input :class="!$q.dark.isActive?'bg-white':''" label="Close Date" outlined dense v-model="mdl_filter_close_date">
+                            <q-input rounded label="Close Date" outlined dense v-model="mdl_filter_close_date">
                                 <template v-slot:append>
                                   <q-icon name="event" class="cursor-pointer">
                                     <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
                                       <q-date mask="YYYY-MM-DD" v-model="mdl_filter_close_date">
                                         <div class="row items-center justify-end">
-                                          <q-btn v-close-popup label="Close" color="primary" flat />
+                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
                                         </div>
                                       </q-date>
                                     </q-popup-proxy>
@@ -250,9 +252,9 @@
                               </q-input>
                     </div>
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                             dense
-                            :class="!$q.dark.isActive?'bg-white':''"
+                            :input-class="!$q.dark.isActive?'bg-white':''"
                             label="Sales Person"
                             outlined
                             v-model="mdl_filter_sales_person"
@@ -273,10 +275,10 @@
                         </q-select>
                     </div>
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                             label="Order By"
                             dense
-                            :class="!$q.dark.isActive?'bg-white':''"
+                            :input-class="!$q.dark.isActive?'bg-white':''"
                             outlined
                             v-model="mdl_filter_order_by"
                             use-input
@@ -296,8 +298,8 @@
                           </q-select>
                     </div>
                     <div class="col-12">
-                        <q-btn @click="findOptions()" style="width: 140px" class="text-blue q-px-sm q-ml-sm" outline dense icon="search" label="Find"></q-btn>
-                        <q-btn @click="resetFind()" style="width: 140px" class="q-px-sm q-ml-sm" outline dense icon="search" label="Clear"></q-btn>
+                        <q-btn rounded @click="findOptions()" style="width: 140px" class="text-blue q-px-sm q-ml-sm" outline dense icon="search" label="Find"></q-btn>
+                        <q-btn rounded @click="resetFind()" style="width: 140px" class="q-px-sm q-ml-sm" outline dense icon="search" label="Clear"></q-btn>
                     </div>
                 </div>
                 <div class="q-mt-md">
@@ -308,7 +310,7 @@
           <div>
         <q-item class="q-pa-none q-pt-xs q-px-xs">
               <q-item-section>
-                <q-btn
+                <q-btn rounded
                 style="width: 175px;"
             class="custom_btn_dropdown"
             dense
@@ -324,7 +326,7 @@
               </q-item-section>
               <q-item-section style="display: block;" class="detail_cls">
 
-              <q-select
+              <q-select rounded 
                   v-if="saved_find_list.length>0"
                   label="Select Find"
                   dense
@@ -336,6 +338,7 @@
                   :options="select_find_options"
                   style="margin:0;margin-left:3px;padding:0;width: 160px"
                   class="text-capitalize float-right"
+                  :input-class="!$q.dark.isActive?'bg-white':''"
                   @input="searchSelectFind"
                 >
                   <template v-slot:no-option>
@@ -347,9 +350,9 @@
                   </template>
                 </q-select>
 
-              <q-btn style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline rounded dense label="Saved Finds" icon="save" @click="open_saved_finds_drawer=true"></q-btn>
-              <q-btn style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline rounded dense label="Find Options" icon="search" @click="open_find_options_drawer=true"></q-btn>
-              <q-btn style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-workEffortId' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline rounded dense icon="close" label="Clear"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Saved Finds" icon="save" @click="open_saved_finds_drawer=true"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Find Options" icon="search" @click="open_find_options_drawer=true"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-workEffortId' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline dense icon="close" label="Clear"></q-btn>
               </q-item-section>
             </q-item>
                     <q-card flat class="q-mt-sm">
@@ -926,5 +929,16 @@ module.exports = {
     }
     .custom_radius {
         border-radius: 1rem;
+    }
+    .right_options_popup .q-field__label {
+        background: transparent !important;
+    }
+    .right_options_popup .q-field__input {
+        background: transparent !important;
+    }
+    .right_options_popup .q-field--float .q-field__label {
+        background: grey !important;
+        color: white !important;
+        border-radius: 8px !important;
     }
 </style>

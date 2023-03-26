@@ -4,7 +4,7 @@
         <div class="col-3">
             <q-card v-if="current_opportunity" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius  detail_cls my-card">
               <q-card-section class="q-pt-none text-weight-medium">
-                Opportunity: <q-chip :label="current_opportunity.opportunityName" color="grey" text-color="white"></q-chip><q-btn @click="edit_opportunity = true" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                Opportunity: <q-chip :label="current_opportunity.opportunityName" color="grey" text-color="white"></q-chip><q-btn rounded @click="edit_opportunity = true" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
               </q-card-section>
               <q-card-section class="q-pt-none q-px-none">
                 <q-list>
@@ -58,7 +58,7 @@
             </q-card>
             <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card q-mt-md">
                 <q-card-section>
-                    <div class="text-h6"><span class="q-mt-sm inline-block">Sales Team</span> <q-btn @click="add_sales_person=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Sales Person</q-btn></div>
+                    <div class="text-h6"><span class="q-mt-sm inline-block">Sales Team</span> <q-btn rounded @click="add_sales_person=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Sales Person</q-btn></div>
                   </q-card-section>
 
                   <q-card-section class="q-pt-none q-px-none">
@@ -69,7 +69,7 @@
                             </q-item-section>
 
                             <q-item-section style="display:block;" side top>
-                              <q-btn outline @click="confirmRemoveContact(item, 'SalesRepresentative')" dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                              <q-btn rounded outline @click="confirmRemoveContact(item, 'SalesRepresentative')" dense icon="delete" class="text-capitalize text-primary"></q-btn>
                             </q-item-section>
                           </q-item>
                       </q-list>
@@ -99,7 +99,7 @@
                     <q-card flat class="detail_cls my-card">
                       <q-card-section style="display:flow-root">
                         <div class="text-h6 text-primary float-left q-pt-sm">Notes</div>
-                        <q-btn @click="add_note_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Note</q-btn>
+                        <q-btn rounded @click="add_note_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Note</q-btn>
                       </q-card-section>
 
                       <q-card-section class="q-pt-none custom_height_with_scroll_main" style="padding: 0px">
@@ -114,7 +114,7 @@
                                 </q-item-section>
 
                                 <q-item-section side top>
-                                  <q-btn @click="openEditNote(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn rounded @click="openEditNote(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
                                 </q-item-section>
                               </q-item>
                             </q-list>
@@ -128,7 +128,7 @@
                     <q-card flat class="detail_cls my-card">
                       <q-card-section style="display:flow-root">
                         <div class="text-h6 text-primary float-left q-pt-sm">Tasks</div>
-                        <q-btn @click="add_task_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">New Task</q-btn>
+                        <q-btn rounded @click="add_task_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">New Task</q-btn>
                       </q-card-section>
 
                       <q-card-section >
@@ -149,7 +149,7 @@
                             >
                                 <template v-slot:body-cell-action="props">
                                     <q-td key="action" :props="props">
-                                        <q-btn @click="openEditTask(props.row)" outline dense icon="edit" class="text-capitalize text-primary" label="Edit"></q-btn>
+                                        <q-btn rounded @click="openEditTask(props.row)" outline dense icon="edit" class="text-capitalize text-primary" label="Edit"></q-btn>
                                     </q-td>
                                 </template>
                                 <template v-slot:body-cell-description="props">
@@ -177,7 +177,7 @@
         <div class="col-3">
             <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card">
                 <q-card-section class="q-pt-none">
-                    <div class="text-h6"><span class="q-mt-sm inline-block">Contacts</span> <q-btn @click="add_contact=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Contact</q-btn></div>
+                    <div class="text-h6"><span class="q-mt-sm inline-block">Contacts</span> <q-btn rounded @click="add_contact=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Contact</q-btn></div>
                   </q-card-section>
 
                   <q-card-section class="q-pt-none q-px-none">
@@ -188,7 +188,7 @@
                             </q-item-section>
 
                             <q-item-section style="display:block;" side top>
-                              <q-btn outline @click="confirmRemoveContact(item, 'Contact')" dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                              <q-btn rounded outline @click="confirmRemoveContact(item, 'Contact')" dense icon="delete" class="text-capitalize text-primary"></q-btn>
                             </q-item-section>
                           </q-item>
                       </q-list>
@@ -214,12 +214,12 @@
 
         <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
                         <div class="q-mt-sm q-pt-sm">
-                            <div :class="$q.dark.isActive?'text-white':'text-black'" style="border: 1px solid #c2c2c2;min-height: 150px !important;" id="addNote"></div>
+                            <div :class="$q.dark.isActive?'text-white':'text-black'" style="border-radius: 12px !important;border: 1px solid #c2c2c2;min-height: 150px !important;" id="addNote"></div>
                         </div>
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn @click="addNote" outline dense label="Add Note" class="text-capitalize" color="primary" />
+          <q-btn rounded @click="addNote" outline dense label="Add Note" class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -240,12 +240,12 @@
 
         <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
                         <div class="q-mt-sm q-pt-sm">
-                            <div :class="$q.dark.isActive?'text-white':'text-black'" style="border: 1px solid #c2c2c2;min-height: 150px !important;" id="editNote"></div>
+                            <div :class="$q.dark.isActive?'text-white':'text-black'" style="border-radius: 12px !important;border: 1px solid #c2c2c2;min-height: 150px !important;" id="editNote"></div>
                         </div>
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn @click="editNote" :disabled="!(note_edit_item.noteText)" outline dense label="Update" class="text-capitalize" color="primary" />
+          <q-btn rounded @click="editNote" :disabled="!(note_edit_item.noteText)" outline dense label="Update" class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -267,17 +267,17 @@
 
         <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
                         <div class="q-mt-sm q-pt-sm">
-                            <q-input v-model="new_task_name"  square outlined style="margin:0;padding:0;" label="Task Name" dense>
+                            <q-input rounded v-model="new_task_name" outlined style="margin:0;padding:0;" label="Task Name" dense>
                             </q-input>
                             <div class="q-mt-sm q-pt-sm">
-                                <div :class="$q.dark.isActive?'text-white':'text-black'" style="border: 1px solid #c2c2c2;min-height: 150px !important;" id="addTask"></div>
+                                <div :class="$q.dark.isActive?'text-white':'text-black'" style="border-radius: 12px !important;border: 1px solid #c2c2c2;min-height: 150px !important;" id="addTask"></div>
                             </q-input>
                             </div>
                         </div>
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn :disabled="!(new_task_name)" @click="addTask" outline dense label="Create Task" class="text-capitalize" color="primary" />
+          <q-btn rounded :disabled="!(new_task_name)" @click="addTask" outline dense label="Create Task" class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -299,11 +299,11 @@
         <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
             <div class="row q-mt-sm q-pt-sm">
                 <div class="col-12">
-                    <q-input v-model="task_edit_item.workEffortName" outlined label="Task Name" dense>
+                    <q-input rounded v-model="task_edit_item.workEffortName" outlined label="Task Name" dense>
                     </q-input>
                 </div>
                 <div class="col-6 q-py-lg">
-                    <q-select
+                    <q-select rounded 
                         label="Status"
                         dense
                         outlined
@@ -320,18 +320,18 @@
                             <q-item-section class="text-grey">
                               No results
                             </q-item-section>
-                          </q-item>
+                          </q-tem>
                         </template>
                       </q-select>
                 </div>
                 <div class="col-6 q-py-lg q-pl-sm">
-                    <q-input label="Due Date" outlined dense v-model="edit_due_date">
+                    <q-input rounded label="Due Date" outlined dense v-model="edit_due_date">
                         <template v-slot:append>
                           <q-icon name="event" class="cursor-pointer">
                             <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
                               <q-date mask="YYYY-MM-DD" v-model="edit_due_date">
                                 <div class="row items-center justify-end">
-                                  <q-btn v-close-popup label="Close" color="primary" flat />
+                                  <q-btn rounded v-close-popup label="Close" color="primary" flat />
                                 </div>
                               </q-date>
                             </q-popup-proxy>
@@ -340,14 +340,14 @@
                       </q-input>
                 </div>
                 <div class="col-12">
-                    <div :class="$q.dark.isActive?'text-white':'text-black'" style="border: 1px solid #c2c2c2;min-height: 150px !important;" id="editTask"></div>
+                    <div :class="$q.dark.isActive?'text-white':'text-black'" style="border-radius: 12px !important;border: 1px solid #c2c2c2;min-height: 150px !important;" id="editTask"></div>
                 </q-input>
                 </div>
             </div>
         </q-card-section>
 
         <q-card-actions class="q-mx-sm" align="left">
-          <q-btn :disabled="!(task_edit_item.workEffortName && status)" @click="editTask" outline dense label="Update" class="text-capitalize" color="primary" />
+          <q-btn rounded :disabled="!(task_edit_item.workEffortName && status)" @click="editTask" outline dense label="Update" class="text-capitalize" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -362,8 +362,8 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn outlined label="Cancel" color="grey" v-close-popup></q-btn>
-          <q-btn outlined label="Delete" color="red" @click="removeContactFromOpp"></q-btn>
+          <q-btn rounded outlined label="Cancel" color="grey" v-close-popup></q-btn>
+          <q-btn rounded outlined label="Delete" color="red" @click="removeContactFromOpp"></q-btn>
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -375,7 +375,7 @@
                     Add Contact
                 </div>
                 <div class="col-1">
-                    <q-btn flat round dense icon="close" class="float-right" v-close-popup></q-btn>
+                    <q-btn rounded flat dense icon="close" class="float-right" v-close-popup></q-btn>
                 </div>
             </div>
             </q-card-section>
@@ -388,9 +388,9 @@
                     </div>
                     <div class="col-12">
                         <div class="col-12">
-                            <q-select
+                            <q-select rounded 
                                 dense
-                                :class="!$q.dark.isActive?'bg-white':''"
+                                :content-class="!$q.dark.isActive?'bg-white':''"
                                 label="Contact"
                                 outlined
                                 v-model="new_contact_in_opp"
@@ -416,8 +416,8 @@
 
             <q-separator></q-separator>
             <q-card-actions class="q-pa-md" align="left">
-              <q-btn :disable="!(new_contact_in_opp)" @click="addParty('Contact')" outline dense label="Add" class="text-capitalize q-mb-md" color="primary"></q-btn>
-              <q-btn v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+              <q-btn rounded :disable="!(new_contact_in_opp)" @click="addParty('Contact')" outline dense label="Add" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn rounded v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -429,7 +429,7 @@
                     Add Sales Person
                 </div>
                 <div class="col-1">
-                    <q-btn flat round dense icon="close" class="float-right" v-close-popup></q-btn>
+                    <q-btn rounded flat round dense icon="close" class="float-right" v-close-popup></q-btn>
                 </div>
             </div>
             </q-card-section>
@@ -442,9 +442,9 @@
                     </div>
                     <div class="col-12">
                         <div class="col-12">
-                            <q-select
+                            <q-select rounded 
                                 dense
-                                :class="!$q.dark.isActive?'bg-white':''"
+                                :content-class="!$q.dark.isActive?'bg-white':''"
                                 label="Sales Person"
                                 outlined
                                 v-model="new_sales_person_in_opp"
@@ -470,8 +470,8 @@
 
             <q-separator></q-separator>
             <q-card-actions class="q-pa-md" align="left">
-              <q-btn :disable="!(new_sales_person_in_opp)" @click="addParty('SalesRepresentative')" outline dense label="Add" class="text-capitalize q-mb-md" color="primary"></q-btn>
-              <q-btn v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+              <q-btn rounded :disable="!(new_sales_person_in_opp)" @click="addParty('SalesRepresentative')" outline dense label="Add" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn rounded v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -483,7 +483,7 @@
                     Edit Opportunity
                 </div>
                 <div class="col-1">
-                    <q-btn flat round dense icon="close" class="float-right" v-close-popup></q-btn>
+                    <q-btn rounded flat round dense icon="close" class="float-right" v-close-popup></q-btn>
                 </div>
             </div>
             </q-card-section>
@@ -492,9 +492,9 @@
             <q-card-section class="q-ma-md edit_page">
                 <div class="row q-col-gutter-md detail_cls">
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                                 dense
-                                :class="!$q.dark.isActive?'bg-white':''"
+                                :content-class="!$q.dark.isActive?'bg-white':''"
                                 label="Sales Account"
                                 outlined
                                 v-model="selected_account_in_edit"
@@ -515,9 +515,9 @@
                             </q-select>
                     </div>
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                             dense
-                            :class="!$q.dark.isActive?'bg-white':''"
+                            :content-class="!$q.dark.isActive?'bg-white':''"
                             label="Currency"
                             outlined
                             v-model="edit_opp_obj.selected_uom"
@@ -538,9 +538,9 @@
                         </q-select>
                     </div>
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                             dense
-                            :class="!$q.dark.isActive?'bg-white':''"
+                            :content-class="!$q.dark.isActive?'bg-white':''"
                             label="Stage"
                             outlined
                             v-model="stage_in_edit"
@@ -561,18 +561,18 @@
                         </q-select>
                     </div>
                     <div class="col-6">
-                        <q-input  v-model="edit_opp_obj.estimatedAmount" outlined label="Amount" style="margin:0;padding:0;background-color:white;" dense>
+                        <q-input rounded v-model="edit_opp_obj.estimatedAmount" outlined label="Amount" style="margin:0;padding:0;" dense>
                                         </q-input>
                     </div>
                     <div class="col-6">
                         <div class="col-6">
-                            <q-input label="Close Date" outlined dense v-model="current_close_date_in_edit">
+                            <q-input rounded label="Close Date" outlined dense v-model="current_close_date_in_edit">
                                 <template v-slot:append>
                                   <q-icon name="event" class="cursor-pointer">
                                     <q-popup-proxy ref="qDateProxyEditOpp" transition-show="scale" transition-hide="scale">
                                       <q-date mask="YYYY-MM-DD" v-model="current_close_date_in_edit">
                                         <div class="row items-center justify-end">
-                                          <q-btn v-close-popup label="Close" color="primary" flat />
+                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
                                         </div>
                                       </q-date>
                                     </q-popup-proxy>
@@ -582,9 +582,9 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <q-select
+                        <q-select rounded 
                             dense
-                            :class="!$q.dark.isActive?'bg-white':''"
+                            :content-class="!$q.dark.isActive?'bg-white':''"
                             label="Sales Person"
                             outlined
                             v-model="edit_sales_person"
@@ -605,12 +605,12 @@
                         </q-select>
                     </div>
                     <div class="col-12">
-                        <q-input  v-model="edit_opp_obj.opportunityName" outlined label="Opportunity Name" style="margin:0;padding:0;background-color:white;" dense>
+                        <q-input rounded v-model="edit_opp_obj.opportunityName" outlined label="Opportunity Name" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
 
                     <div class="col-12">
-                        <q-input type="textarea" v-model="edit_opp_obj.description" outlined label="Description" style="margin:0;padding:0;background-color:white;" dense>
+                        <q-input rounded type="textarea" v-model="edit_opp_obj.description" outlined label="Description" style="margin:0;padding:0;" dense>
                                     </q-input>
                     </div>
                 </div>
@@ -619,8 +619,8 @@
 
             <q-separator></q-separator>
             <q-card-actions class="q-pa-md" align="left">
-              <q-btn :disable="!(selected_account_in_edit && edit_opp_obj.opportunityName)" @click="updateOpportunity()" outline dense label="Update" class="text-capitalize q-mb-md" color="primary"></q-btn>
-              <q-btn v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+              <q-btn rounded :disable="!(selected_account_in_edit && edit_opp_obj.opportunityName)" @click="updateOpportunity()" outline dense label="Update" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn rounded v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
             </q-card-actions>
           </q-card>
         </q-dialog>
