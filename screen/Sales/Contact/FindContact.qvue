@@ -676,7 +676,7 @@ module.exports = {
         background: #ECF2FF;
     }
     .custom_radius {
-        border-radius: 1rem;
+        border-radius: 8px;
     }
     .right_options_popup .q-field__label {
         background: transparent !important;

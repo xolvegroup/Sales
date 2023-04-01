@@ -1421,7 +1421,7 @@ module.exports = {
         background: #ECF2FF;
     }
     .custom_radius {
-        border-radius: 1rem;
+        border-radius: 8px;
     }
     .custom_height_with_scroll {
         max-height: 180px;
