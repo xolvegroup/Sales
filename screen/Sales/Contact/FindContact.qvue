@@ -196,7 +196,7 @@
           </div>
     </q-drawer>
           <div>
-        <q-item class="q-pa-none q-pt-xs q-px-xs">
+        <q-item class="q-pa-none">
               <q-item-section>
                 <q-btn rounded
                 style="width: 175px;"
@@ -242,7 +242,7 @@
               <q-btn rounded style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-workEffortId' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline dense icon="close" label="Clear"></q-btn>
               </q-item-section>
             </q-item>
-                    <q-card flat class="q-mt-sm">
+                    <q-card flat class="main_list">
                       <q-card-section class="q-px-xs">
                         <q-table
                         bordered
@@ -688,5 +688,8 @@ module.exports = {
         background: grey !important;
         color: white !important;
         border-radius: 8px !important;
+    }
+    .main_list .q-card__section {
+        padding: 1px !important
     }
 </style>

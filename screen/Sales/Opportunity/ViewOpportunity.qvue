@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="row q-mt-md">
+        <div class="row">
         <div class="col-3">
             <q-card v-if="current_opportunity" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius  detail_cls my-card">
               <q-card-section class="q-pt-none text-weight-medium">
@@ -56,7 +56,7 @@
               </q-list>
               </q-card-section>
             </q-card>
-            <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card q-mt-md">
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card q-mt-sm">
                 <q-card-section>
                     <div class="text-h6"><span class="q-mt-sm inline-block">Sales Team</span> <q-btn rounded @click="add_sales_person=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Sales Person</q-btn></div>
                   </q-card-section>
@@ -76,7 +76,7 @@
                   </q-card-section>
             </q-card>
         </div>
-        <div class="col-6 q-px-md">
+        <div class="col-6 q-px-sm">
         <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card">
             <q-tabs
                 v-model="tab"
