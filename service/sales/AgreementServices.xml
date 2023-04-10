@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+
+    <!-- Use this to create a new Agreement for subscription products
+     This service will create the following records: Agreement, AgreementItem, ProductPrice -->
+    <service verb="find" noun="Agreement">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters><parameter name="agreement"/></out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
+        </actions>
+    </service>
+    <service verb="update" noun="Agreement">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="organizationPartyId"/>
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
+            <parameter name="description"/>
+            <parameter name="currencyUomId"/>
+        </in-parameters>
+        <actions>
+            <!-- TODO: Add status check so this cannot be called if Agreement is beyond draft (approved, canceled) -->
+            <service-call name="update#mantle.party.agreement.Agreement" out-map="context" in-map="context"/>
+        </actions>
+    </service>
+    <service verb="update" noun="BillToParty">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <actions>
+            <set field="roleTypeId" value="CustomerBillTo"/>
+            <!-- If selected party is the same as the party on the agreement, clear any bill to party records and return. -->
+            <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
+            <if condition="partyId == agreement.otherPartyId">
+                <entity-find entity-name="mantle.party.agreement.AgreementParty" list="agreementPartyList">
+                    <econdition field-name="agreementId"/>
+                    <econdition field-name="roleTypeId"/>
+                </entity-find>
+                <iterate list="agreementPartyList" entry="agreementParty">
+                    <service-call name="delete#mantle.party.agreement.AgreementParty" out-map="context" in-map="[agreementId:agreementId,roleTypeId:roleTypeId,partyId:agreementParty.partyId]"/>
+                </iterate>
+                <return/>
+            </if>
+            <!-- Check for existing bill to record -->
+            <entity-find-one entity-name="mantle.party.agreement.AgreementParty" value-field="billToParty">
+                <field-map field-name="agreementId"/>
+                <field-map field-name="roleTypeId"/>
+            </entity-find-one>
+            <!-- If the bill to has changed delete the old one and create a new one -->
+            <if condition="billToParty">
+                <if condition="billToParty.partyId != partyId">
+                    <service-call name="delete#mantle.party.agreement.AgreementParty" out-map="context" in-map="[agreementId:agreementId,partyId:billToParty.partyId,roleTypeId:roleTypeId]"/>
+                    <service-call name="create#mantle.party.agreement.AgreementParty" out-map="context" in-map="context"/>
+                </if>
+                <!-- If there is no bill to party record create one -->
+                <else>
+                    <service-call name="create#mantle.party.agreement.AgreementParty" out-map="context" in-map="context"/>
+                </else>
+            </if>
+        </actions>
+    </service>
+    <service verb="find" noun="AgreementItems">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="agreementItemList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.agreement.AgreementItemAndProductPrice" list="agreementItemList">
+                <econdition field-name="agreementId"/>
+                <econdition field-name="productId" operator="not-equals" value="CLOUD_ORG"/> <!-- Exclude subscriptions. Need to make this more generic. -->
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="AgreementParties">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="agreementPartyList" type="List"/>
+            <parameter name="billToParty"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.agreement.AgreementPartyDetail" list="agreementPartyList"/>
+            <entity-find-one entity-name="mantle.party.agreement.AgreementPartyDetail" value-field="billToParty">
+                <field-map field-name="agreementId"/>
+                <field-map field-name="roleTypeId" value="CustomerBillTo"/>
+            </entity-find-one>
+            <if condition="!billToParty">
+                <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
+                <entity-find-one entity-name="mantle.party.PartyDetail" value-field="billToParty">
+                    <field-map field-name="partyId" from="agreement.otherPartyId"/>
+                </entity-find-one>
+            </if>
+        </actions>
+    </service>
+    <service verb="create" noun="AgreementItem"><description>Current version supports adding products to an Agreement for a given date range and linking to a ProductPrice record.</description>
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="agreementItemType" default="AitPricing"/>
+            <parameter name="productId"/>
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
+            <parameter name="quantity"/>
+            <parameter name="unitAmount"/>
+        </in-parameters>
+        <actions>
+            <set field="price" from="unitAmount"/>
+            <!-- Create AgreementItem and ProductPrice and link with agreementId and agreementItemSeqId on ProductPrice -->
+            <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
+            <service-call name="create#mantle.product.ProductPrice" out-map="context" in-map="context"/>
+        </actions>
+    </service>
+    <service verb="update" noun="AgreementItem"><description>Current version supports adding products to an Agreement for a given date range and linking to a ProductPrice record.</description>
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="agreementItemSeqId" required="true"/>
+            <parameter name="productPriceId" required="true"/>
+            <parameter name="productId"/>
+            <parameter name="price"/>
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
+            <parameter name="quantity"/>
+            <parameter name="unitAmount"/>
+        </in-parameters>
+        <actions>
+            <service-call name="update#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
+            <service-call name="update#mantle.product.ProductPrice" out-map="context" in-map="context"/>
+        </actions>
+    </service>
+    <service verb="find" noun="AgreementSubscriptions">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="agreementSubscriptionList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.agreement.AgreementItemAndSubscription" list="agreementSubscriptionList">
+                <econdition field-name="agreementId"/>
+                <select-field field-name="resourceInstanceId"/>
+            </entity-find>
+        </actions>
+    </service>
+</services>

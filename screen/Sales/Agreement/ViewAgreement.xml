@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd" default-menu-title="Agreement" default-menu-include="false">
+    <parameter name="agreementId" required="true"/>
+    <transition name="updateAgreement"><service-call name="sales.AgreementServices.update#Agreement"/><default-response url="."/></transition>
+    <transition name="addAgreementParty"><service-call name="create#mantle.party.agreement.AgreementParty"/><default-response url="."/></transition>
+    <transition name="removeAgreementParty"><service-call name="delete#mantle.party.agreement.AgreementParty"/><default-response url="."/></transition>
+    <transition name="updateBillToParty"><service-call name="sales.AgreementServices.update#BillToParty"/><default-response url="."/></transition>
+    <transition name="addAgreementItem"><service-call name="sales.AgreementServices.create#AgreementItem"/><default-response url="."/></transition>
+    <transition name="updateAgreementItem"><service-call name="sales.AgreementServices.update#AgreementItem"/><default-response url="."/></transition>
+    <transition name="deleteAgreementItem"><service-call name="delete#mantle.party.agreement.AgreementItem"/><default-response url="."/></transition>
+    <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
+    <transition-include name="getProductList" location="component://SimpleScreens/template/product/ProductTransitions.xml"/>
+    <actions>
+        <service-call name="sales.AgreementServices.find#Agreement" in-map="[agreementId:agreementId]" out-map="context"/>
+        <service-call name="sales.AgreementServices.find#AgreementItems" in-map="[agreementId:agreementId]" out-map="context"/>
+        <service-call name="sales.AgreementServices.find#AgreementParties" in-map="[agreementId:agreementId]" out-map="context"/>
+        <service-call name="sales.AgreementServices.find#AgreementSubscriptions" in-map="[agreementId:agreementId]" out-map="context"/>
+        <!-- Get customer details for display -->
+        <entity-find-one entity-name="mantle.party.PartyDetail" value-field="customer">
+            <field-map field-name="partyId" from="agreement.otherPartyId"/>
+        </entity-find-one>
+    </actions>
+
+    <widgets>
+        <container-row>
+            <row-col lg="6">
+                <container-box>
+                    <box-header title="Agreement #${agreementId} - ${ec.resource.expand('PartyNameOnlyTemplate','',customer)}"/>
+                    <box-body>
+                        <form-single name="HeaderForm" map="agreement" transition="updateAgreement">
+                            <!-- TODO: implement status flow
+                            <field name="statusId"><default-field title="Status">
+                                <display text="${statusItem.description}"/></default-field>
+                            </field>
+                            -->
+                            <field name="agreementId"><default-field><hidden/></default-field></field>
+                            <field name="organizationPartyId"><default-field title="Transacting Entity"><drop-down allow-empty="true">
+                                <entity-options key="${partyId}" text="PartyNameTemplate">
+                                    <entity-find entity-name="mantle.party.PartyDetailAndRole">
+                                        <econdition field-name="roleTypeId" value="OrgInternal"/>
+                                        <econdition field-name="disabled" value="N" or-null="true"/>
+                                        <order-by field-name="organizationName"/>
+                                    </entity-find>
+                                </entity-options>
+                            </drop-down></default-field></field>
+                            <field name="currencyUomId"><default-field title="Currency"><drop-down no-current-selected-key="${ec.user.getPreference('CurrencyDefault') ?: 'USD'}">
+                                <entity-options key="${uomId}" text="${description} [${uomId}]">
+                                    <entity-find entity-name="moqui.basic.Uom">
+                                        <econdition field-name="uomTypeEnumId" value="UT_CURRENCY_MEASURE"/>
+                                        <order-by field-name="description"/>
+                                    </entity-find></entity-options>
+                            </drop-down></default-field></field>
+                            <field name="fromDate"><default-field title="Start Date"><date-time type="date"/></default-field></field>
+                            <field name="thruDate"><default-field title="End Date"><date-time type="date"/></default-field></field>
+                            <field name="organizationPartyId"><default-field title="Transacting Entity"><drop-down allow-empty="true">
+                                <entity-options key="${partyId}" text="PartyNameTemplate">
+                                    <entity-find entity-name="mantle.party.PartyDetailAndRole">
+                                        <econdition field-name="roleTypeId" value="OrgInternal"/>
+                                        <econdition field-name="disabled" value="N" or-null="true"/>
+                                        <order-by field-name="organizationName"/>
+                                    </entity-find>
+                                </entity-options>
+                            </drop-down></default-field></field>
+                            <field name="description"><default-field><text-line size="40"/></default-field></field>
+                            <field name="submitButton"><default-field title="Save"><submit/></default-field></field>
+                            <field-layout>
+                                <field-col-row>
+                                    <field-col><field-ref name="organizationPartyId"/></field-col>
+                                    <field-col><field-ref name="currencyUomId"/></field-col>
+                                </field-col-row>
+                                <field-col-row>
+                                    <field-col><field-ref name="fromDate"/></field-col>
+                                    <field-col><field-ref name="thruDate"/></field-col>
+                                    <field-col><field-ref name="description"/></field-col>
+                                    <field-col><field-ref name="submitButton"/></field-col>
+                                </field-col-row>
+                            </field-layout>
+                        </form-single>
+                        <section name="SubscriptionSection" condition="agreementSubscriptionList">
+                            <widgets>
+                                <container-box>
+                                    <box-header title="Subscriptions Associated with this Agreement"/>
+                                    <box-body>
+                                        <form-list name="SubscriptionForm" list="agreementSubscriptionList">
+                                            <field name="resourceInstanceId"><default-field title="Cloud Org ID"><display/></default-field></field>
+                                        </form-list>
+                                    </box-body>
+                                </container-box>
+
+                            </widgets>
+                        </section>
+                    </box-body>
+                </container-box>
+            </row-col>
+            <row-col lg="6">
+                <container-box>
+                    <box-header title="Bill To Party: ${ec.resource.expand('PartyNameOnlyTemplate','',billToParty)}"/>
+                    <box-toolbar>
+                        <container-dialog id="BillToDialog" button-text="Change Bill To">
+                            <form-single name="BillToForm" transition="updateBillToParty">
+                                <field name="agreementId"><default-field><hidden/></default-field></field>
+                                <field name="partyId"><default-field title="Party"><drop-down>
+                                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0"/></drop-down>
+                                </default-field></field>
+                                <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                    </box-toolbar>
+                    <box-body>
+                        <container-box><box-header title="Bill To Address"/>
+                            <box-toolbar>
+
+                            </box-toolbar>
+                            <box-body>
+
+                            </box-body>
+                        </container-box>
+                    </box-body>
+                </container-box>
+                <container-box>
+                    <box-header title="Agreement Parties"/>
+                    <box-toolbar>
+                        <container-dialog id="AddPartyDialog" button-text="Add Party">
+                            <form-single name="CreateAgreementParty" transition="addAgreementParty" map="agreement">
+                                <field name="agreementId"><default-field><hidden/></default-field></field>
+                                <field name="partyId"><default-field title="Party"><drop-down>
+                                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0"/></drop-down>
+                                </default-field></field>
+                                <field name="roleTypeId"><default-field title="Role">
+                                    <drop-down><entity-options key="${roleTypeId}" text="${description}">
+                                        <entity-find entity-name="mantle.party.RoleGroupMemberAndType" cache="true">
+                                            <econdition field-name="roleGroupEnumId" value="RgpAgreement"/>
+                                            <order-by field-name="description"/></entity-find>
+                                    </entity-options></drop-down>
+                                </default-field></field>
+                                <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                    </box-toolbar>
+                    <box-body>
+                        <form-list name="AgreementPartyForm" list="agreementPartyList">
+                            <field name="partyId">
+                                <default-field title="Party">
+                                    <link url="viewAccount" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
+                                </default-field>
+                            </field>
+                            <field name="description"><default-field title="Role"><display/></default-field></field>
+                            <field name="removeButton" align="right"><default-field title="">
+                                <link url="removeAgreementParty" icon="fa fa-trash"
+                                      parameter-map="[agreementId:agreementId, partyId:partyId, roleTypeId:roleTypeId]"
+                                      confirmation="Are you sure you want to remove this party from the Agreement?"/>
+                            </default-field></field>
+                        </form-list>
+                    </box-body>
+                </container-box>
+                <container-box>
+                    <box-header title="Agreement Terms"/>
+                    <box-body>
+                        <label text="Settlement Term: E.g., Net 30" type="p"/>
+                        <label text="Price Rule: E.g., Extend discount to on demand" type="p"/>
+                    </box-body>
+                </container-box>
+            </row-col>
+        </container-row>
+        <container-row>
+            <row-col lg="12">
+                <container-box>
+                    <box-header title="Agreement Items"/>
+                    <box-toolbar>
+                        <container-dialog id="AddAgreementItemContainer" button-text="Add Item">
+                            <form-single name="AddAgreementItemForm" transition="addAgreementItem" focus-field="productId">
+                                <field name="agreementId"><default-field><hidden/></default-field></field>
+                                <field name="productId"><default-field title="Product">
+                                    <drop-down><dynamic-options transition="getProductList" server-search="true" min-length="0"/></drop-down>
+                                </default-field></field>
+                                <field name="quantity"><default-field><text-line size="8" default-value="1"/></default-field></field>
+                                <field name="unitAmount"><default-field title="Price" tooltip="Leave empty to use Calc Price">
+                                    <text-line size="10"/></default-field></field>
+                                <field name="fromDate"><default-field><date-time type="date"/></default-field></field>
+                                <field name="thruDate"><default-field><date-time type="date"/></default-field></field>
+                                <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                            </form-single>
+                        </container-dialog>
+                    </box-toolbar>
+                    <box-body>
+                        <form-list name="AgreementItemForm" list="agreementItemList" list-entry="agreementItem" transition="updateAgreementItem">
+                            <field name="agreementId"><default-field><hidden/></default-field></field>
+                            <field name="agreementItemSeqId"><default-field><hidden/></default-field></field>
+                            <field name="productPriceId"><default-field><hidden/></default-field></field>
+                            <field name="agreementItemTypeEnumId"><default-field title="Item Type"><display-entity entity-name="moqui.basic.Enumeration"/></default-field></field>
+                            <field name="productId"><default-field title="Product"><display-entity entity-name="mantle.product.Product"/></default-field></field>
+                            <field name="fromDate"><default-field><date-time type="date"/></default-field></field>
+                            <field name="thruDate"><default-field><date-time type="date"/></default-field></field>
+                            <!--<field name="quantity" align="right"><default-field><display/></default-field></field>-->
+                            <field name="quantity">
+                                <conditional-field condition="1" title="Quantity"><text-line size="1"/></conditional-field>
+                                <default-field title="Quantity"><display/></default-field>
+                            </field>
+                            <!-- TODO: get list price dynamically based on date range of agreement -->
+                            <field name="unitListPrice" from="1" align="right"><default-field title="List Price">
+                                <display currency-unit-field="agreement.currencyUomId"/></default-field>
+                            </field>
+                            <field name="price"><default-field><display currency-unit-field="agreement.currencyUomId"/></default-field></field>
+                            <field name="price">
+                                <conditional-field condition="1" title="Price">
+                                    <text-line size="4" format="#,##0.00#"/></conditional-field>
+                                <default-field title="Price"><display currency-unit-field="agreement.currencyUomId"/></default-field>
+                            </field>
+                            <field name="submitButton" align="right"><conditional-field condition="1">
+                                <submit text="Update"/>
+                                <link url="deleteAgreementItem" text=" " btn-type="danger" icon="fa fa-trash" confirmation="Delete Item?"/>
+                            </conditional-field><default-field title=""/></field>
+                        </form-list>
+                    </box-body>
+                </container-box>
+            </row-col>
+        </container-row>
+    </widgets>
+</screen>

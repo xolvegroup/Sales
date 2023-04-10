@@ -129,4 +129,45 @@ by adding toRelationships to the MantleParty DataDocument for indexing with elas
         <alias name="placedDate" entity-alias="OHDR"/>
         <alias name="productStoreId" entity-alias="OHDR"/>
     </view-entity>
+    <view-entity entity-name="AgreementPartyDetail" package="mantle.party.agreement">
+        <member-entity entity-alias="AGMTPTY" entity-name="mantle.party.agreement.AgreementParty"/>
+        <member-entity entity-alias="RTP" entity-name="mantle.party.RoleType" join-from-alias="AGMTPTY">
+            <key-map field-name="roleTypeId"/></member-entity>
+        <member-entity entity-alias="PTY" entity-name="mantle.party.Party" join-from-alias="AGMTPTY">
+            <key-map field-name="partyId"/></member-entity>
+        <member-entity entity-alias="PER" entity-name="mantle.party.Person" join-from-alias="PTY" join-optional="true">
+            <key-map field-name="partyId"/></member-entity>
+        <member-entity entity-alias="ORG" entity-name="mantle.party.Organization" join-from-alias="PTY" join-optional="true">
+            <key-map field-name="partyId"/></member-entity>
+        <alias-all entity-alias="AGMTPTY"><exclude field="partyId"/></alias-all>
+        <alias-all entity-alias="RTP"/>
+        <alias-all entity-alias="PTY"/>
+        <alias-all entity-alias="PER"/>
+        <alias-all entity-alias="ORG"/>
+    </view-entity>
+    <view-entity entity-name="AgreementItemAndProductPrice" package="mantle.party.agreement">
+        <member-entity entity-alias="AI" entity-name="mantle.party.agreement.AgreementItem"/>
+        <member-entity entity-alias="PP" entity-name="mantle.product.ProductPrice" join-from-alias="AI" join-optional="true">
+            <key-map field-name="agreementId"/>
+            <key-map field-name="agreementItemSeqId"/>
+        </member-entity>
+        <alias-all entity-alias="AI"><exclude field="productId"/></alias-all>
+        <alias-all entity-alias="PP"><exclude field="fromDate"/><exclude field="thruDate"/><exclude field="quantityUomId"/></alias-all>
+        <alias name="priceFromDate" entity-alias="PP" field="fromDate"/>
+        <alias name="priceThruDate" entity-alias="PP" field="thruDate"/>
+    </view-entity>
+    <view-entity entity-name="AgreementItemAndSubscription" package="mantle.party.agreement">
+        <member-entity entity-alias="AI" entity-name="AgreementItem"/>
+        <member-entity entity-alias="AIS" entity-name="AgreementItemSubscription" join-from-alias="AI">
+            <key-map field-name="agreementId"/>
+            <key-map field-name="agreementItemSeqId"/>
+        </member-entity>
+        <member-entity entity-alias="SUB" entity-name="Subscription" join-from-alias="AIS">
+            <key-map field-name="subscriptionId"/>
+        </member-entity>
+        <alias-all entity-alias="AI"><exclude field="productId"/></alias-all>
+        <alias-all entity-alias="SUB"><exclude field="fromDate"/><exclude field="thruDate"/></alias-all>
+        <alias name="subFromDate" entity-alias="SUB" field="fromDate"/>
+        <alias name="subThruDate" entity-alias="SUB" field="thruDate"/>
+    </view-entity>
 </entities>
