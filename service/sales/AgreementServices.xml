@@ -16,6 +16,19 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- Use this to create a new Agreement for subscription products
      This service will create the following records: Agreement, AgreementItem, ProductPrice -->
+    <service verb="create" noun="Agreement">
+        <in-parameters>
+            <parameter name="agreementDate" type="Timestamp" default="ec.user.nowTimestamp"/>
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
+            <parameter name="description"/>
+            <parameter name="currencyUomId"/>
+        </in-parameters>
+        <out-parameters><parameter name="agreementId"/></out-parameters>
+        <actions>
+            <service-call name="create#mantle.party.agreement.Agreement"/>
+        </actions>
+    </service>
     <service verb="find" noun="Agreement">
         <in-parameters>
             <parameter name="agreementId" required="true"/>
@@ -86,7 +99,7 @@ along with this software (see the LICENSE.md file). If not, see
         <actions>
             <entity-find entity-name="mantle.party.agreement.AgreementItemAndProductPrice" list="agreementItemList">
                 <econdition field-name="agreementId"/>
-                <econdition field-name="productId" operator="not-equals" value="CLOUD_ORG"/> <!-- Exclude subscriptions. Need to make this more generic. -->
+                <econdition field-name="productId" operator="not-equals" value="XOLVE_CLOUD"/> <!-- Exclude subscriptions. Need to make this more generic. -->
             </entity-find>
         </actions>
     </service>
@@ -136,6 +149,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="productPriceId" required="true"/>
             <parameter name="productId"/>
             <parameter name="price"/>
+            <parameter name="itemText"/>
             <parameter name="fromDate"/>
             <parameter name="thruDate"/>
             <parameter name="quantity"/>
@@ -156,7 +170,6 @@ along with this software (see the LICENSE.md file). If not, see
         <actions>
             <entity-find entity-name="mantle.party.agreement.AgreementItemAndSubscription" list="agreementSubscriptionList">
                 <econdition field-name="agreementId"/>
-                <select-field field-name="resourceInstanceId"/>
             </entity-find>
         </actions>
     </service>
