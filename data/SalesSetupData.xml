@@ -17,10 +17,23 @@ along with this software (see the LICENSE.md file). If not, see
     <moqui.security.ArtifactGroup artifactGroupId="XOLVE_SALES" description="CRM and SFA"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="XOLVE_SALES" artifactName="component://Sales/screen/Sales.xml"
                                         artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+    <!-- Xolve Sales Admin -->
+    <moqui.security.ArtifactGroup artifactGroupId="XOLVE_SALES_ADMIN" description="CRM and SFA Administration"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="XOLVE_SALES_ADMIN" artifactName="component://Sales/screen/SalesAdmin.xml"
+                                        artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+
+    <!-- Xolve Subscription Management -->
+    <moqui.security.ArtifactGroup artifactGroupId="XOLVE_SUBSCRIPTION_MANAGEMENT" description="Agreements, Subscriptions, Quotes and Orders"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="XOLVE_SUBSCRIPTION_MANAGEMENT" artifactName="component://Sales/screen/SubscriptionManagement.xml"
+                                        artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+
     <!-- authz/permission for ADMIN users -->
     <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SALES" userGroupId="ADMIN" artifactGroupId="XOLVE_SALES"
                                   authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
-
+    <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SALES_ADMIN" userGroupId="ADMIN" artifactGroupId="XOLVE_SALES_ADMIN"
+                                  authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+    <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SUBSCRIPTION_MANAGEMENT" userGroupId="ADMIN" artifactGroupId="XOLVE_SUBSCRIPTION_MANAGEMENT"
+                                  authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
     <!-- Artifact group for REST API -->
     <moqui.security.ArtifactGroup artifactGroupId="XOLVE_SALES_API" description="Sales REST API)"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="XOLVE_SALES_API" artifactTypeEnumId="AT_REST_PATH"
@@ -33,5 +46,15 @@ along with this software (see the LICENSE.md file). If not, see
     <!-- authz for Sales app user group -->
     <moqui.security.UserGroup userGroupId="XOLVE_SALES_USERS" description="Sales Users"/>
     <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SALES_USERS" userGroupId="XOLVE_SALES_USERS" artifactGroupId="XOLVE_SALES"
+                                  authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
+
+    <!-- authz for Sales Admin app -->
+    <moqui.security.UserGroup userGroupId="XOLVE_SALES_ADMIN" description="Sales Admin"/>
+    <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SALES_ADMIN" userGroupId="XOLVE_SALES_ADMIN" artifactGroupId="XOLVE_SALES_ADMIN"
+                                  authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
+
+    <!-- authz for Subscription Management app -->
+    <moqui.security.UserGroup userGroupId="XOLVE_SUBSCRIPTION_MANAGEMENT" description="Subscription Management"/>
+    <moqui.security.ArtifactAuthz artifactAuthzId="XOLVE_SUBSCRIPTION_MANAGEMENT" userGroupId="XOLVE_SUBSCRIPTION_MANAGEMENT" artifactGroupId="XOLVE_SUBSCRIPTION_MANAGEMENT"
                                   authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
 </entity-facade-xml>

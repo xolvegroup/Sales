@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a 
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+
+    <!-- Use this to create a new Agreement for subscription products
+     This service will create the following records: Agreement, AgreementItem, ProductPrice -->
+    <service verb="create" noun="Agreement">
+        <in-parameters>
+            <parameter name="agreementDate" type="Timestamp" default="ec.user.nowTimestamp"/>
+            <parameter name="orderId" required="true"/>
+            <!--
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
+            <parameter name="description"/>
+            <parameter name="currencyUomId"/>
+            -->
+        </in-parameters>
+        <out-parameters><parameter name="agreementId"/></out-parameters>
+        <actions>
+            <!-- Get order data and create / update agreement
+             OrderPart for agreement data like start/end dates
+             OrderPart and OrderPartParty for bill to / ship to and all other parties (
+             if bill to / ship to is same as customer on order then there will not be data in OrderPartParty)
+             OrderItem: Mirror the subscription services logic that gets all digital products on the order that also have a SubscriptionResource
+             Will need to build a list of maps for AgreementItem and pass to create#Agreement service
+             Also buld a list for AgreementParty and map OrderPartParty -->
+            <entity-find-one entity-name="mantle.order.OrderHeader" value-field="orderHeader"/>
+            <entity-find entity-name="mantle.order.OrderPart" list="orderPartList">
+                <econdition field-name="orderId"/>
+            </entity-find>
+            <entity-find entity-name="mantle.order.OrderItem" list="orderItemList">
+                <econdition field-name="orderId"/>
+                <econdition field-name="orderPartSeqId" from="orderPartList[0].orderPartSeqId"/>
+            </entity-find>
+            <entity-find entity-name="mantle.order.OrderPartParty" list="orderPartPartyList">
+                <econdition field-name="orderId"/>
+                <econdition field-name="orderPartSeqId" from="orderPartList[0].orderPartSeqId"/>
+            </entity-find>
+            <set field="agreementTypeEnumId" value="AgrSales"/>
+            <set field="agreementItemTypeEnumId" value="AitPricing"/>
+            <set field="currencyUomId" from="orderHeader.currencyUomId"/>
+            <set field="otherPartyId" from="orderPartList[0].customerPartyId"/>
+            <set field="customerPartyId" from="otherPartyId"/>
+            <set field="otherRoleTypeId" value="Customer"/>
+            <set field="fromDate" from="orderPartList[0].validFromDate"/>
+            <set field="thruDate" from="orderPartList[0].validThruDate"/>
+            <set field="description" from="orderPartList[0].partName"/>
+            <set field="priceTypeEnumId" value="PptCurrent"/>
+            <set field="pricePurposeEnumId" value="PppUsage"/>
+            <!-- Create Agreement -->
+            <service-call name="create#mantle.party.agreement.Agreement" out-map="context" in-map="context"/>
+            
+            <!-- Loop orderItem and create AgreementItem and ProductPrice for each subscription.
+             TODO: Change this to only get subscription products on the order. Maybe directly pull from Subscription(s) that were just created during order approval.-->
+            <iterate list="orderItemList" entry="orderItem">
+                <log level="warn" message="Order Item Logger - orderId: ${orderItem.orderId}"/>
+                <log level="warn" message="Order Item Logger - productId: ${orderItem.productId}"/>
+                <set field="productId" from="orderItem.productId"/>
+                <set field="price" from="orderItem.unitAmount"/>
+                <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
+                <log level="warn" message="After call to AgreementItem"/>
+                <!-- From date and thru date matches agreement dates. -->
+                <service-call name="create#mantle.product.ProductPrice" out-map="context" in-map="context"/>
+
+                <!-- Link AgreementItem with Subscription
+                <service-call name="create#AgreementItemSubscription" out-map="context" in-map="context"/>
+                -->
+            </iterate>
+        </actions>
+    </service>
+    <!-- TODO: Add logic to support update, cancel create new agreement depending on sales motion (e.g., new, amend, renew)-->
+    <service verb="approve" noun="Order"><description>Wrapper service for subscription management.
+        Calls Moqui default approve#Order service then creates or updates an agreement with agreement items for each
+        subscription product. Updates subscription with unique id (e.g., tenant id) if required.</description>
+        <in-parameters>
+            <parameter name="orderId" required="true"/>
+        </in-parameters>
+        <actions>
+            <service-call name="mantle.order.OrderServices.approve#Order" out-map="context" in-map="context"/>
+            <set field="orderId" from="orderId"/>
+            <service-call name="sales.SubscriptionManagementServices.create#Agreement" out-map="context" in-map="context"/>
+        </actions>
+    </service>
+</services>

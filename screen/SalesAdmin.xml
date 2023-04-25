@@ -1,0 +1,10 @@
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd" menu-image="fa fa-flash" menu-image-type="icon">
+
+    <subscreens default-item="Party">
+        <subscreens-item name="Party" menu-title="Manage Parties" location="component://SimpleScreens/screen/SimpleScreens/Party.xml" menu-index="99"/>
+    </subscreens>
+    <widgets>
+        <subscreens-panel id="SalesAdminPanel" type="popup"/>
+    </widgets>
+</screen>

@@ -24,4 +24,5 @@ along with this software (see the LICENSE.md file). If not, see
         <relationship type="one" related="mantle.sales.opportunity.SalesOpportunity"/>
         <relationship type="one" related="moqui.security.UserAccount"/>
     </entity>
+
 </entities>
