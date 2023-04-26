@@ -155,6 +155,10 @@ by adding toRelationships to the MantleParty DataDocument for indexing with elas
         <alias-all entity-alias="PP"><exclude field="fromDate"/><exclude field="thruDate"/><exclude field="quantityUomId"/></alias-all>
         <alias name="priceFromDate" entity-alias="PP" field="fromDate"/>
         <alias name="priceThruDate" entity-alias="PP" field="thruDate"/>
+        <alias name="lineAmount" type="currency-amount" function="sum"><complex-alias operator="*">
+            <complex-alias-field entity-alias="AI" field="quantity"/>
+            <complex-alias-field entity-alias="PP" field="price"/>
+        </complex-alias></alias>
     </view-entity>
     <view-entity entity-name="AgreementItemAndSubscription" package="mantle.party.agreement">
         <member-entity entity-alias="AI" entity-name="AgreementItem"/>

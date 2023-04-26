@@ -96,11 +96,19 @@ along with this software (see the LICENSE.md file). If not, see
                                     <box-header title="Subscriptions Associated with this Agreement"/>
                                     <box-body>
                                         <form-list name="SubscriptionForm" list="agreementSubscriptionList">
-                                            <field name="resourceInstanceId"><default-field title="Cloud Org ID"><display/></default-field></field>
+                                            <field name="subscriptionId"><default-field title="Internal ID"><display/></default-field></field>
+                                            <field name="resourceInstanceId"><default-field title="External ID"><display/></default-field></field>
                                         </form-list>
                                     </box-body>
                                 </container-box>
-
+                                <container-box>
+                                    <box-header title="Agreement Terms"/>
+                                    <box-body>
+                                        <label text="Settlement Term: Net 30" type="p"/>
+                                        <label text="Committed Consumption: Billed annually in advance" type="p"/>
+                                        <label text="Price Rule: Discount applies to usage over committed amount" type="p"/>
+                                    </box-body>
+                                </container-box>
                             </widgets>
                         </section>
                     </box-body>
@@ -126,7 +134,8 @@ along with this software (see the LICENSE.md file). If not, see
 
                             </box-toolbar>
                             <box-body>
-
+                                <label text="456 Reseller Drive" type="p"/>
+                                <label text="Denver, CO 80208" type="p"/>
                             </box-body>
                         </container-box>
                     </box-body>
@@ -167,13 +176,6 @@ along with this software (see the LICENSE.md file). If not, see
                         </form-list>
                     </box-body>
                 </container-box>
-                <container-box>
-                    <box-header title="Agreement Terms"/>
-                    <box-body>
-                        <label text="Settlement Term: E.g., Net 30" type="p"/>
-                        <label text="Price Rule: E.g., Extend discount to on demand" type="p"/>
-                    </box-body>
-                </container-box>
             </row-col>
         </container-row>
         <container-row>
@@ -203,6 +205,7 @@ along with this software (see the LICENSE.md file). If not, see
                             <field name="productPriceId"><default-field><hidden/></default-field></field>
                             <field name="agreementItemTypeEnumId"><default-field title="Item Type"><display-entity entity-name="moqui.basic.Enumeration"/></default-field></field>
                             <field name="productId"><default-field title="Product"><display-entity entity-name="mantle.product.Product"/></default-field></field>
+                            <field name="itemText"><default-field title="Line Description"><text-line size="30"/></default-field></field>
                             <field name="fromDate"><default-field><date-time type="date"/></default-field></field>
                             <field name="thruDate"><default-field><date-time type="date"/></default-field></field>
                             <!--<field name="quantity" align="right"><default-field><display/></default-field></field>-->
@@ -218,7 +221,10 @@ along with this software (see the LICENSE.md file). If not, see
                             <field name="price">
                                 <conditional-field condition="1" title="Price">
                                     <text-line size="4" format="#,##0.00#"/></conditional-field>
-                                <default-field title="Price"><display currency-unit-field="agreement.currencyUomId"/></default-field>
+                                <default-field title="Contracted Price"><display currency-unit-field="agreement.currencyUomId"/></default-field>
+                            </field>
+                            <field name="lineAmount" align="right"><default-field title="Line Amount">
+                                <display currency-unit-field="agreement.currencyUomId"/></default-field>
                             </field>
                             <field name="submitButton" align="right"><conditional-field condition="1">
                                 <submit text="Update"/>
