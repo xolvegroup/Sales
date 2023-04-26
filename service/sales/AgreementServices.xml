@@ -23,6 +23,8 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="thruDate"/>
             <parameter name="description"/>
             <parameter name="currencyUomId"/>
+            <parameter name="otherPartyId"/> <!-- This is the customer -->
+            <parameter name="agreementTypeEnumId" default-value="AgrSales"/>
         </in-parameters>
         <out-parameters><parameter name="agreementId"/></out-parameters>
         <actions>
@@ -36,6 +38,17 @@ along with this software (see the LICENSE.md file). If not, see
         <out-parameters><parameter name="agreement"/></out-parameters>
         <actions>
             <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
+        </actions>
+    </service>
+    <service verb="find" noun="Agreements">
+        <in-parameters>
+            <parameter name="partyId"/>
+        </in-parameters>
+        <out-parameters><parameter name="agreements"/></out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.agreement.Agreement" list="agreements">
+                <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>
+            </entity-find>
         </actions>
     </service>
     <service verb="update" noun="Agreement">
