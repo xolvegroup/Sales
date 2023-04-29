@@ -1,0 +1,424 @@
+<template>
+    <div class="row">
+        <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm">
+                <q-card-section>
+                    <div class="text-h6">Agreement #100103 - Acme Industries Tree</div>
+                </q-card-section>
+                <q-card-section class="correct_input_fields">
+                    <div class="row">
+                        <div  class="col-md-6 col-lg-6 col-xs-12 col-sm-12 q-pr-sm">
+                            <q-select rounded
+                              label="Transacting Entity"
+                              dense
+                              outlined
+                              v-model="transacting_entity"
+                              :class="!$q.dark.isActive?'custom_style':''"
+                              use-input
+                              input-debounce="700"
+                              option-value="value"
+                              option-label="label"
+                              :options="transacting_entity_options"
+                              @filter="filterFnTransactingEntity"
+                            >
+                              <template v-slot:no-option>
+                                <q-item>
+                                  <q-item-section class="text-grey">
+                                    No results
+                                  </q-item-section>
+                                </q-item>
+                              </template>
+                            </q-select>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
+                            <q-select rounded
+                              label="Currency"
+                              dense
+                              outlined
+                              v-model="currency"
+                              :class="!$q.dark.isActive?'custom_style':''"
+                              use-input
+                              input-debounce="700"
+                              option-value="value"
+                              option-label="label"
+                              :options="currency_options"
+                              @filter="filterFnCurrency"
+                            >
+                              <template v-slot:no-option>
+                                <q-item>
+                                  <q-item-section class="text-grey">
+                                    No results
+                                  </q-item-section>
+                                </q-item>
+                              </template>
+                            </q-select>
+                        </div>
+                    </div>
+
+                    <div class="row q-mt-md">
+                        <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
+                            <q-input style="width:48%;float:left;margin-right:5px;" rounded label="Start Date" outlined dense v-model="start_date">
+                                <template v-slot:prepend>
+                                  <q-icon name="event" class="cursor-pointer">
+                                    <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                      <q-date mask="YYYY-MM-DD" v-model="start_date">
+                                        <div class="row items-center justify-end">
+                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                        </div>
+                                      </q-date>
+                                    </q-popup-proxy>
+                                  </q-icon>
+                                </template>
+                              </q-input>
+
+                            <q-input class="q-ml-sm" style="width:48%;float:left;" rounded label="End Date" style="margin:0;padding:0;" outlined dense v-model="end_date">
+                                <template v-slot:prepend>
+                                  <q-icon name="event" class="cursor-pointer">
+                                    <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                      <q-date mask="YYYY-MM-DD" v-model="end_date">
+                                        <div class="row items-center justify-end">
+                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                        </div>
+                                      </q-date>
+                                    </q-popup-proxy>
+                                  </q-icon>
+                                </template>
+                              </q-input>
+                        </div>
+                        <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
+                            <q-input rounded v-model="description" outlined label="Description" style="margin:0;padding:0;" dense>
+                                <template v-slot:after>
+                                    <q-btn rounded size="18px" @click="" style="width: 70px" class="text-blue q-px-sm q-mt-xs q-ml-md text-capitalize" outline dense label="Save"></q-btn>
+                                </template>
+                            </q-input>
+                        </div>
+                    </div>
+                </q-card-section>
+                <q-card-section>
+                    <q-card flat bordered class="custom_radius q-pa-sm">
+                        <div class="text-h6">Subscription Associated with this Agreement</div>
+                        <div class="q-mt-md">
+                            <q-table
+                              :data="subscription_list"
+                              :columns="subscription_columns"
+                              row-key="name"
+                              hide-bottom
+                              flat
+                              dense
+                              class="bg-transparent"
+                              :pagination.sync="pagination"
+                            >
+                            </q-table>
+                        </div>
+                    </q-card>
+                </q-card-section>
+                <q-card-section>
+                    <q-card flat bordered class="custom_radius q-pa-sm">
+                        <div class="text-h6">Agreement Terms</div>
+                        <div class="q-pl-sm">
+                            <div class="q-py-xs q-mt-sm">Settlement Term: Net 30</div>
+                            <div class="q-py-xs">Committed Consumption: Billed annually in advance</div>
+                            <div class="q-py-xs">Price Rule: Discount applies to usage over committed account</div>
+                        </div>
+                    </q-card>
+                </q-card-section>
+            </q-card>
+        </div>
+
+        <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12 q-pl-sm">
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm">
+                <q-card-section>
+                    <div class="row">
+                        <div class="col-9 text-h6">
+                            Bill To Party: Reseller, Inc.
+                        </div>
+                        <div class="col-3">
+                            <q-btn icon="open_in_new" rounded @click="" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Change Bill To"></q-btn>
+                        </div>
+                    </div>
+                </q-card-section>
+
+
+                <q-card-section>
+                    <q-card flat bordered class="custom_radius q-pa-sm">
+
+                        <div class="text-h6">Bill To Address</div>
+                        <div class="q-pl-sm">
+                            <div class="q-py-xs q-mt-sm">456 Reseller Drive</div>
+                            <div class="q-py-xs">Denver, CO 80208</div>
+                        </div>
+                    </q-card>
+                </q-card-section>
+            </q-card>
+
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm q-mt-sm">
+                <q-card-section>
+                    <div class="row">
+                        <div class="col-9 text-h6">
+                            Agreement Parties
+                        </div>
+                        <div class="col-3">
+                            <q-btn icon="open_in_new" rounded @click="" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add Party"></q-btn>
+                        </div>
+                    </div>
+                </q-card-section>
+
+                <q-card-section>
+                        <div class="q-mt-sm">
+                            <q-table
+                              :data="agreement_parties_list"
+                              :columns="agreement_parties_columns"
+                              row-key="name"
+                              hide-bottom
+                              flat
+                              dense
+                              class="bg-transparent"
+                              :pagination.sync="pagination_agreement_parties"
+                            >
+                                <template v-slot:body-cell-action="props">
+                                    <q-td key="action" :props="props">
+                                        <q-btn rounded @click="" outline dense icon="delete" class="text-capitalize text-red"></q-btn>
+                                    </q-td>
+                                </template>
+                            </q-table>
+                        </div>
+                </q-card-section>
+
+            </q-card>
+        </div>
+
+        <div class="col-md-12 col-lg-12 col-xs-12 col-sm-12">
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm q-mt-sm">
+                <q-card-section>
+                    <div class="row">
+                        <div class="col-9 text-h6">
+                            Agreement Items
+                        </div>
+                        <div class="col-3">
+                            <q-btn icon="open_in_new" rounded @click="" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add Item"></q-btn>
+                        </div>
+                    </div>
+                </q-card-section>
+
+                <q-card-section class="correct_input_fields">
+                        <div class="q-mt-xs">
+                            <q-table
+                              :data="agreement_items_list"
+                              :columns="agreement_items_columns"
+                              row-key="name"
+                              hide-bottom
+                              flat
+                              dense
+                              class="bg-transparent"
+                              :pagination.sync="pagination_agreement_items"
+                            >
+                                <template v-slot:body-cell-action="props">
+                                    <q-td key="action" :props="props">
+                                        <q-btn rounded @click="" outline dense label="Save" class="text-capitalize text-primary"></q-btn>
+                                        <q-btn rounded @click="" outline dense icon="delete" class="text-capitalize text-red"></q-btn>
+                                    </q-td>
+                                </template>
+
+                                <template v-slot:body-cell-line_description="props">
+                                    <q-td class="" key="line_description" :props="props">
+                                        <q-input rounded v-model="props.row.line_description" outlined label="Line Description" style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                        </q-input>
+                                    </q-td>
+                                </template>
+
+                                <template v-slot:body-cell-from_date="props">
+                                    <q-td key="from_date" :props="props">
+                                           <q-input style="margin-top:8px;margin-bottom:8px;" rounded label="End Date" style="margin:0;padding:0;" outlined dense v-model="props.row.from_date">
+                                            <template v-slot:prepend>
+                                              <q-icon name="event" class="cursor-pointer">
+                                                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                                  <q-date mask="YYYY-MM-DD" v-model="props.row.from_date">
+                                                    <div class="row items-center justify-end">
+                                                      <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                                    </div>
+                                                  </q-date>
+                                                </q-popup-proxy>
+                                              </q-icon>
+                                            </template>
+                                          </q-input>
+                                    </q-td>
+                                </template>
+
+                                <template v-slot:body-cell-thru_date="props">
+                                    <q-td key="thru_date" :props="props">
+                                           <q-input style="margin-top:8px;margin-bottom:8px;" rounded label="End Date" outlined dense v-model="props.row.thru_date">
+                                            <template v-slot:prepend>
+                                              <q-icon name="event" class="cursor-pointer">
+                                                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                                  <q-date mask="YYYY-MM-DD" v-model="props.row.thru_date">
+                                                    <div class="row items-center justify-end">
+                                                      <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                                    </div>
+                                                  </q-date>
+                                                </q-popup-proxy>
+                                              </q-icon>
+                                            </template>
+                                          </q-input>
+                                    </q-td>
+                                </template>
+
+                                <template v-slot:body-cell-quantity="props">
+                                    <q-td key="quantity" :props="props">
+                                        <q-input rounded v-model="props.row.quantity" outlined label="Quantity" style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                        </q-input>
+                                    </q-td>
+                                </template>
+
+                                <template v-slot:body-cell-contracted_price="props">
+                                    <q-td key="contracted_price" :props="props">
+                                        <q-input rounded v-model="props.row.contracted_price" outlined label="Contracted Price" style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                        </q-input>
+                                    </q-td>
+                                </template>
+
+                            </q-table>
+                        </div>
+                </q-card-section>
+
+            </q-card>
+        </div>
+
+    </div>
+</template>
+<script>
+module.exports = {
+    data: function () {
+        return {
+            description: "",
+            transacting_entity:"",
+            currency:"",
+            transacting_entity_options_all: [{'label':'md','value':'md'},{'label':'html','value':'html'}],
+            transacting_entity_options: [{'label':'md','value':'md'},{'label':'html','value':'html'}],
+            currency_options_all: [{'label':'md','value':'md'},{'label':'html','value':'html'}],
+            currency_options: [{'label':'md','value':'md'},{'label':'html','value':'html'}],
+            start_date: null,
+            end_date: null,
+            pagination: {
+                page: 0,
+                rowsPerPage: 0
+              },
+            subscription_list:[{'internal_id':'100103','external_id':'1234567890'}],
+            subscription_columns: [{ name: 'internal_id',align:'left', label: 'Internal ID', field: 'internal_id' },
+                            { name: 'external_id',align:'left', label: 'External ID', field: 'external_id' }
+                          ],
+            pagination_agreement_parties: {
+                page: 0,
+                rowsPerPage: 0
+              },
+            agreement_parties_list:[{'party':'Amazon Web Services','role':'Hyperscaler'}, {'party':'Reseller, Inc.','role':'Customer - Bill To'}],
+            agreement_parties_columns: [{ name: 'party',align:'left', label: 'Party', field: 'party' },
+                            { name: 'role',align:'left', label: 'Role', field: 'role' },
+                            { name: 'action',align:'left', label: '', field: '' },
+                          ],
+            pagination_agreement_items: {
+                page: 0,
+                rowsPerPage: 0
+              },
+            agreement_items_list:[{
+                                     item_type:'Pricing',
+                                     product:'Xolve Cloud Units',
+                                     line_description:'Year 1',
+                                     from_date:'2023-04-15',
+                                     thru_date:'2024-04-14',
+                                     quantity:'100,00',
+                                     last_price:'$1.00',
+                                     contracted_price:'0.80',
+                                     line_amount:'$80,000,00',
+                                  },{
+                                     item_type:'Pricing',
+                                     product:'Xolve Cloud Units',
+                                     line_description:'Year 2',
+                                     from_date:'2023-04-15',
+                                     thru_date:'2024-04-14',
+                                     quantity:'100,00',
+                                     last_price:'$1.00',
+                                     contracted_price:'0.85',
+                                     line_amount:'$80,000,00',
+                                  },{
+                                     item_type:'Pricing',
+                                     product:'Xolve Cloud Units',
+                                     line_description:'Year 3',
+                                     from_date:'2023-04-15',
+                                     thru_date:'2024-04-14',
+                                     quantity:'100,00',
+                                     last_price:'$1.00',
+                                     contracted_price:'0.90',
+                                     line_amount:'$80,000,00',
+                                  },
+                                ],
+            agreement_items_columns: [{ name: 'item_type',align:'left', label: 'Item Type', field: 'item_type' },
+                                      { name: 'product',align:'left', label: 'Product', field: 'product' },
+                                      { name: 'line_description',align:'left', label: 'Line Description', field: 'line_description' },
+                                      { name: 'from_date',align:'left', label: 'From Date', field: 'from_date' },
+                                      { name: 'thru_date',align:'left', label: 'Thru Date', field: 'thru_date' },
+                                      { name: 'quantity',align:'left', label: 'Quantity', field: 'quantity' },
+                                      { name: 'last_price',align:'left', label: 'Last Price', field: 'last_price' },
+                                      { name: 'contracted_price',align:'left', label: 'Contracted Price', field: 'contracted_price' },
+                                      { name: 'line_amount',align:'left', label: 'Line Amount', field: 'line_amount' },
+                                      { name: 'action',align:'left', label: '', field: '' },
+                                      ]
+        }
+    },
+    methods: {
+          filterFnTransactingEntity (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.transacting_entity_options = self.transacting_entity_options_all
+                })
+                return
+              }
+              update(() => {
+                  const needle = val.toLowerCase()
+                  this.transacting_entity_options = self.transacting_entity_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                })
+          },
+          filterFnCurrency (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.currency_options = self.currency_options_all
+                })
+                return
+              }
+              update(() => {
+                  const needle = val.toLowerCase()
+                  this.currency_options = self.currency_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                })
+          },
+    },
+    created: function () {
+
+    },
+}
+</script>
+<style>
+    .q-field__label {
+        top: 10px !important;
+    }
+    .q-field--float .q-field__label {
+        top: 0px !important;
+    }
+    .custom_style {
+        background: #ECF2FF !important;
+    }
+    .custom_radius {
+        border-radius: 8px !important;
+    }
+    .correct_input_fields .q-field__label {
+        background: transparent !important;
+    }
+    .correct_input_fields .q-field__input {
+        background: transparent !important;
+    }
+    .correct_input_fields .q-field--float .q-field__label {
+        background: grey !important;
+        color: white !important;
+        border-radius: 8px !important;
+    }
+</style>

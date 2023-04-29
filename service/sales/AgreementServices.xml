@@ -23,12 +23,13 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="thruDate"/>
             <parameter name="description"/>
             <parameter name="currencyUomId"/>
+            <parameter name="organizationPartyId"/>
             <parameter name="otherPartyId"/> <!-- This is the customer -->
             <parameter name="agreementTypeEnumId" default-value="AgrSales"/>
         </in-parameters>
         <out-parameters><parameter name="agreementId"/></out-parameters>
         <actions>
-            <service-call name="create#mantle.party.agreement.Agreement"/>
+            <service-call name="create#mantle.party.agreement.Agreement" out-map="context" in-map="context" />
         </actions>
     </service>
     <service verb="find" noun="Agreement">
@@ -43,11 +44,21 @@ along with this software (see the LICENSE.md file). If not, see
     <service verb="find" noun="Agreements">
         <in-parameters>
             <parameter name="partyId"/>
+            <parameter name="pageOffset" default-value="" type="Integer"/>
+            <parameter name="pageLimit" default-value="" type="Integer"/>
+            <parameter name="orderByField" default-value="-agreementId"/>
         </in-parameters>
-        <out-parameters><parameter name="agreements"/></out-parameters>
+        <out-parameters>
+            <parameter name="agreements"/>
+            <parameter name="count" type="Integer"/>
+        </out-parameters>
         <actions>
-            <entity-find entity-name="mantle.party.agreement.Agreement" list="agreements">
+            <entity-find-count entity-name="mantle.party.agreement.Agreement" count-field="count" distinct="true">
                 <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>
+            </entity-find-count>
+            <entity-find offset="pageOffset" limit="pageLimit" entity-name="mantle.party.agreement.Agreement" list="agreements">
+                <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>
+                <order-by field-name="${orderByField}"/>
             </entity-find>
         </actions>
     </service>
@@ -184,6 +195,18 @@ along with this software (see the LICENSE.md file). If not, see
             <entity-find entity-name="mantle.party.agreement.AgreementItemAndSubscription" list="agreementSubscriptionList">
                 <econdition field-name="agreementId"/>
             </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="OrganizationOptions">
+        <out-parameters>
+            <parameter name="orgOptions" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyDetailAndRole" list="orgOptions">
+            <econdition field-name="partyId" from="activeOrgId" ignore="!activeOrgId"/>
+            <econdition field-name="roleTypeId" value="OrgInternal"/>
+            <econdition field-name="disabled" value="N" or-null="true"/>
+            <order-by field-name="organizationName"/></entity-find>
         </actions>
     </service>
 </services>

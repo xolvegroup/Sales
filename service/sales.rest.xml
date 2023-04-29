@@ -196,4 +196,14 @@ along with this software (see the LICENSE.md file). If not, see
             <method type="get"><service name="sales.SalesServices.get#SalesPersonOptions"/></method>
         </resource>
     </resource>
+
+    <resource name="agreement" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.AgreementServices.find#Agreements"/></method>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.create#Agreement"/></method>
+        </resource>
+        <resource name="organizationOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.get#OrganizationOptions"/></method>
+        </resource>
+    </resource>
 </resource>

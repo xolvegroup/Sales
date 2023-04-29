@@ -253,6 +253,21 @@
                     </q-list>
               </q-card-section>
             </q-card>
+
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card q-mt-sm">
+              <q-card-section class="q-pt-none">
+                <div class="text-h6"><span class="q-mt-sm inline-block">Agreements</span> <q-btn rounded @click="add_agreement=true" outline dense icon="add" class="text-capitalize text-primary float-right">New Agreement</q-btn></div>
+              </q-card-section>
+              <q-card-section class="q-pt-none">
+                <q-list dense separator class="custom_height_with_scroll">
+                  <q-item class="q-py-md" :key="item.agreementId" v-for="item in agreements">
+                    <q-item-section>
+                      <q-item-label> <a :href="'ViewAgreement?agreementId=' + item.agreementId">{{item.description}}</a> </q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section>
+            </q-card>
         </div>
     </div>
 
@@ -712,22 +727,101 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="add_agreement">
+          <q-card class="detail_cls" style="width: 750px;max-width:750px;">
+            <q-card-section>
+              <div class="text-h5 q-pa-sm q-pl-md">New Agreement
+                <q-btn rounded class="absolute-top-right" style="margin: 12px" flat round dense icon="close" v-close-popup></q-btn>
+              </div>
+            </q-card-section>
+             <q-separator></q-separator>
+            <q-card-section style="font-size: 16px" class="q-pt-none">
+                <div class="row cls_space">
+                    <div class="col-12 q-px-md q-py-md">
+                        <q-input rounded outlined dense
+        v-model="new_agreement.description" label="Description*" />
+                    </div>
+                    <div class="col-12 q-px-md q-py-md">
+                        <q-select rounded
+                              label="Organization*"
+                              dense
+                              outlined
+                              v-model="new_agreement.organization"
+                              :class="!$q.dark.isActive?'bg-white':''"
+                              use-input
+                              input-debounce="700"
+                              option-value="partyId"
+                              option-label="label"
+                              :options="organization_options"
+                              @filter="filterFnOrganization"
+                            >
+                              <template v-slot:no-option>
+                                <q-item>
+                                  <q-item-section class="text-grey">
+                                    No results
+                                  </q-item-section>
+                                </q-item>
+                              </template>
+                            </q-select>
+                    </div>
+                    <div class="col-6 q-px-md q-py-md">
+                        <q-input rounded label="Valid From" outlined dense v-model="new_agreement.valid_from">
+                            <template v-slot:append>
+                              <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                  <q-date mask="YYYY-MM-DD" v-model="new_agreement.valid_from">
+                                    <div class="row items-center justify-end">
+                                      <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                    </div>
+                                  </q-date>
+                                </q-popup-proxy>
+                              </q-icon>
+                            </template>
+                          </q-input>
+                    </div>
+                    <div class="col-6 q-px-md q-py-md">
+                        <q-input rounded label="Valid Thru" outlined dense v-model="new_agreement.valid_thru">
+                            <template v-slot:append>
+                              <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                  <q-date mask="YYYY-MM-DD" v-model="new_agreement.valid_thru">
+                                    <div class="row items-center justify-end">
+                                      <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                    </div>
+                                  </q-date>
+                                </q-popup-proxy>
+                              </q-icon>
+                            </template>
+                          </q-input>
+                    </div>
+                </div>
+            </q-card-section>
+            <q-separator></q-separator>
+            <q-card-actions class="q-pl-lg q-py-md" align="left">
+              <q-btn size="14px" :disabled="!(new_agreement.description && new_agreement.organization)" rounded @click="createAgreement" outline label="Create Agreement" class="text-capitalize
+        q-mb-md" color="primary" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
 </template>
 <script>
 module.exports = {
     data: function () {
         return {
             tab: 'Notes',
+            add_agreement: false,
             delete_contact: false,
             add_email_modal: false,
             edit_email_modal: false,
             email_purpose_options_master: [],
             email_purpose_options: [],
+            agreements: [],
             mdl_filter_email_purpose:null,
             mdl_email:'',
             new_task_name:'',
             edit_mdl_email:{},
             mdl_phone:{},
+            new_agreement:{organization:null},
             edit_mdl_phone:{},
             add_phone_modal:false,
             edit_phone_modal:false,
@@ -739,6 +833,8 @@ module.exports = {
             edit_url_modal:false,
             url_purpose_options_master: [],
             url_purpose_options: [],
+            organization_options_master: [],
+            organization_options: [],
             order_status_options: [],
             mdl_filter_url_purpose:null,
             mdl_web_url:'',
@@ -777,6 +873,19 @@ module.exports = {
         }
     },
     methods: {
+        filterFnOrganization (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.organization_options = self.organization_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.organization_options = self.organization_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+            })
+          },
         filterFnStatus (val, update) {
             let self = this;
               if (val === '') {
@@ -1180,6 +1289,34 @@ module.exports = {
                     }
                 });
             },
+            getAgreements () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.agreements = resp.agreements;
+                    }
+                });
+            },
+            getOrganizationOptions () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/organizationOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.organization_options = resp.orgOptions.map(function(item){
+                            item["label"] = item["pseudoId"] + ": " + item["organizationName"];
+                            return item;
+                        });
+                        self.organization_options_master = JSON.parse(JSON.stringify(self.organization_options));
+                    }
+                });
+            },
             openEditPhone(item) {
                 this.edit_mdl_phone = JSON.parse(JSON.stringify(item));
                 this.edit_phone_modal = true;
@@ -1302,6 +1439,29 @@ module.exports = {
                         self.getPartyContactInfoList();
                     }
                 });
+            },
+            createAgreement () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                allParams["otherPartyId"] = params.partyId;
+                allParams["description"] = self.new_agreement.description;
+                allParams["fromDate"] = self.new_agreement.valid_from;
+                allParams["thruDate"] = self.new_agreement.valid_thru;
+                allParams["organizationPartyId"] = self.new_agreement.organization.partyId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/create", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.add_agreement = false;
+                        self.new_agreement = {};
+                        self.$q.notify({
+                            message: 'Agreement created successfully.',
+                            position: 'bottom-left',
+                          });
+                        window.location.href = "ViewAgreement?agreementId=" + resp.agreementId;
+                    }
+                });
             }
     },
     created: function () {
@@ -1315,6 +1475,8 @@ module.exports = {
         self.getPartyContactInfoList();
         self.getContactList();
         self.getSalesOpportunity();
+        self.getAgreements();
+        self.getOrganizationOptions();
         setTimeout( () => {
             this.getPartyNoteList();
             this.getTaskList();
