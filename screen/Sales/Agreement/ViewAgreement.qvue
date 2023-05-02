@@ -12,13 +12,13 @@
                               label="Transacting Entity"
                               dense
                               outlined
-                              v-model="transacting_entity"
+                              v-model="agreement_detail_org_party"
                               :class="!$q.dark.isActive?'custom_style':''"
                               use-input
                               input-debounce="700"
                               option-value="value"
                               option-label="label"
-                              :options="transacting_entity_options"
+                              :options="organization_options"
                               @filter="filterFnTransactingEntity"
                             >
                               <template v-slot:no-option>
@@ -35,12 +35,12 @@
                               label="Currency"
                               dense
                               outlined
-                              v-model="currency"
+                              v-model="agreement_detail_cur_uom"
                               :class="!$q.dark.isActive?'custom_style':''"
                               use-input
                               input-debounce="700"
-                              option-value="value"
-                              option-label="label"
+                              option-value="uomId"
+                              option-label="uom_label"
                               :options="currency_options"
                               @filter="filterFnCurrency"
                             >
@@ -57,11 +57,11 @@
 
                     <div class="row q-mt-md">
                         <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
-                            <q-input style="width:48%;float:left;margin-right:5px;" rounded label="Start Date" outlined dense v-model="start_date">
+                            <q-input style="width:48%;float:left;margin-right:5px;" rounded label="Start Date" outlined dense v-model="agreement_detail.fromDate">
                                 <template v-slot:prepend>
                                   <q-icon name="event" class="cursor-pointer">
                                     <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                                      <q-date mask="YYYY-MM-DD" v-model="start_date">
+                                      <q-date mask="YYYY-MM-DD" v-model="agreement_detail.fromDate">
                                         <div class="row items-center justify-end">
                                           <q-btn rounded v-close-popup label="Close" color="primary" flat />
                                         </div>
@@ -71,11 +71,11 @@
                                 </template>
                               </q-input>
 
-                            <q-input class="q-ml-sm" style="width:48%;float:left;" rounded label="End Date" style="margin:0;padding:0;" outlined dense v-model="end_date">
+                            <q-input class="q-ml-sm" style="width:48%;float:left;" rounded label="End Date" style="margin:0;padding:0;" outlined dense v-model="agreement_detail.thruDate">
                                 <template v-slot:prepend>
                                   <q-icon name="event" class="cursor-pointer">
                                     <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                                      <q-date mask="YYYY-MM-DD" v-model="end_date">
+                                      <q-date mask="YYYY-MM-DD" v-model="agreement_detail.thruDate">
                                         <div class="row items-center justify-end">
                                           <q-btn rounded v-close-popup label="Close" color="primary" flat />
                                         </div>
@@ -86,9 +86,9 @@
                               </q-input>
                         </div>
                         <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
-                            <q-input rounded v-model="description" outlined label="Description" style="margin:0;padding:0;" dense>
+                            <q-input rounded v-model="agreement_detail.description" outlined label="Description" style="margin:0;padding:0;" dense>
                                 <template v-slot:after>
-                                    <q-btn rounded size="18px" @click="" style="width: 70px" class="text-blue q-px-sm q-mt-xs q-ml-md text-capitalize" outline dense label="Save"></q-btn>
+                                    <q-btn rounded size="18px" @click="updateAgreement" style="width: 70px" class="text-blue q-px-sm q-mt-xs q-ml-md text-capitalize" outline dense label="Save"></q-btn>
                                 </template>
                             </q-input>
                         </div>
@@ -175,9 +175,25 @@
                               class="bg-transparent"
                               :pagination.sync="pagination_agreement_parties"
                             >
+                                <template v-slot:body-cell-party="props">
+                                    <q-td :props="props">
+                                        <span v-if="props.row.firstName && props.row.roleTypeId === 'Employee'">
+                                            {{props.row.firstName}} {{props.row.lastName}}
+                                        </span>
+                                        <span v-if="!props.row.firstName && props.row.roleTypeId === 'Employee'">
+                                            {{props.row.organizationName}}
+                                        </span>
+                                        <span v-if="props.row.organizationName && props.row.roleTypeId !== 'Employee'">
+                                            {{props.row.organizationName}}
+                                        </span>
+                                        <span v-if="!props.row.organizationName && props.row.roleTypeId !== 'Employee'">
+                                            {{props.row.firstName}} {{props.row.lastName}}
+                                        </span>
+                                    </q-td>
+                                </template>
                                 <template v-slot:body-cell-action="props">
-                                    <q-td key="action" :props="props">
-                                        <q-btn rounded @click="" outline dense icon="delete" class="text-capitalize text-red"></q-btn>
+                                    <q-td :props="props">
+                                        <q-btn rounded @click="confirmRemoveAgreementParty(props.row)" outline dense icon="delete" class="text-capitalize text-red"></q-btn>
                                     </q-td>
                                 </template>
                             </q-table>
@@ -213,26 +229,26 @@
                               :pagination.sync="pagination_agreement_items"
                             >
                                 <template v-slot:body-cell-action="props">
-                                    <q-td key="action" :props="props">
-                                        <q-btn rounded @click="" outline dense label="Save" class="text-capitalize text-primary"></q-btn>
-                                        <q-btn rounded @click="" outline dense icon="delete" class="text-capitalize text-red"></q-btn>
+                                    <q-td :props="props">
+                                        <q-btn rounded @click="updateAgreementItem(props.row)" outline dense label="Update" class="text-capitalize text-primary"></q-btn>
+                                        <q-btn rounded @click="confirmDeleteAgreementItem(props.row)" outline dense icon="delete" class="text-capitalize text-red"></q-btn>
                                     </q-td>
                                 </template>
 
-                                <template v-slot:body-cell-line_description="props">
-                                    <q-td class="" key="line_description" :props="props">
-                                        <q-input rounded v-model="props.row.line_description" outlined label="Line Description" style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                <template v-slot:body-cell-item_text="props">
+                                    <q-td :props="props">
+                                        <q-input rounded v-model="props.row.itemText" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
                                         </q-input>
                                     </q-td>
                                 </template>
 
                                 <template v-slot:body-cell-from_date="props">
-                                    <q-td key="from_date" :props="props">
-                                           <q-input style="margin-top:8px;margin-bottom:8px;" rounded label="End Date" style="margin:0;padding:0;" outlined dense v-model="props.row.from_date">
+                                    <q-td :props="props">
+                                           <q-input style="margin-top:8px;margin-bottom:8px;" rounded style="margin:0;padding:0;" outlined dense v-model="props.row.fromDate">
                                             <template v-slot:prepend>
                                               <q-icon name="event" class="cursor-pointer">
                                                 <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                                                  <q-date mask="YYYY-MM-DD" v-model="props.row.from_date">
+                                                  <q-date mask="YYYY-MM-DD" v-model="props.row.fromDate">
                                                     <div class="row items-center justify-end">
                                                       <q-btn rounded v-close-popup label="Close" color="primary" flat />
                                                     </div>
@@ -245,12 +261,12 @@
                                 </template>
 
                                 <template v-slot:body-cell-thru_date="props">
-                                    <q-td key="thru_date" :props="props">
-                                           <q-input style="margin-top:8px;margin-bottom:8px;" rounded label="End Date" outlined dense v-model="props.row.thru_date">
+                                    <q-td :props="props">
+                                           <q-input style="margin-top:8px;margin-bottom:8px;" rounded outlined dense v-model="props.row.thruDate">
                                             <template v-slot:prepend>
                                               <q-icon name="event" class="cursor-pointer">
                                                 <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                                                  <q-date mask="YYYY-MM-DD" v-model="props.row.thru_date">
+                                                  <q-date mask="YYYY-MM-DD" v-model="props.row.thruDate">
                                                     <div class="row items-center justify-end">
                                                       <q-btn rounded v-close-popup label="Close" color="primary" flat />
                                                     </div>
@@ -263,16 +279,22 @@
                                 </template>
 
                                 <template v-slot:body-cell-quantity="props">
-                                    <q-td key="quantity" :props="props">
-                                        <q-input rounded v-model="props.row.quantity" outlined label="Quantity" style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                    <q-td :props="props">
+                                        <q-input rounded v-model="props.row.quantity" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
                                         </q-input>
                                     </q-td>
                                 </template>
 
-                                <template v-slot:body-cell-contracted_price="props">
-                                    <q-td key="contracted_price" :props="props">
-                                        <q-input rounded v-model="props.row.contracted_price" outlined label="Contracted Price" style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                <template v-slot:body-cell-price="props">
+                                    <q-td :props="props">
+                                        <q-input rounded v-model="props.row.price" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
                                         </q-input>
+                                    </q-td>
+                                </template>
+
+                                <template v-slot:body-cell-line_amount="props">
+                                    <q-td :props="props">
+                                        {{props.row.formatted_line_amount}}
                                     </q-td>
                                 </template>
 
@@ -282,22 +304,47 @@
 
             </q-card>
         </div>
+        <q-dialog v-model="delete_agreement_item" persistent>
+          <q-card style="max-width: 450px" class="q-pa-md">
+            <q-card-section class="row items-center">
+              <q-avatar icon="delete" color="red" text-color="white"></q-avatar>
+              <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to delete this agreement item?</span>
+            </q-card-section>
 
+            <q-card-actions align="right">
+              <q-btn rounded outlined label="Cancel" color="grey" v-close-popup></q-btn>
+              <q-btn rounded v-if="" outlined label="Delete" color="red" @click="deleteAgreementItem"></q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="delete_party_from_agreement" persistent>
+          <q-card style="max-width: 450px" class="q-pa-md">
+            <q-card-section class="row items-center">
+              <q-avatar icon="delete" color="red" text-color="white"></q-avatar>
+              <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to remove this party from the Agreement?</span>
+            </q-card-section>
+
+            <q-card-actions align="right">
+              <q-btn rounded outlined label="Cancel" color="grey" v-close-popup></q-btn>
+              <q-btn rounded v-if="" outlined label="Delete" color="red" @click="removeAgreementParty"></q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
     </div>
 </template>
 <script>
 module.exports = {
     data: function () {
         return {
-            description: "",
             transacting_entity:"",
-            currency:"",
-            transacting_entity_options_all: [{'label':'md','value':'md'},{'label':'html','value':'html'}],
-            transacting_entity_options: [{'label':'md','value':'md'},{'label':'html','value':'html'}],
-            currency_options_all: [{'label':'md','value':'md'},{'label':'html','value':'html'}],
-            currency_options: [{'label':'md','value':'md'},{'label':'html','value':'html'}],
-            start_date: null,
-            end_date: null,
+            agreement_detail: {},
+            agreement_detail_cur_uom: null,
+            agreement_detail_org_party: null,
+            organization_options_master: [],
+            agreement_parties: [],
+            organization_options: [],
+            currency_options_master: [],
+            currency_options: [],
             pagination: {
                 page: 0,
                 rowsPerPage: 0
@@ -310,56 +357,28 @@ module.exports = {
                 page: 0,
                 rowsPerPage: 0
               },
-            agreement_parties_list:[{'party':'Amazon Web Services','role':'Hyperscaler'}, {'party':'Reseller, Inc.','role':'Customer - Bill To'}],
-            agreement_parties_columns: [{ name: 'party',align:'left', label: 'Party', field: 'party' },
-                            { name: 'role',align:'left', label: 'Role', field: 'role' },
+            agreement_parties_list:[],
+            agreement_parties_columns: [{ name: 'party',align:'left', label: 'Party', field: '' },
+                            { name: 'role',align:'left', label: 'Role', field: 'roleTypeId' },
                             { name: 'action',align:'left', label: '', field: '' },
                           ],
             pagination_agreement_items: {
                 page: 0,
                 rowsPerPage: 0
               },
-            agreement_items_list:[{
-                                     item_type:'Pricing',
-                                     product:'Xolve Cloud Units',
-                                     line_description:'Year 1',
-                                     from_date:'2023-04-15',
-                                     thru_date:'2024-04-14',
-                                     quantity:'100,00',
-                                     last_price:'$1.00',
-                                     contracted_price:'0.80',
-                                     line_amount:'$80,000,00',
-                                  },{
-                                     item_type:'Pricing',
-                                     product:'Xolve Cloud Units',
-                                     line_description:'Year 2',
-                                     from_date:'2023-04-15',
-                                     thru_date:'2024-04-14',
-                                     quantity:'100,00',
-                                     last_price:'$1.00',
-                                     contracted_price:'0.85',
-                                     line_amount:'$80,000,00',
-                                  },{
-                                     item_type:'Pricing',
-                                     product:'Xolve Cloud Units',
-                                     line_description:'Year 3',
-                                     from_date:'2023-04-15',
-                                     thru_date:'2024-04-14',
-                                     quantity:'100,00',
-                                     last_price:'$1.00',
-                                     contracted_price:'0.90',
-                                     line_amount:'$80,000,00',
-                                  },
-                                ],
+            agreement_items_list:[],
+            item_to_delete: {},
+            delete_agreement_item: false,
+            delete_party_from_agreement: false,
             agreement_items_columns: [{ name: 'item_type',align:'left', label: 'Item Type', field: 'item_type' },
                                       { name: 'product',align:'left', label: 'Product', field: 'product' },
-                                      { name: 'line_description',align:'left', label: 'Line Description', field: 'line_description' },
-                                      { name: 'from_date',align:'left', label: 'From Date', field: 'from_date' },
-                                      { name: 'thru_date',align:'left', label: 'Thru Date', field: 'thru_date' },
+                                      { name: 'item_text',align:'left', label: 'Line Description', field: 'itemText' },
+                                      { name: 'from_date',align:'left', label: 'From Date', field: 'fromDate' },
+                                      { name: 'thru_date',align:'left', label: 'Thru Date', field: 'thruDate' },
                                       { name: 'quantity',align:'left', label: 'Quantity', field: 'quantity' },
-                                      { name: 'last_price',align:'left', label: 'Last Price', field: 'last_price' },
-                                      { name: 'contracted_price',align:'left', label: 'Contracted Price', field: 'contracted_price' },
-                                      { name: 'line_amount',align:'left', label: 'Line Amount', field: 'line_amount' },
+                                      { name: 'last_price',align:'left', label: 'List Price', field: 'last_price' },
+                                      { name: 'price',align:'left', label: 'Contracted Price', field: 'price' },
+                                      { name: 'line_amount',align:'left', label: 'Line Amount', field: 'lineAmount' },
                                       { name: 'action',align:'left', label: '', field: '' },
                                       ]
         }
@@ -369,31 +388,198 @@ module.exports = {
             let self = this;
               if (val === '') {
                 update(() => {
-                  this.transacting_entity_options = self.transacting_entity_options_all
+                  this.organization_options = self.organization_options_master
                 })
                 return
               }
               update(() => {
                   const needle = val.toLowerCase()
-                  this.transacting_entity_options = self.transacting_entity_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                  this.organization_options = self.organization_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
                 })
           },
           filterFnCurrency (val, update) {
             let self = this;
               if (val === '') {
                 update(() => {
-                  this.currency_options = self.currency_options_all
+                  this.currency_options = self.currency_options_master
                 })
                 return
               }
               update(() => {
                   const needle = val.toLowerCase()
-                  this.currency_options = self.currency_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                  this.currency_options = self.currency_options.filter(v => v.uom_label.toLowerCase().indexOf(needle) > -1)
                 })
           },
+          formatDate (dt) {
+                if (dt) {
+                    dt = new Date(dt);
+                    return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0');
+                }
+            },
+            getUOM () {
+                var self = this;
+                var allParms = { moquiSessionToken:self.$root.moquiSessionToken };
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getUOM", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.currency_options_master = resp.statusList.map(function(item){
+                            item.uom_label = item.description + " [" + item.uomId + "]";
+                            return item;
+                        });
+                        self.currency_options = JSON.parse(JSON.stringify(self.currency_options_master));
+                        self.getOrganizationOptions();
+                    }
+                });
+            },
+            updateAgreement () {
+                var self = this;
+                self.agreement_detail["moquiSessionToken"] = self.$root.moquiSessionToken;
+                self.agreement_detail["organizationPartyId"] = self.agreement_detail_org_party.partyId;
+                self.agreement_detail["currencyUomId"] = self.agreement_detail_cur_uom.uomId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateAgreement", headers:{Accept:'application/json'}, data:self.agreement_detail,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.$q.notify({
+                            message: 'Updated successfully.',
+                            position: 'bottom-left',
+                          });
+                    }
+                });
+            },
+            confirmDeleteAgreementItem (item) {
+                var self = this;
+                self.item_to_delete = {};
+                self.item_to_delete["moquiSessionToken"] = self.$root.moquiSessionToken;
+                self.item_to_delete["agreementId"] = item.agreementId;
+                self.item_to_delete["agreementItemSeqId"] = item.agreementItemSeqId;
+                self.delete_agreement_item = true;
+            },
+            deleteAgreementItem() {
+                let self = this;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/deleteAgreementItem", headers:{Accept:'application/json'}, data:self.item_to_delete,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.$q.notify({
+                            message: 'Deleted successfully.',
+                            position: 'bottom-left',
+                        });
+                        self.delete_agreement_item = false;
+                        self.item_to_delete = {};
+                        self.getAgreementItems();
+                    }
+                });
+            },
+            confirmRemoveAgreementParty (item) {
+                var self = this;
+                self.item_to_delete = {};
+                self.item_to_delete["moquiSessionToken"] = self.$root.moquiSessionToken;
+                self.item_to_delete["agreementId"] = item.agreementId;
+                self.item_to_delete["partyId"] = item.partyId;
+                self.item_to_delete["roleTypeId"] = item.roleTypeId;
+                self.delete_party_from_agreement = true;
+            },
+            removeAgreementParty() {
+                let self = this;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/removeAgreementParty", headers:{Accept:'application/json'}, data:self.item_to_delete,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.$q.notify({
+                            message: 'Removed party successfully.',
+                            position: 'bottom-left',
+                        });
+                        self.delete_party_from_agreement = false;
+                        self.item_to_delete = {};
+                        self.getAgreementParties();
+                    }
+                });
+            },
+            updateAgreementItem (item) {
+                var self = this;
+                item["moquiSessionToken"] = self.$root.moquiSessionToken;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateAgreementItem", headers:{Accept:'application/json'}, data:item,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.$q.notify({
+                            message: 'Updated successfully.',
+                            position: 'bottom-left',
+                          });
+                          self.getAgreementItems();
+                    }
+                });
+            },
+            getOrganizationOptions () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/organizationOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.organization_options = resp.orgOptions.map(function(item){
+                            item["label"] = item["pseudoId"] + ": " + item["organizationName"];
+                            return item;
+                        });
+                        self.organization_options_master = JSON.parse(JSON.stringify(self.organization_options));
+                        self.getAgreement();
+                    }
+                });
+            },
+            getAgreement () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {agreementId: params.agreementId, moquiSessionToken:self.$root.moquiSessionToken };
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getSingle", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.agreement_detail = resp.agreement;
+                        self.agreement_detail.fromDate = self.formatDate(self.agreement_detail.fromDate);
+                        self.agreement_detail.thruDate = self.formatDate(self.agreement_detail.thruDate);
+                        if (!self.agreement_detail.currencyUomId) {
+                            self.agreement_detail_cur_uom = self.currency_options.find(function(item){
+                                return item.uomId === "USD";
+                            });
+                        }
+                        else {
+                            self.agreement_detail_cur_uom = self.currency_options.find(function(item){
+                                return item.uomId === self.agreement_detail.currencyUomId;
+                            });
+                        }
+                        self.agreement_detail_org_party = self.organization_options.find(function(item){
+                            return item.partyId === self.agreement_detail.organizationPartyId;
+                        })
+                    }
+                });
+            },
+            getAgreementItems () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {agreementId: params.agreementId, moquiSessionToken:self.$root.moquiSessionToken };
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/agreementItems", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.agreement_items_list = resp.agreementItemList.map(function(item){
+                            item["fromDate"] = self.formatDate(item.fromDate);
+                            item["thruDate"] = self.formatDate(item.thruDate);
+                            item["price"] = Number(item["price"]).toLocaleString();;
+                            return item;
+                        });
+                    }
+                });
+            },
+            getAgreementParties () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {agreementId: params.agreementId, moquiSessionToken:self.$root.moquiSessionToken };
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getAgreementParties", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.agreement_parties_list = resp.agreementPartyList;
+                    }
+                });
+            }
     },
     created: function () {
-
+        this.getUOM();
+        this.getAgreementItems();
+        this.getAgreementParties();
     },
 }
 </script>

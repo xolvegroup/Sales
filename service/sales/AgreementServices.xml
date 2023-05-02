@@ -121,10 +121,40 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="agreementItemList" type="List"/>
         </out-parameters>
         <actions>
-            <entity-find entity-name="mantle.party.agreement.AgreementItemAndProductPrice" list="agreementItemList">
+            <entity-find entity-name="mantle.party.agreement.AgreementItemAndProductPrice" list="agreementItemListMain">
                 <econdition field-name="agreementId"/>
                 <econdition field-name="productId" operator="not-equals" value="XOLVE_CLOUD"/> <!-- Exclude subscriptions. Need to make this more generic. -->
             </entity-find>
+            <set field="agreementItemList" from="[]"/>
+            <if condition="agreementItemListMain">
+                <iterate list="agreementItemListMain" entry="ai">
+                    <set field="ag_item" from="new HashMap()"/>
+                    <script>
+                        ag_item.putAll(ai)
+                        agreementItemList.add(ag_item)
+                    </script>
+                    <set field="formatted_line_amount" from="ec.l10n.formatCurrency(ai.lineAmount ?: 0, ai?.quantityUomId)"/>
+                    <script>
+                        ag_item.put("formatted_line_amount",formatted_line_amount)
+                    </script>
+                    <entity-find-one entity-name="mantle.product.Product" value-field="product">
+                        <field-map field-name="productId" from="ai.productId"/>
+                    </entity-find-one>
+                    <if condition="product">
+                        <script>
+                            ag_item.put("product",product.productName)
+                        </script>
+                    </if>
+                    <entity-find-one entity-name="moqui.basic.Enumeration" value-field="item_type">
+                        <field-map field-name="enumId" from="ai.agreementItemTypeEnumId"/>
+                    </entity-find-one>
+                    <if condition="item_type">
+                        <script>
+                            ag_item.put("item_type",item_type.description)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
         </actions>
     </service>
     <service verb="find" noun="AgreementParties">

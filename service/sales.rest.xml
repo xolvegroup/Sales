@@ -199,11 +199,32 @@ along with this software (see the LICENSE.md file). If not, see
 
     <resource name="agreement" require-authentication="anonymous-view">
         <method type="get"><service name="sales.AgreementServices.find#Agreements"/></method>
+        <resource name="getSingle" require-authentication="anonymous-all">
+            <method type="get"><service name="sales.AgreementServices.find#Agreement"/></method>
+        </resource>
         <resource name="create" require-authentication="anonymous-all">
             <method type="post"><service name="sales.AgreementServices.create#Agreement"/></method>
         </resource>
+        <resource name="updateAgreement" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#Agreement"/></method>
+        </resource>
+        <resource name="updateAgreementItem" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#AgreementItem"/></method>
+        </resource>
+        <resource name="deleteAgreementItem" require-authentication="anonymous-all">
+            <method type="post"><service name="delete#mantle.party.agreement.AgreementItem"/></method>
+        </resource>
+        <resource name="removeAgreementParty" require-authentication="anonymous-all">
+            <method type="post"><service name="delete#mantle.party.agreement.AgreementParty"/></method>
+        </resource>
         <resource name="organizationOptions" require-authentication="anonymous-view">
             <method type="get"><service name="sales.AgreementServices.get#OrganizationOptions"/></method>
+        </resource>
+        <resource name="agreementItems" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#AgreementItems"/></method>
+        </resource>
+        <resource name="getAgreementParties" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#AgreementParties"/></method>
         </resource>
     </resource>
 </resource>

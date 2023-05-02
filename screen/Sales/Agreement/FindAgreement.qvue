@@ -284,17 +284,6 @@ module.exports = {
         }
     },
     methods: {
-        checkSalesPerson(sp_list) {
-            let sps = sp_list.filter(function(item){
-                return item.fromRoleTypeId === 'SalesRepresentative';
-            });
-            if (sps.length > 0){
-                return true
-            }
-            else {
-                return false
-            }
-        },
         onPageChange (props) {
             let self = this;
             const page = props.pagination.page;
@@ -342,26 +331,6 @@ module.exports = {
                     self.pagination.descending = descending;
                 }
             });
-        },
-        addNewSalesAccount() {
-            let self = this;
-              var allParams = $.extend({organizationName: self.new_sales_account_name,
-                                      moquiSessionToken:self.$root.moquiSessionToken }, {});
-              $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/account/create", headers:{Accept:'application/json'}, data:allParams,
-                  error:moqui.handleAjaxError, success:function(resp) {
-                      self.new_sales_account_name = "";
-                      self.add_new_sales_account = false;
-                      setTimeout( () => {
-                        self.onPageChange({
-                          pagination: self.pagination,
-                        });
-                      }, 900 );
-                      self.$q.notify({
-                        message: 'New sales account created successfully.',
-                        position: 'bottom-left',
-                      });
-                  }
-              });
         },
         formatDate (dt) {
             if (dt) {
@@ -436,33 +405,6 @@ module.exports = {
             self.onPageChange({
               pagination: self.pagination,
             });
-        },
-        timeSince(date) {
-
-              var seconds = Math.floor((new Date() - date) / 1000);
-
-              var interval = seconds / 31536000;
-
-              if (interval > 1) {
-                return Math.floor(interval) + " year(s) ago";
-              }
-              interval = seconds / 2592000;
-              if (interval > 1) {
-                return Math.floor(interval) + " month(s) ago";
-              }
-              interval = seconds / 86400;
-              if (interval > 1) {
-                return Math.floor(interval) + " day(s) ago";
-              }
-              interval = seconds / 3600;
-              if (interval > 1) {
-                return Math.floor(interval) + " hour(s) ago";
-              }
-              interval = seconds / 60;
-              if (interval > 1) {
-                return Math.floor(interval) + " minute(s) ago";
-              }
-              return Math.floor(seconds) + " second(s) ago";
         },
         getSavedFinds () {
             var self = this;
