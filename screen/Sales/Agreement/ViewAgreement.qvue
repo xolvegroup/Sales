@@ -158,13 +158,13 @@
                             Agreement Parties
                         </div>
                         <div class="col-3">
-                            <q-btn icon="open_in_new" rounded @click="" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add Party"></q-btn>
+                            <q-btn icon="open_in_new" rounded @click="add_party=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add Party"></q-btn>
                         </div>
                     </div>
                 </q-card-section>
 
                 <q-card-section>
-                        <div class="q-mt-sm">
+                        <div class="q-mt-sm custom_height_with_scroll">
                             <q-table
                               :data="agreement_parties_list"
                               :columns="agreement_parties_columns"
@@ -330,6 +330,74 @@
             </q-card-actions>
           </q-card>
         </q-dialog>
+        <q-dialog v-model="add_party">
+          <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+            <q-card-section>
+            <div class="row q-px-sm">
+                <div class="col-10">
+                    <div class="text-h5">Add Party</div>
+                </div>
+                <div class="col-2 text-right">
+                    <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+                </div>
+            </div>
+            </q-card-section>
+
+            <q-separator class="q-mx-none"></q-separator>
+
+            <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                            <q-select rounded
+                                label="Party"
+                                dense
+                                outlined
+                                v-model="new_party"
+                                use-input
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                input-debounce="0"
+                                option-value="value"
+                                option-label="label"
+                                :options="account_options"
+                                @filter="filterFnAccount"
+                              >
+                                <template v-slot:no-option>
+                                  <q-item>
+                                    <q-item-section class="text-grey">
+                                      No results
+                                    </q-item-section>
+                                  </q-item>
+                                </template>
+                              </q-select>
+
+                            <div class="q-mt-sm q-pt-sm">
+                                <q-select rounded
+                                label="Role"
+                                dense
+                                outlined
+                                v-model="new_role"
+                                use-input
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                input-debounce="0"
+                                option-value="roleTypeId"
+                                option-label="description"
+                                :options="role_options"
+                                @filter="filterFnRole"
+                              >
+                                <template v-slot:no-option>
+                                  <q-item>
+                                    <q-item-section class="text-grey">
+                                      No results
+                                    </q-item-section>
+                                  </q-item>
+                                </template>
+                              </q-select>
+                            </div>
+            </q-card-section>
+
+            <q-card-actions class="q-mx-sm" align="left">
+              <q-btn size="16px" rounded :disabled="!(new_party && new_role)" @click="addPartyToAgreement"  outline dense label="Save"  class="text-capitalize" color="primary" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
     </div>
 </template>
 <script>
@@ -338,6 +406,9 @@ module.exports = {
         return {
             transacting_entity:"",
             agreement_detail: {},
+            add_party: false,
+            new_party: null,
+            new_role: null,
             agreement_detail_cur_uom: null,
             agreement_detail_org_party: null,
             organization_options_master: [],
@@ -345,6 +416,8 @@ module.exports = {
             organization_options: [],
             currency_options_master: [],
             currency_options: [],
+            role_options_master: [],
+            role_options: [],
             pagination: {
                 page: 0,
                 rowsPerPage: 0
@@ -367,6 +440,7 @@ module.exports = {
                 rowsPerPage: 0
               },
             agreement_items_list:[],
+            account_options:[],
             item_to_delete: {},
             delete_agreement_item: false,
             delete_party_from_agreement: false,
@@ -384,6 +458,47 @@ module.exports = {
         }
     },
     methods: {
+            filterFnRole (val, update) {
+                let self = this;
+                  if (val === '') {
+                    update(() => {
+                      this.role_options = self.role_options_master
+                    })
+                    return
+                  }
+                  update(() => {
+                      const needle = val.toLowerCase()
+                      this.role_options = self.role_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
+                    })
+              },
+            filterFnAccount(val, update, abort) {
+                let self = this;
+                if (val.length < 2) {
+                    abort()
+                    return
+                }
+                if (val === '') {
+                    update(() => {
+                        self.account_options = [];
+                    })
+                    return
+                }
+                self.searchPartyList(val.toLowerCase()).then(function(resp){
+                    update(() => {
+                        self.account_options = resp;
+                    })
+                });
+            },
+            searchPartyList (search_keyword) {
+                var self = this;
+                var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                allParms["hasAllParms"] = true;
+                allParms["pageIndex"] = 0;
+                allParms["term"] = search_keyword;
+                return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError
+                });
+            },
           filterFnTransactingEntity (val, update) {
             let self = this;
               if (val === '') {
@@ -574,12 +689,43 @@ module.exports = {
                         self.agreement_parties_list = resp.agreementPartyList;
                     }
                 });
+            },
+            getRoleOptions () {
+                var self = this;
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken };
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getRoleOptions", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.role_options_master = resp.roleList;
+                        self.role_options = JSON.parse(JSON.stringify(self.role_options_master));
+                    }
+                });
+            },
+            addPartyToAgreement () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
+                        partyId: self.new_party.value, roleTypeId: self.new_role.roleTypeId};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/addAgreementParty", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.new_party = null;
+                        self.new_role = null;
+                        self.add_party = false;
+                        self.getAgreementParties();
+                        self.$q.notify({
+                            message: 'Party added successfully.',
+                            position: 'bottom-left',
+                          });
+                    }
+                });
             }
     },
     created: function () {
         this.getUOM();
         this.getAgreementItems();
         this.getAgreementParties();
+        this.getRoleOptions();
     },
 }
 </script>
@@ -606,5 +752,10 @@ module.exports = {
         background: grey !important;
         color: white !important;
         border-radius: 8px !important;
+    }
+    .custom_height_with_scroll {
+        max-height: 155px;
+        overflow-x: hidden !important;
+        overflow-y: auto;
     }
 </style>
