@@ -220,6 +220,9 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="addAgreementParty" require-authentication="anonymous-all">
             <method type="post"><service name="create#mantle.party.agreement.AgreementParty"/></method>
         </resource>
+        <resource name="addAgreementItem" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.create#AgreementItem"/></method>
+        </resource>
         <resource name="organizationOptions" require-authentication="anonymous-view">
             <method type="get"><service name="sales.AgreementServices.get#OrganizationOptions"/></method>
         </resource>
@@ -231,6 +234,9 @@ along with this software (see the LICENSE.md file). If not, see
         </resource>
         <resource name="getRoleOptions" require-authentication="anonymous-view">
             <method type="get"><service name="sales.AgreementServices.get#RoleOptions"/></method>
+        </resource>
+        <resource name="getProductList" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.get#ProductList"/></method>
         </resource>
     </resource>
 </resource>

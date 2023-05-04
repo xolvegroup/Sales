@@ -211,7 +211,7 @@
                             Agreement Items
                         </div>
                         <div class="col-3">
-                            <q-btn icon="open_in_new" rounded @click="" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add Item"></q-btn>
+                            <q-btn icon="open_in_new" rounded @click="add_item=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add Item"></q-btn>
                         </div>
                     </div>
                 </q-card-section>
@@ -294,7 +294,7 @@
 
                                 <template v-slot:body-cell-line_amount="props">
                                     <q-td :props="props">
-                                        {{props.row.formatted_line_amount}}
+                                        {{props.row.formattedLineAmount}}
                                     </q-td>
                                 </template>
 
@@ -393,8 +393,94 @@
                             </div>
             </q-card-section>
 
-            <q-card-actions class="q-mx-sm" align="left">
+            <q-card-actions class="q-mx-sm q-mb-sm" align="left">
               <q-btn size="16px" rounded :disabled="!(new_party && new_role)" @click="addPartyToAgreement"  outline dense label="Save"  class="text-capitalize" color="primary" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="add_item">
+          <q-card class="detail_cls q-px-none q-pt-sm" style="min-width: 700px">
+            <q-card-section>
+            <div class="row q-px-sm">
+                <div class="col-10">
+                    <div class="text-h5">Add Item</div>
+                </div>
+                <div class="col-2 text-right">
+                    <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+                </div>
+            </div>
+            </q-card-section>
+
+            <q-separator class="q-mx-none"></q-separator>
+
+            <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                    <q-select rounded
+                        label="Product*"
+                        dense
+                        outlined
+                        v-model="new_product"
+                        use-input
+                        input-debounce="700"
+                        :class="!$q.dark.isActive?'bg-white':''"
+                        input-debounce="0"
+                        option-value="value"
+                        option-label="label"
+                        :options="product_options"
+                        @filter="filterFnProduct"
+                      >
+                        <template v-slot:no-option>
+                          <q-item>
+                            <q-item-section class="text-grey">
+                              No results
+                            </q-item-section>
+                          </q-item>
+                        </template>
+                      </q-select>
+
+                    <div class="q-mt-sm q-pt-sm">
+                        <q-input label="Quantity" rounded v-model="new_agreement_item.quantity" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                        </q-input>
+                    </div>
+                    <div class="q-mt-sm q-pt-sm">
+                        <q-input label="Price" rounded v-model="new_agreement_item.price" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                        </q-input>
+                    </div>
+                    <div class="row q-mt-sm q-pt-sm q-col-gutter-sm">
+                        <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
+                            <q-input rounded label="From Date" outlined dense v-model="new_agreement_item.fromDate">
+                                <template v-slot:prepend>
+                                  <q-icon name="event" class="cursor-pointer">
+                                    <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                      <q-date mask="YYYY-MM-DD" v-model="new_agreement_item.fromDate">
+                                        <div class="row items-center justify-end">
+                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                        </div>
+                                      </q-date>
+                                    </q-popup-proxy>
+                                  </q-icon>
+                                </template>
+                              </q-input>
+                          </div>
+                        <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
+                            <q-input rounded label="Thru Date" outlined dense v-model="new_agreement_item.thruDate">
+                                <template v-slot:prepend>
+                                  <q-icon name="event" class="cursor-pointer">
+                                    <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                      <q-date mask="YYYY-MM-DD" v-model="new_agreement_item.thruDate">
+                                        <div class="row items-center justify-end">
+                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                        </div>
+                                      </q-date>
+                                    </q-popup-proxy>
+                                  </q-icon>
+                                </template>
+                              </q-input>
+                        </div>
+                    </div>
+            </q-card-section>
+
+            <q-card-actions class="q-mx-sm q-mb-sm" align="left">
+              <q-btn size="16px" rounded :disabled="!(new_product)" @click="addAgreementItem"  outline dense label="Save"  class="text-capitalize" color="primary" />
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -407,7 +493,10 @@ module.exports = {
             transacting_entity:"",
             agreement_detail: {},
             add_party: false,
+            add_item: false,
+            new_agreement_item: {},
             new_party: null,
+            new_product: null,
             new_role: null,
             agreement_detail_cur_uom: null,
             agreement_detail_org_party: null,
@@ -441,10 +530,11 @@ module.exports = {
               },
             agreement_items_list:[],
             account_options:[],
+            product_options:[],
             item_to_delete: {},
             delete_agreement_item: false,
             delete_party_from_agreement: false,
-            agreement_items_columns: [{ name: 'item_type',align:'left', label: 'Item Type', field: 'item_type' },
+            agreement_items_columns: [{ name: 'item_type',align:'left', label: 'Item Type', field: 'itemType' },
                                       { name: 'product',align:'left', label: 'Product', field: 'product' },
                                       { name: 'item_text',align:'left', label: 'Line Description', field: 'itemText' },
                                       { name: 'from_date',align:'left', label: 'From Date', field: 'fromDate' },
@@ -471,6 +561,34 @@ module.exports = {
                       this.role_options = self.role_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
                     })
               },
+              filterFnProduct(val, update, abort) {
+                    let self = this;
+                    if (val.length < 2) {
+                        abort()
+                        return
+                    }
+                    if (val === '') {
+                        update(() => {
+                            self.product_options = [];
+                        })
+                        return
+                    }
+                    self.getProductList(val.toLowerCase()).then(function(resp){
+                        update(() => {
+                            self.product_options = resp.options;
+                        })
+                    });
+                },
+              getProductList (search_keyword) {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {term: search_keyword ,agreementId: params.agreementId, pageIndex: 0, hasAllParms: true, moquiSessionToken:self.$root.moquiSessionToken };
+                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getProductList", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError
+                });
+            },
             filterFnAccount(val, update, abort) {
                 let self = this;
                 if (val.length < 2) {
@@ -572,7 +690,7 @@ module.exports = {
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/deleteAgreementItem", headers:{Accept:'application/json'}, data:self.item_to_delete,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.$q.notify({
-                            message: 'Deleted successfully.',
+                            message: 'Agreement item deleted successfully.',
                             position: 'bottom-left',
                         });
                         self.delete_agreement_item = false;
@@ -672,7 +790,12 @@ module.exports = {
                         self.agreement_items_list = resp.agreementItemList.map(function(item){
                             item["fromDate"] = self.formatDate(item.fromDate);
                             item["thruDate"] = self.formatDate(item.thruDate);
-                            item["price"] = Number(item["price"]).toLocaleString();;
+                            if (item["price"]){
+                                item["price"] = Number(item["price"]).toLocaleString();
+                            }
+                            else {
+                                item["price"] = "";
+                            }
                             return item;
                         });
                     }
@@ -719,6 +842,27 @@ module.exports = {
                           });
                     }
                 });
+            },
+            addAgreementItem () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
+                        productId: self.new_product.value, quantity: self.new_agreement_item.quantity,
+                        unitAmount: self.new_agreement_item.price, fromDate: self.new_agreement_item.fromDate, thruDate: self.new_agreement_item.thruDate};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/addAgreementItem", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.new_agreement_item = {};
+                        self.new_product = null;
+                        self.add_item = false;
+                        self.getAgreementItems();
+                        self.$q.notify({
+                            message: 'Agreement item added successfully.',
+                            position: 'bottom-left',
+                          });
+                    }
+                });
             }
     },
     created: function () {
@@ -726,6 +870,7 @@ module.exports = {
         this.getAgreementItems();
         this.getAgreementParties();
         this.getRoleOptions();
+        this.getProductList();
     },
 }
 </script>
