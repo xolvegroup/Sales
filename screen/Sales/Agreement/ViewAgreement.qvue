@@ -129,11 +129,14 @@
             <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm">
                 <q-card-section>
                     <div class="row">
-                        <div class="col-9 text-h6">
-                            Bill To Party: Reseller, Inc.
+                        <div v-if="bill_to_party_det.firstName || bill_to_party_det.lastName" class="col-9 text-h6">
+                            Bill To Party: {{bill_to_party_det.firstName}} {{bill_to_party_det.lastName}}
+                        </div>
+                        <div v-if="bill_to_party_det.organizationName" class="col-9 text-h6">
+                            Bill To Party: {{bill_to_party_det.organizationName}}
                         </div>
                         <div class="col-3">
-                            <q-btn icon="open_in_new" rounded @click="" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Change Bill To"></q-btn>
+                            <q-btn icon="open_in_new" rounded @click="change_bill_party=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Change Bill To"></q-btn>
                         </div>
                     </div>
                 </q-card-section>
@@ -484,6 +487,50 @@
             </q-card-actions>
           </q-card>
         </q-dialog>
+        <q-dialog v-model="change_bill_party">
+          <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+            <q-card-section>
+            <div class="row q-px-sm">
+                <div class="col-10">
+                    <div class="text-h5">Change Bill To</div>
+                </div>
+                <div class="col-2 text-right">
+                    <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+                </div>
+            </div>
+            </q-card-section>
+
+            <q-separator class="q-mx-none"></q-separator>
+
+            <q-card-section style="font-size: 16px" class="q-mt-sm q-mx-sm">
+                            <q-select rounded
+                                label="Party"
+                                dense
+                                outlined
+                                v-model="change_bill_to_party"
+                                use-input
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                input-debounce="0"
+                                option-value="value"
+                                option-label="label"
+                                :options="account_options"
+                                @filter="filterFnAccount"
+                              >
+                                <template v-slot:no-option>
+                                  <q-item>
+                                    <q-item-section class="text-grey">
+                                      No results
+                                    </q-item-section>
+                                  </q-item>
+                                </template>
+                              </q-select>
+            </q-card-section>
+
+            <q-card-actions class="q-mx-sm q-mb-sm" align="left">
+              <q-btn size="16px" rounded :disabled="!(change_bill_to_party)" @click="updateBillToParty"  outline dense label="Update"  class="text-capitalize" color="primary" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
     </div>
 </template>
 <script>
@@ -497,6 +544,9 @@ module.exports = {
             new_agreement_item: {},
             new_party: null,
             new_product: null,
+            change_bill_to_party: null,
+            change_bill_party: false,
+            bill_to_party_det: {},
             new_role: null,
             agreement_detail_cur_uom: null,
             agreement_detail_org_party: null,
@@ -810,6 +860,7 @@ module.exports = {
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getAgreementParties", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.agreement_parties_list = resp.agreementPartyList;
+                        self.bill_to_party_det = resp.billToParty;
                     }
                 });
             },
@@ -859,6 +910,25 @@ module.exports = {
                         self.getAgreementItems();
                         self.$q.notify({
                             message: 'Agreement item added successfully.',
+                            position: 'bottom-left',
+                          });
+                    }
+                });
+            },
+            updateBillToParty () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
+                        partyId: self.change_bill_to_party.value};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateBillToParty", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.change_bill_to_party = null;
+                        self.change_bill_party = false;
+                        self.getAgreementParties();
+                        self.$q.notify({
+                            message: 'Changed successfully.',
                             position: 'bottom-left',
                           });
                     }

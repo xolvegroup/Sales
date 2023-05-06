@@ -238,5 +238,8 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="getProductList" require-authentication="anonymous-view">
             <method type="get"><service name="sales.AgreementServices.get#ProductList"/></method>
         </resource>
+        <resource name="updateBillToParty" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#BillToParty"/></method>
+        </resource>
     </resource>
 </resource>
