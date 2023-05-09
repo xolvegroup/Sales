@@ -241,5 +241,14 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="updateBillToParty" require-authentication="anonymous-all">
             <method type="post"><service name="sales.AgreementServices.update#BillToParty"/></method>
         </resource>
+        <resource name="findAgreementSubscriptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#AgreementSubscriptions"/></method>
+        </resource>
+        <resource name="getPartyContactInfo" require-authentication="anonymous-view">
+            <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfoList"/></method>
+        </resource>
+        <resource name="getAgreementTerms" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#AgreementTerms"/></method>
+        </resource>
     </resource>
 </resource>

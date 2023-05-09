@@ -96,7 +96,7 @@
                 </q-card-section>
                 <q-card-section>
                     <q-card flat bordered class="custom_radius q-pa-sm">
-                        <div class="text-h6">Subscription Associated with this Agreement</div>
+                        <div class="text-h6">Subscriptions Associated with this Agreement</div>
                         <div class="q-mt-md">
                             <q-table
                               :data="subscription_list"
@@ -115,10 +115,10 @@
                 <q-card-section>
                     <q-card flat bordered class="custom_radius q-pa-sm">
                         <div class="text-h6">Agreement Terms</div>
-                        <div class="q-pl-sm">
-                            <div class="q-py-xs q-mt-sm">Settlement Term: Net 30</div>
-                            <div class="q-py-xs">Committed Consumption: Billed annually in advance</div>
-                            <div class="q-py-xs">Price Rule: Discount applies to usage over committed account</div>
+                        <div class="q-pl-sm q-pt-xs">
+                            <div class="q-py-xs" v-for="item in agreement_terms">
+                                {{item.termText}}
+                            </div>
                         </div>
                     </q-card>
                 </q-card-section>
@@ -145,7 +145,9 @@
                 <q-card-section>
                     <q-card flat bordered class="custom_radius q-pa-sm">
 
-                        <div class="text-h6">Bill To Address</div>
+                        <div class="text-h6">Bill To Address
+                        <q-btn icon="open_in_new" rounded @click="select_bill_to_address=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Select"></q-btn>
+                        </div>
                         <div class="q-pl-sm">
                             <div class="q-py-xs q-mt-sm">456 Reseller Drive</div>
                             <div class="q-py-xs">Denver, CO 80208</div>
@@ -531,6 +533,50 @@
             </q-card-actions>
           </q-card>
         </q-dialog>
+        <q-dialog v-model="select_bill_to_address">
+          <q-card class="detail_cls q-px-none q-pt-sm" style="min-width: 700px">
+            <q-card-section>
+            <div class="row q-px-sm">
+                <div class="col-10">
+                    <div class="text-h5">Select Address</div>
+                </div>
+                <div class="col-2 text-right">
+                    <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+                </div>
+            </div>
+            </q-card-section>
+
+            <q-separator class="q-mx-none"></q-separator>
+
+            <q-card-section style="font-size: 16px" class="q-mt-sm q-mx-sm">
+                            <q-select rounded
+                                label="Billing Address"
+                                dense
+                                outlined
+                                v-model="bill_to_address"
+                                use-input
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                input-debounce="0"
+                                option-value="value"
+                                option-label="label"
+                                :options="postal_address_list"
+                                @filter="filterFnBillAddress"
+                              >
+                                <template v-slot:no-option>
+                                  <q-item>
+                                    <q-item-section class="text-grey">
+                                      No results
+                                    </q-item-section>
+                                  </q-item>
+                                </template>
+                              </q-select>
+            </q-card-section>
+
+            <q-card-actions class="q-mx-sm q-mb-sm" align="left">
+              <q-btn size="16px" rounded  @click=""  outline dense label="Set Billing Address"  class="text-capitalize" color="primary" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
     </div>
 </template>
 <script>
@@ -541,6 +587,8 @@ module.exports = {
             agreement_detail: {},
             add_party: false,
             add_item: false,
+            select_bill_to_address: false,
+            bill_to_address: null,
             new_agreement_item: {},
             new_party: null,
             new_product: null,
@@ -553,6 +601,7 @@ module.exports = {
             organization_options_master: [],
             agreement_parties: [],
             organization_options: [],
+            subscription_list: [],
             currency_options_master: [],
             currency_options: [],
             role_options_master: [],
@@ -562,8 +611,9 @@ module.exports = {
                 rowsPerPage: 0
               },
             subscription_list:[{'internal_id':'100103','external_id':'1234567890'}],
-            subscription_columns: [{ name: 'internal_id',align:'left', label: 'Internal ID', field: 'internal_id' },
-                            { name: 'external_id',align:'left', label: 'External ID', field: 'external_id' }
+            subscription_columns: [{ name: 'description',align:'left', label: 'Description', field: 'description' },
+                            { name: 'internal_id',align:'left', label: 'Internal ID', field: 'subscriptionId' },
+                            { name: 'external_id',align:'left', label: 'External ID', field: 'externalSubscriptionId' }
                           ],
             pagination_agreement_parties: {
                 page: 0,
@@ -581,6 +631,7 @@ module.exports = {
             agreement_items_list:[],
             account_options:[],
             product_options:[],
+            agreement_terms: [],
             item_to_delete: {},
             delete_agreement_item: false,
             delete_party_from_agreement: false,
@@ -594,7 +645,9 @@ module.exports = {
                                       { name: 'price',align:'left', label: 'Contracted Price', field: 'price' },
                                       { name: 'line_amount',align:'left', label: 'Line Amount', field: 'lineAmount' },
                                       { name: 'action',align:'left', label: '', field: '' },
-                                      ]
+                                      ],
+          postal_address_list_master: [],
+          postal_address_list: []
         }
     },
     methods: {
@@ -678,6 +731,19 @@ module.exports = {
               update(() => {
                   const needle = val.toLowerCase()
                   this.organization_options = self.organization_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                })
+          },
+          filterFnBillAddress (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.postal_address_list = self.postal_address_list_master
+                })
+                return
+              }
+              update(() => {
+                  const needle = val.toLowerCase()
+                  this.postal_address_list = self.postal_address_list_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
                 })
           },
           filterFnCurrency (val, update) {
@@ -861,6 +927,7 @@ module.exports = {
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.agreement_parties_list = resp.agreementPartyList;
                         self.bill_to_party_det = resp.billToParty;
+                        self.getPartyContactInfo(resp.billToParty.partyId);
                     }
                 });
             },
@@ -933,6 +1000,50 @@ module.exports = {
                           });
                     }
                 });
+            },
+            getAgreementSubscriptions () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/findAgreementSubscriptions", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.subscription_list = resp.agreementSubscriptionList;
+                    }
+                });
+            },
+            getPartyContactInfo (party_id) {
+                var self = this;
+                var allParms = {postalContactMechPurposeId: 'PostalBilling',moquiSessionToken:self.$root.moquiSessionToken, partyId: party_id};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getContactInfoList", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        resp.postalAddressList.forEach(function(item){
+                            let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
+                                    + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
+                                    + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
+                                    + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                    (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                    + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
+                                    item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "");
+                            self.postal_address_list.push({label: label, value: item.postalContactMechId});
+                            return item;
+                        });
+                        self.postal_address_list_master = JSON.parse(JSON.stringify(self.postal_address_list));
+                    }
+                });
+            },
+            getAgreementTerms () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getAgreementTerms", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.agreement_terms = resp.agreementTermList
+                    }
+                });
             }
     },
     created: function () {
@@ -941,6 +1052,8 @@ module.exports = {
         this.getAgreementParties();
         this.getRoleOptions();
         this.getProductList();
+        this.getAgreementSubscriptions();
+        this.getAgreementTerms();
     },
 }
 </script>

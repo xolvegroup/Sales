@@ -337,4 +337,31 @@ along with this software (see the LICENSE.md file). If not, see
         </actions>
         <default-response type="none"/>
     </service>
+    <service verb="find" noun="AgreementSubscriptions">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="subscriptionList" type="list"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.product.subscription.Subscription" list="subscriptionList">
+                <econdition field-name="agreementId"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="AgreementTerms">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="agreementTermList" type="list"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.agreement.AgreementTerm" list="agreementTermList">
+                <econdition field-name="agreementId"/>
+                <order-by field-name="termTypeEnumId,settlementTermId"/>
+            </entity-find>
+        </actions>
+    </service>
 </services>
