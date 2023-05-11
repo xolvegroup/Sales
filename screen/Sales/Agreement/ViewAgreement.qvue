@@ -3,7 +3,7 @@
         <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
             <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm">
                 <q-card-section>
-                    <div class="text-h6">Agreement #100103 - Acme Industries Tree</div>
+                    <div class="text-h6">Agreement #{{agreement_detail.agreementId}} - {{agreement_detail.description}}</div>
                 </q-card-section>
                 <q-card-section class="correct_input_fields">
                     <div class="row">
@@ -143,14 +143,30 @@
 
 
                 <q-card-section>
-                    <q-card flat bordered class="custom_radius q-pa-sm">
+                    <q-card flat bordered style="min-height: 62px;" class="custom_radius q-pa-sm">
 
                         <div class="text-h6">Bill To Address
                         <q-btn icon="open_in_new" rounded @click="select_bill_to_address=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Select"></q-btn>
                         </div>
-                        <div class="q-pl-sm">
-                            <div class="q-py-xs q-mt-sm">456 Reseller Drive</div>
-                            <div class="q-py-xs">Denver, CO 80208</div>
+                        <div class="q-pl-sm" v-if="selected_bill_to_address.postalAddress">
+                            <div class="q-py-xs q-mt-sm" v-if="selected_bill_to_address.postalAddress.toName">
+                                <b>To: {{selected_bill_to_address.postalAddress.toName}}</b>
+                            </div>
+                            <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.attnName">
+                                <b>To: {{selected_bill_to_address.postalAddress.attnName}}</b>
+                            </div>
+                            <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.attnName">
+                                {{selected_bill_to_address.postalAddress.address1}}
+                                <span v-if="selected_bill_to_address.postalAddress.unitNumber">
+                                    #{{selected_bill_to_address.postalAddress.unitNumber}}
+                                </span>
+                            </div>
+                            <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.address2">
+                                {{selected_bill_to_address.postalAddress.address2}}
+                            </div>
+                            <div class="q-py-xs" v-if="selected_bill_to_address.add_last_line">
+                                {{selected_bill_to_address.add_last_line}}
+                            </div>
                         </div>
                     </q-card>
                 </q-card-section>
@@ -573,7 +589,7 @@
             </q-card-section>
 
             <q-card-actions class="q-mx-sm q-mb-sm" align="left">
-              <q-btn size="16px" rounded  @click=""  outline dense label="Set Billing Address"  class="text-capitalize" color="primary" />
+              <q-btn size="16px" rounded  @click="setBillingAddress" :disabled="!(bill_to_address)" outline dense label="Set Billing Address"  class="text-capitalize" color="primary" />
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -600,6 +616,7 @@ module.exports = {
             agreement_detail_org_party: null,
             organization_options_master: [],
             agreement_parties: [],
+            postal_addresses_master: [],
             organization_options: [],
             subscription_list: [],
             currency_options_master: [],
@@ -620,6 +637,7 @@ module.exports = {
                 rowsPerPage: 0
               },
             agreement_parties_list:[],
+            agreement_contact: {},
             agreement_parties_columns: [{ name: 'party',align:'left', label: 'Party', field: '' },
                             { name: 'role',align:'left', label: 'Role', field: 'roleTypeId' },
                             { name: 'action',align:'left', label: '', field: '' },
@@ -633,6 +651,7 @@ module.exports = {
             product_options:[],
             agreement_terms: [],
             item_to_delete: {},
+            selected_bill_to_address: {},
             delete_agreement_item: false,
             delete_party_from_agreement: false,
             agreement_items_columns: [{ name: 'item_type',align:'left', label: 'Item Type', field: 'itemType' },
@@ -877,6 +896,8 @@ module.exports = {
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getSingle", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.agreement_detail = resp.agreement;
+                        self.agreement_contact = resp.agreementContact;
+                        self.getAgreementParties();
                         self.agreement_detail.fromDate = self.formatDate(self.agreement_detail.fromDate);
                         self.agreement_detail.thruDate = self.formatDate(self.agreement_detail.thruDate);
                         if (!self.agreement_detail.currencyUomId) {
@@ -1018,18 +1039,30 @@ module.exports = {
                 var allParms = {postalContactMechPurposeId: 'PostalBilling',moquiSessionToken:self.$root.moquiSessionToken, partyId: party_id};
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getContactInfoList", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
-                        resp.postalAddressList.forEach(function(item){
-                            let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
-                                    + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
-                                    + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
-                                    + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                    (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
-                                    + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                    item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "");
-                            self.postal_address_list.push({label: label, value: item.postalContactMechId});
-                            return item;
-                        });
-                        self.postal_address_list_master = JSON.parse(JSON.stringify(self.postal_address_list));
+                        if (resp.postalAddressList) {
+                            self.postal_addresses_master = resp.postalAddressList;
+                            resp.postalAddressList.forEach(function(item){
+                                let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
+                                        + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
+                                        + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
+                                        + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                        (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                        + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
+                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "");
+                                self.postal_address_list.push({label: label, value: item.postalContactMechId});
+                                return item;
+                            });
+                            self.postal_address_list_master = JSON.parse(JSON.stringify(self.postal_address_list));
+                            if (self.agreement_contact && self.agreement_contact.contactMechId) {
+                                self.selected_bill_to_address = self.postal_addresses_master.find(function(item){
+                                    item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                        (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                        + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
+                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "")
+                                    return item.postalContactMechId === self.agreement_contact.contactMechId
+                                })
+                            }
+                        }
                     }
                 });
             },
@@ -1044,12 +1077,36 @@ module.exports = {
                         self.agreement_terms = resp.agreementTermList
                     }
                 });
+            },
+            setBillingAddress () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
+                        billToPostalContactMechId: self.bill_to_address.value};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateBillToContactMech", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.selected_bill_to_address = self.postal_addresses_master.find(function(item){
+                            item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
+                                item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "")
+                            return item.postalContactMechId === self.bill_to_address.value
+                        })
+                        self.select_bill_to_address = false;
+                        self.bill_to_address = null;
+                        self.$q.notify({
+                            message: 'Saved successfully.',
+                            position: 'bottom-left',
+                          });
+                    }
+                });
             }
     },
     created: function () {
         this.getUOM();
         this.getAgreementItems();
-        this.getAgreementParties();
         this.getRoleOptions();
         this.getProductList();
         this.getAgreementSubscriptions();
