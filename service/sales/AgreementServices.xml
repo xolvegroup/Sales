@@ -146,7 +146,7 @@ along with this software (see the LICENSE.md file). If not, see
         <actions>
             <entity-find entity-name="mantle.party.agreement.AgreementItemAndProductPrice" list="agreementItemListMain">
                 <econdition field-name="agreementId"/>
-                <econdition field-name="productId" operator="not-equals" value="XOLVE_CLOUD"/> <!-- Exclude subscriptions. Need to make this more generic. -->
+                <econdition field-name="agreementItemTypeEnumId" value="AitPricing"/> <!-- Exclude subscriptions -->
             </entity-find>
             <set field="agreementItemList" from="[]"/>
             <if condition="agreementItemListMain">
@@ -357,19 +357,6 @@ along with this software (see the LICENSE.md file). If not, see
                 else ec.web.sendJsonResponse(outList)
             </script>
             <!-- <log level="warn" message="Got product search outList: ${outList}"/> -->
-        </actions>
-    </service>
-    <service verb="find" noun="AgreementSubscriptions">
-        <in-parameters>
-            <parameter name="agreementId" required="true"/>
-        </in-parameters>
-        <out-parameters>
-            <parameter name="subscriptionList" type="list"/>
-        </out-parameters>
-        <actions>
-            <entity-find entity-name="mantle.product.subscription.Subscription" list="subscriptionList">
-                <econdition field-name="agreementId"/>
-            </entity-find>
         </actions>
     </service>
     <service verb="find" noun="AgreementTerms">
