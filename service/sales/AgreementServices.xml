@@ -176,6 +176,12 @@ along with this software (see the LICENSE.md file). If not, see
                             agItem.put("itemType",itemType.description)
                         </script>
                     </if>
+                    <entity-find entity-name="mantle.product.ProductPrice" list="productPrice">
+                        <econdition field-name="productId" from="ai.productId"/>
+                        <econdition field-name="priceTypeEnumId" value="PptList"/>
+                        <date-filter/>
+                    </entity-find>
+                    <set field="listPrice" from="productPrice[0]"/>
                 </iterate>
             </if>
         </actions>
