@@ -158,7 +158,7 @@
                             <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.attnName">
                                 <b>To: {{selected_bill_to_address.postalAddress.attnName}}</b>
                             </div>
-                            <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.attnName">
+                            <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.address1">
                                 {{selected_bill_to_address.postalAddress.address1}}
                                 <span v-if="selected_bill_to_address.postalAddress.unitNumber">
                                     #{{selected_bill_to_address.postalAddress.unitNumber}}
