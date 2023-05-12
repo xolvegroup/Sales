@@ -158,8 +158,8 @@
                             <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.attnName">
                                 <b>To: {{selected_bill_to_address.postalAddress.attnName}}</b>
                             </div>
-                            <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.address1">
-                                {{selected_bill_to_address.postalAddress.address1}}
+                            <div class="q-py-xs">
+                                <span v-if="selected_bill_to_address.postalAddress.address1">{{selected_bill_to_address.postalAddress.address1}}</span>
                                 <span v-if="selected_bill_to_address.postalAddress.unitNumber">
                                     #{{selected_bill_to_address.postalAddress.unitNumber}}
                                 </span>
@@ -663,7 +663,7 @@ module.exports = {
                                       { name: 'from_date',align:'left', label: 'From Date', field: 'fromDate' },
                                       { name: 'thru_date',align:'left', label: 'Thru Date', field: 'thruDate' },
                                       { name: 'quantity',align:'left', label: 'Quantity', field: 'quantity' },
-                                      { name: 'last_price',align:'left', label: 'List Price', field: 'last_price' },
+                                      { name: 'list_price',align:'left', label: 'List Price', field: 'listPrice' },
                                       { name: 'price',align:'left', label: 'Contracted Price', field: 'price' },
                                       { name: 'line_amount',align:'left', label: 'Line Amount', field: 'lineAmount' },
                                       { name: 'action',align:'left', label: '', field: '' },
@@ -863,6 +863,9 @@ module.exports = {
             updateAgreementItem (item) {
                 var self = this;
                 item["moquiSessionToken"] = self.$root.moquiSessionToken;
+                if (self.agreement_detail.currencyUomId) {
+                    item["priceUomId"] = self.agreement_detail.currencyUomId
+                }
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateAgreementItem", headers:{Accept:'application/json'}, data:item,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.$q.notify({
@@ -995,6 +998,9 @@ module.exports = {
                 var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
                         productId: self.new_product.value, quantity: self.new_agreement_item.quantity,
                         unitAmount: self.new_agreement_item.price, fromDate: self.new_agreement_item.fromDate, thruDate: self.new_agreement_item.thruDate};
+                    if (self.agreement_detail.currencyUomId) {
+                        allParms["priceUomId"] = self.agreement_detail.currencyUomId
+                    }
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/addAgreementItem", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.new_agreement_item = {};
@@ -1019,7 +1025,8 @@ module.exports = {
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.change_bill_to_party = null;
                         self.change_bill_party = false;
-                        self.getAgreementParties();
+                        //self.getAgreementParties();
+                        self.resetBillingAddress();
                         self.$q.notify({
                             message: 'Changed successfully.',
                             position: 'bottom-left',
@@ -1041,6 +1048,10 @@ module.exports = {
             },
             getPartyContactInfo (party_id) {
                 var self = this;
+                self.postal_address_list = [];
+                self.postal_addresses_master = [];
+                self.postal_address_list_master = [];
+                self.selected_bill_to_address = {};
                 var allParms = {postalContactMechPurposeId: 'PostalBilling',moquiSessionToken:self.$root.moquiSessionToken, partyId: party_id};
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getContactInfoList", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
@@ -1105,6 +1116,21 @@ module.exports = {
                             message: 'Saved successfully.',
                             position: 'bottom-left',
                           });
+                    }
+                });
+            },
+            resetBillingAddress () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
+                        action: "delete"};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateBillToContactMech", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.selected_bill_to_address = {}
+                        self.bill_to_address = null;
+                        self.getAgreement();
                     }
                 });
             }

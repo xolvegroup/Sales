@@ -121,6 +121,7 @@ along with this software (see the LICENSE.md file). If not, see
         <in-parameters>
             <parameter name="agreementId" required="true"/>
             <parameter name="billToPostalContactMechId"/>
+            <parameter name="action" default-value="add"/>
         </in-parameters>
         <actions>
             <!-- Clear existing setting from AgreementContactMech -->
@@ -129,11 +130,13 @@ along with this software (see the LICENSE.md file). If not, see
                 <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
                 <field-map field-name="contactMechId" value="*"/>
             </service-call>
-            <service-call name="create#mantle.party.agreement.AgreementContactMech">
-                <field-map field-name="agreementId" from="agreementId"/>
-                <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
-                <field-map field-name="contactMechId" from="billToPostalContactMechId"/>
-            </service-call>
+            <if condition="action != 'delete'">
+                <service-call name="create#mantle.party.agreement.AgreementContactMech">
+                    <field-map field-name="agreementId" from="agreementId"/>
+                    <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+                    <field-map field-name="contactMechId" from="billToPostalContactMechId"/>
+                </service-call>
+            </if>
         </actions>
     </service>
     <service verb="find" noun="AgreementItems">
@@ -156,7 +159,7 @@ along with this software (see the LICENSE.md file). If not, see
                         agItem.putAll(ai)
                         agreementItemList.add(agItem)
                     </script>
-                    <set field="formattedLineAmount" from="ec.l10n.formatCurrency(ai.lineAmount ?: 0, ai?.quantityUomId)"/>
+                    <set field="formattedLineAmount" from="ec.l10n.formatCurrency(ai.lineAmount ?: 0, ai?.priceUomId)"/>
                     <script>
                         agItem.put("formattedLineAmount",formattedLineAmount)
                     </script>
@@ -177,11 +180,16 @@ along with this software (see the LICENSE.md file). If not, see
                         </script>
                     </if>
                     <entity-find entity-name="mantle.product.ProductPrice" list="productPrice">
-                        <econdition field-name="productId" from="ai.productId"/>
-                        <econdition field-name="priceTypeEnumId" value="PptList"/>
+                        <field-map field-name="productId" from="ai.productId"/>
+                        <field-map field-name="priceTypeEnumId" value="PptList"/>
                         <date-filter/>
                     </entity-find>
-                    <set field="listPrice" from="productPrice[0]"/>
+                    <if condition="productPrice">
+                        <set field="listPrice" from="ec.l10n.formatCurrency(productPrice[0]['price'] ?: 0, productPrice[0]['priceUomId'])"/>
+                        <script>
+                            agItem.put("listPrice",listPrice)
+                        </script>
+                    </if>
                 </iterate>
             </if>
         </actions>
@@ -217,6 +225,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="thruDate"/>
             <parameter name="quantity"/>
             <parameter name="unitAmount"/>
+            <parameter name="priceUomId"/>
         </in-parameters>
         <actions>
             <set field="price" from="unitAmount"/>
@@ -237,6 +246,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="thruDate"/>
             <parameter name="quantity"/>
             <parameter name="unitAmount"/>
+            <parameter name="priceUomId"/>
         </in-parameters>
         <actions>
             <service-call name="update#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
