@@ -268,7 +268,7 @@
 
                                 <template v-slot:body-cell-from_date="props">
                                     <q-td :props="props">
-                                           <q-input style="margin-top:8px;margin-bottom:8px;" rounded style="margin:0;padding:0;" outlined dense v-model="props.row.fromDate">
+                                           <q-input style="margin-top:8px;margin-bottom:8px;width: 138px;" rounded style="margin:0;padding:0;" outlined dense v-model="props.row.fromDate">
                                             <template v-slot:prepend>
                                               <q-icon name="event" class="cursor-pointer">
                                                 <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
@@ -286,7 +286,7 @@
 
                                 <template v-slot:body-cell-thru_date="props">
                                     <q-td :props="props">
-                                           <q-input style="margin-top:8px;margin-bottom:8px;" rounded outlined dense v-model="props.row.thruDate">
+                                           <q-input style="margin-top:8px;margin-bottom:8px;width: 138px;" rounded outlined dense v-model="props.row.thruDate">
                                             <template v-slot:prepend>
                                               <q-icon name="event" class="cursor-pointer">
                                                 <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
@@ -304,14 +304,14 @@
 
                                 <template v-slot:body-cell-quantity="props">
                                     <q-td :props="props">
-                                        <q-input rounded v-model="props.row.quantity" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                        <q-input rounded v-model="props.row.quantity" outlined style="width: 138px;margin-top:8px;margin-bottom:8px;padding:0;" dense>
                                         </q-input>
                                     </q-td>
                                 </template>
 
                                 <template v-slot:body-cell-price="props">
                                     <q-td :props="props">
-                                        <q-input rounded v-model="props.row.price" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                        <q-input rounded v-model="props.row.price" outlined style="width: 138px;margin-top:8px;margin-bottom:8px;padding:0;" dense>
                                         </q-input>
                                     </q-td>
                                 </template>
