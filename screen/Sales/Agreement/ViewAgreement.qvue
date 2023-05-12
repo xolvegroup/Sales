@@ -129,11 +129,14 @@
             <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm">
                 <q-card-section>
                     <div class="row">
-                        <div v-if="bill_to_party_det.firstName || bill_to_party_det.lastName" class="col-9 text-h6">
+                        <div v-if="bill_to_party_det && (bill_to_party_det.firstName || bill_to_party_det.lastName)" class="col-9 text-h6">
                             Bill To Party: {{bill_to_party_det.firstName}} {{bill_to_party_det.lastName}}
                         </div>
-                        <div v-if="bill_to_party_det.organizationName" class="col-9 text-h6">
+                        <div v-if="bill_to_party_det && bill_to_party_det.organizationName" class="col-9 text-h6">
                             Bill To Party: {{bill_to_party_det.organizationName}}
+                        </div>
+                        <div v-if="!bill_to_party_det" class="col-9 text-h6">
+                            Bill To Party:
                         </div>
                         <div class="col-3">
                             <q-btn icon="open_in_new" rounded @click="change_bill_party=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Change Bill To"></q-btn>
@@ -148,7 +151,7 @@
                         <div class="text-h6">Bill To Address
                         <q-btn icon="open_in_new" rounded @click="select_bill_to_address=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Select"></q-btn>
                         </div>
-                        <div class="q-pl-sm" v-if="selected_bill_to_address.postalAddress">
+                        <div class="q-pl-sm" v-if="selected_bill_to_address && selected_bill_to_address.postalAddress">
                             <div class="q-py-xs q-mt-sm" v-if="selected_bill_to_address.postalAddress.toName">
                                 <b>To: {{selected_bill_to_address.postalAddress.toName}}</b>
                             </div>
@@ -948,7 +951,9 @@ module.exports = {
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.agreement_parties_list = resp.agreementPartyList;
                         self.bill_to_party_det = resp.billToParty;
-                        self.getPartyContactInfo(resp.billToParty.partyId);
+                        if (resp.billToParty) {
+                            self.getPartyContactInfo(resp.billToParty.partyId);
+                        }
                     }
                 });
             },
