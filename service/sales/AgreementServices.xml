@@ -48,6 +48,9 @@ along with this software (see the LICENSE.md file). If not, see
     <service verb="find" noun="Agreements">
         <in-parameters>
             <parameter name="partyId"/>
+            <parameter name="otherPartyId"/>
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
             <parameter name="pageOffset" default-value="" type="Integer"/>
             <parameter name="pageLimit" default-value="" type="Integer"/>
             <parameter name="orderByField" default-value="-agreementId"/>
@@ -59,9 +62,15 @@ along with this software (see the LICENSE.md file). If not, see
         <actions>
             <entity-find-count entity-name="mantle.party.agreement.Agreement" count-field="count" distinct="true">
                 <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>
+                <econdition field-name="otherPartyId" from="otherPartyId" ignore-if-empty="true"/>
+                <econdition field-name="agreementDate" operator="greater-equals" from="fromDate" ignore-if-empty="true"/>
+                <econdition field-name="agreementDate" operator="less-equals" from="thruDate" ignore-if-empty="true"/>
             </entity-find-count>
             <entity-find offset="pageOffset" limit="pageLimit" entity-name="mantle.party.agreement.Agreement" list="agreements">
                 <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>
+                <econdition field-name="otherPartyId" from="otherPartyId" ignore-if-empty="true"/>
+                <econdition field-name="agreementDate" operator="greater-equals" from="fromDate" ignore-if-empty="true"/>
+                <econdition field-name="agreementDate" operator="less-equals" from="thruDate" ignore-if-empty="true"/>
                 <order-by field-name="${orderByField}"/>
             </entity-find>
         </actions>

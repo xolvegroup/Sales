@@ -20,16 +20,16 @@
                     </div>
                 </div>
                 <div class="row q-mt-md q-col-gutter-md detail_cls">
-                    <div class="col-12 q-pb-lg" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-lastUpdatedStamp' && mdl_filter_order_by !== null)">
+                    <div class="col-12 q-pb-lg" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-agreementId' && mdl_filter_order_by !== null)">
                            <div class="row">
-                                <div class="col-6 q-pb-sm" v-if="mdl_filter_sales_person">
-                                    <span class="text-subtitle2">User : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_sales_person.label }}</span>
-                                </div>
-                                <div class="col-6 q-pb-sm" v-if="mdl_filter_role">
-                                    <span class="text-subtitle2">Role : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_role.label }}</span>
-                                </div>
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_account">
-                                    <span class="text-subtitle2">Sales Account : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_account }}</span>
+                                    <span class="text-subtitle2">Sales Account : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_account.value }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_start_date">
+                                    <span class="text-subtitle2">Start Date : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_start_date }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_end_date">
+                                    <span class="text-subtitle2">End Date : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_end_date }}</span>
                                 </div>
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_order_by">
                                     <span class="text-subtitle2">Order By : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_order_by.label }}</span>
@@ -82,57 +82,58 @@
                 <div class="row q-mt-md q-col-gutter-md detail_cls">
                     <div class="col-12">
                         <q-select rounded
-                            label="Role*"
-                            dense
-                            outlined
-                            v-model="mdl_filter_role"
-                            use-input
-                            color="red"
-                            :input-class="!$q.dark.isActive?'bg-white':''"
-                            input-debounce="0"
-                            option-value="value"
-                            option-label="label"
-                            :options="role_options"
-                            @filter="filterFnRole"
-                          >
-                            <template v-slot:no-option>
-                              <q-item>
-                                <q-item-section class="text-grey">
-                                  No results
-                                </q-item-section>
-                              </q-item>
+                                        dense
+                                        :input-class="!$q.dark.isActive?'bg-white':''"
+                                        label="Sales Account"
+                                        outlined
+                                        v-model="mdl_filter_account"
+                                        use-input
+                                        input-debounce="700"
+                                        option-value="value"
+                                        option-label="label"
+                                        :options="account_options"
+                                        @filter="filterFnAccount"
+                                        >
+                                        <template v-slot:no-option>
+                                            <q-item>
+                                              <q-item-section class="text-grey">
+                                                No results
+                                              </q-item-section>
+                                            </q-item>
+                                        </template>
+                                    </q-select>
+                    </div>
+                    <div class="col-md-12 col-lg-12 col-xs-12 col-sm-12">
+                        <q-input style="width:49%;float:left;margin-right:5px;" rounded label="Start Date" outlined dense v-model="mdl_filter_start_date">
+                            <template v-slot:prepend>
+                              <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                  <q-date mask="YYYY-MM-DD" v-model="mdl_filter_start_date">
+                                    <div class="row items-center justify-end">
+                                      <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                    </div>
+                                  </q-date>
+                                </q-popup-proxy>
+                              </q-icon>
                             </template>
-                          </q-select>
-                    </div>
-                    <div class="col-12">
-                    <q-input rounded v-model="mdl_filter_account" outlined label="Sales Account" style="margin:0;padding:0;" dense>
-                                    </q-input>
-                    </div>
-                    <div class="col-12">
-                        <q-select rounded
-                            label="Order By"
-                            dense
-                            :input-class="!$q.dark.isActive?'bg-white':''"
-                            outlined
-                            v-model="mdl_filter_order_by"
-                            use-input
-                            input-debounce="0"
-                            option-value="value"
-                            option-label="label"
-                            :options="orderby_options"
-                            @filter="filterFnOrderBy"
-                          >
-                            <template v-slot:no-option>
-                              <q-item>
-                                <q-item-section class="text-grey">
-                                  No results
-                                </q-item-section>
-                              </q-item>
+                          </q-input>
+
+                        <q-input class="q-ml-sm" style="width:49%;float:left;" rounded label="End Date" style="margin:0;padding:0;" outlined dense v-model="mdl_filter_end_date">
+                            <template v-slot:prepend>
+                              <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                  <q-date mask="YYYY-MM-DD" v-model="mdl_filter_end_date">
+                                    <div class="row items-center justify-end">
+                                      <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                    </div>
+                                  </q-date>
+                                </q-popup-proxy>
+                              </q-icon>
                             </template>
-                          </q-select>
+                          </q-input>
                     </div>
                     <div class="col-12">
-                        <q-btn rounded :disabled="!(mdl_filter_role)" @click="findOptions()" style="width: 140px" class="text-blue q-px-sm q-ml-sm" outline dense icon="search" label="Find"></q-btn>
+                        <q-btn rounded :disabled="!(mdl_filter_account || mdl_filter_start_date || mdl_filter_end_date)" @click="findOptions()" style="width: 140px" class="text-blue q-px-sm q-ml-sm" outline dense icon="search" label="Find"></q-btn>
                         <q-btn rounded @click="resetFind()" style="width: 140px" class="q-px-sm q-ml-sm" outline dense icon="search" label="Clear"></q-btn>
                     </div>
                 </div>
@@ -172,7 +173,7 @@
 
               <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Saved Finds" icon="save" @click="open_saved_finds_drawer=true"></q-btn>
               <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Find Options" icon="search" @click="open_find_options_drawer=true"></q-btn>
-              <q-btn rounded style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-lastUpdatedStamp' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline dense icon="close" label="Clear"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-agreementId' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline dense icon="close" label="Clear"></q-btn>
               </q-item-section>
             </q-item>
                     <q-card class="main_list" flat>
@@ -229,6 +230,7 @@ module.exports = {
         return {
             agreement_list: [],
             new_sales_account_name: "",
+            account_options: [],
             add_new_sales_account: false,
             pagination: {
                 page: 1,
@@ -266,7 +268,8 @@ module.exports = {
             open_find_options_drawer: false,
             mdl_filter_sales_person:null,
             mdl_filter_account:null,
-            mdl_filter_role:null,
+            mdl_filter_start_date:null,
+            mdl_filter_end_date:null,
             sales_person_options_master: [],
             sales_person_options: [],
             role_options_master: [{"label":"Sales Account","value":"Account"},{"label":"Customer","value":"Customer"}],
@@ -284,6 +287,35 @@ module.exports = {
         }
     },
     methods: {
+        filterFnAccount(val, update, abort) {
+            let self = this;
+            if (val.length < 2) {
+                abort()
+                return
+            }
+            if (val === '') {
+                update(() => {
+                    self.account_options = [];
+                })
+                return
+            }
+            self.searchPartyList(val.toLowerCase(), "Account").then(function(resp){
+                update(() => {
+                    self.account_options = resp;
+                })
+            });
+        },
+        searchPartyList (search_keyword, role_type) {
+            var self = this;
+            var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            allParms["hasAllParms"] = true;
+            allParms["pageIndex"] = 0;
+            allParms["term"] = search_keyword;
+            allParms["roleTypeId"] = role_type;
+            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError
+            });
+        },
         onPageChange (props) {
             let self = this;
             const page = props.pagination.page;
@@ -300,7 +332,7 @@ module.exports = {
                 }
             }
             else {
-                self.filter_params["orderByField"] = "-lastUpdatedStamp";
+                self.filter_params["orderByField"] = "-agreementId";
             }
             const startRow = (page - 1) * rowsPerPage;
             const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage;
@@ -367,14 +399,14 @@ module.exports = {
         findOptions() {
             let self = this;
             self.filter_params = {};
-            if (self.mdl_filter_sales_person) {
-                self.filter_params["partyId"] = self.mdl_filter_sales_person.value;
+            if (self.mdl_filter_start_date) {
+                self.filter_params["fromDate"] = new Date(self.mdl_filter_start_date);
             }
-            if (self.mdl_filter_role) {
-                self.filter_params["roleTypeId"] = self.mdl_filter_role.value;
+            if (self.mdl_filter_end_date) {
+                self.filter_params["thruDate"] = new Date(new Date(self.mdl_filter_end_date).setUTCHours(23,59,59,999));
             }
             if (self.mdl_filter_account) {
-                self.filter_params["organizationName"] = self.mdl_filter_account;
+                self.filter_params["otherPartyId"] = self.mdl_filter_account.value;
             }
             if (self.mdl_filter_order_by) {
                 if (self.mdl_filter_order_by.value.startsWith("-")) {
@@ -393,8 +425,8 @@ module.exports = {
         },
         resetFind() {
             let self = this;
-            self.mdl_filter_sales_person = null;
-            self.mdl_filter_role = null;
+            self.mdl_filter_end_date = null;
+            self.mdl_filter_start_date = null;
             self.mdl_filter_account = null;
             self.mdl_filter_order_by = null;
             self.filter_params = {};
@@ -419,8 +451,8 @@ module.exports = {
         },
         searchSavedFind(selected_item) {
             let self = this;
-            self.mdl_filter_sales_person = null;
-            self.mdl_filter_role = null;
+            self.mdl_filter_end_date = null;
+            self.mdl_filter_start_date = null;
             self.mdl_filter_account = null;
             self.mdl_filter_order_by = null;
             self.filter_params = {};
@@ -432,19 +464,25 @@ module.exports = {
                 selected_item.fieldList.map(function(item){
                     if(item.fieldOperator == 'equals')
                     {
-                        if(item.fieldName=='roleTypeId')
+                        if(item.fieldName=='fromDate')
                         {
-                            let filtered_roles = self.role_options_master.filter(function(item_role){ return item_role.value == item.fieldValue});
-                            if(filtered_roles.length > 0)
-                            {
-                                self.mdl_filter_role = filtered_roles[0];
-                            }
+                            self.mdl_filter_start_date = item.fieldValue;
                             self.filter_params[item.fieldName] = item.fieldValue;
                         }
-                        else if(item.fieldName=='organizationName')
+                        else if(item.fieldName=='thruDate')
                         {
-                            self.mdl_filter_account = item.fieldValue;
+                            self.mdl_filter_end_date = item.fieldValue;
                             self.filter_params[item.fieldName] = item.fieldValue;
+                        }
+                        else if(item.fieldName=='otherPartyId')
+                        {
+                            self.searchPartyList(item.fieldValue, "Account").then(function(resp){
+                                    if(resp.length > 0)
+                                    {
+                                        self.mdl_filter_account = resp[0];;
+                                    }
+                              });
+                              self.filter_params[item.fieldName] = item.fieldValue;
                         }
                     }
                     return item;
@@ -498,14 +536,14 @@ module.exports = {
              formLocation: 'component://Sales/screen/Sales/Agreement/FindAgreement.xml.form_list$AgreementList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/add", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
-                    if (vm.mdl_filter_sales_person) {
-                        vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.value);
+                    if (vm.mdl_filter_end_date) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "thruDate", vm.mdl_filter_end_date);
                     }
-                    if (vm.mdl_filter_role) {
-                        vm.storeSavedFindsFields(resp.formListFindId, "roleTypeId", vm.mdl_filter_role.value);
+                    if (vm.mdl_filter_start_date) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "fromDate", vm.mdl_filter_start_date);
                     }
                     if (vm.mdl_filter_account) {
-                        vm.storeSavedFindsFields(resp.formListFindId, "organizationName", vm.mdl_filter_account);
+                        vm.storeSavedFindsFields(resp.formListFindId, "accountPartyId", vm.mdl_filter_account.value);
                     }
                     setTimeout( () => {
                         vm.getSavedFinds();
