@@ -1,0 +1,753 @@
+<template>
+    <div>
+    <q-dialog v-model="add_new_sales_order">
+          <q-card class="q-pa-none detail_cls" style="width: 50vw; max-width: 50vw;">
+            <q-card-section>
+              <div class="row q-px-md q-py-sm">
+                <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                    Create Sales Order
+                </div>
+                <div class="col-1">
+                    <q-btn flat rounded dense icon="close" class="float-right" v-close-popup></q-btn>
+                </div>
+            </div>
+            </q-card-section>
+            <q-separator></q-separator>
+
+            <q-card-section class="q-ma-md edit_page">
+                                    <q-select rounded
+                            label="Store*"
+                            dense
+                            outlined
+                            v-model="new_store"
+                            use-input
+                            color="red"
+                            :input-class="!$q.dark.isActive?'bg-white':''"
+                            input-debounce="0"
+                            option-value="value"
+                            option-label="label"
+                            :options="store_options"
+                            @filter="filterFnStore"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+                          <q-select rounded
+                        dense
+                        :input-class="!$q.dark.isActive?'bg-white':''"
+                        class="q-pt-sm"
+                        label="Customer"
+                        outlined
+                        v-model="new_customer"
+                        use-input
+                        input-debounce="700"
+                        option-value="value"
+                        option-label="label"
+                        :options="account_options"
+                        @filter="filterFnAccount"
+                        >
+                        <template v-slot:no-option>
+                            <q-item>
+                              <q-item-section class="text-grey">
+                                No results
+                              </q-item-section>
+                            </q-item>
+                        </template>
+                    </q-select>
+            </q-card-section>
+            <q-separator></q-separator>
+            <q-card-actions class="q-pa-md" align="left">
+              <q-btn rounded :disable="!(new_store)" @click="addNewSalesOrder()" outline dense label="Create" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn rounded v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+    <q-drawer
+            side="right"
+            v-model="open_saved_finds_drawer"
+            bordered
+            overlay
+            :width="550"
+            :breakpoint="550"
+            class="right_options_popup"
+            :content-class="!$q.dark.isActive?'bg-grey-3':'bg-black'"
+          >
+          <div class="q-pa-sm q-px-md">
+                <div class="row">
+                    <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                        Saved Finds
+                    </div>
+                    <div class="col-1">
+                        <q-btn rounded flat round dense icon="close" @click="open_saved_finds_drawer=false"></q-btn>
+                    </div>
+                </div>
+                <div class="row q-mt-md q-col-gutter-md detail_cls">
+                    <div class="col-12 q-pb-lg" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-orderId' && mdl_filter_order_by !== null)">
+                           <div class="row">
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_account">
+                                    <span class="text-subtitle2">Sales Account : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_account.value }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_start_date">
+                                    <span class="text-subtitle2">Start Date : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_start_date }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_end_date">
+                                    <span class="text-subtitle2">End Date : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_end_date }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_order_by">
+                                    <span class="text-subtitle2">Order By : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_order_by.label }}</span>
+                                </div>
+                           </div>
+                           <div class="row q-mt-sm">
+                                <div class="col-8 q-pr-lg">
+                                    <q-input rounded v-model="save_new_find" outlined label="Description" style="margin:0;padding:0;" dense>
+                                    </q-input>
+                                </div>
+                                <div class="col-4" style="padding-top:2px;">
+                                    <q-btn rounded @click="storeSavedFinds()" class="text-blue q-px-sm q-ml-sm text-capitalize" outline dense icon="search" label="Save New Find"></q-btn>
+                                </div>
+                           </div>
+                    </div>
+                    <div class="col-12 q-pb-lg text-subtitle2" v-else>
+                        No find parameters (or default), choose some in Find Options to save a new find or update existing
+                    </div>
+                </div>
+                <div class="row q-py-sm q-my-lg" v-for="item in saved_find_list">
+                    <div class="col-8 q-pr-lg">
+                        <q-input rounded :value="item.description" outlined style="margin:0;padding:0;" dense>
+                        </q-input>
+                    </div>
+                    <div class="col-4" style="padding-top:2px;">
+                        <q-btn rounded @click="searchSavedFind(item)" style="width: 70px" class="text-blue q-px-sm q-ml-sm text-capitalize" outline dense icon="search" label="Find"></q-btn>
+                    </div>
+                </div>
+          </div>
+    </q-drawer>
+    <q-drawer
+            side="right"
+            v-model="open_find_options_drawer"
+            bordered
+            overlay
+            :width="400"
+            :breakpoint="400"
+            class="right_options_popup"
+            :content-class="!$q.dark.isActive?'bg-grey-3':'bg-black'"
+          >
+          <div class="q-pa-sm q-px-md">
+                <div class="row">
+                    <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                        Find Options
+                    </div>
+                    <div class="col-1">
+                        <q-btn flat rounded dense icon="close" @click="open_find_options_drawer=false"></q-btn>
+                    </div>
+                </div>
+                <div class="row q-mt-md q-col-gutter-md detail_cls">
+                    <div class="col-12">
+                        <q-select rounded
+                                        dense
+                                        :input-class="!$q.dark.isActive?'bg-white':''"
+                                        label="Sales Account"
+                                        outlined
+                                        v-model="mdl_filter_account"
+                                        use-input
+                                        input-debounce="700"
+                                        option-value="value"
+                                        option-label="label"
+                                        :options="account_options"
+                                        @filter="filterFnAccount"
+                                        >
+                                        <template v-slot:no-option>
+                                            <q-item>
+                                              <q-item-section class="text-grey">
+                                                No results
+                                              </q-item-section>
+                                            </q-item>
+                                        </template>
+                                    </q-select>
+                    </div>
+                    <div class="col-md-12 col-lg-12 col-xs-12 col-sm-12">
+                        <q-input style="width:49%;float:left;margin-right:5px;" rounded label="Start Date" outlined dense v-model="mdl_filter_start_date">
+                            <template v-slot:prepend>
+                              <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                  <q-date mask="YYYY-MM-DD" v-model="mdl_filter_start_date">
+                                    <div class="row items-center justify-end">
+                                      <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                    </div>
+                                  </q-date>
+                                </q-popup-proxy>
+                              </q-icon>
+                            </template>
+                          </q-input>
+
+                        <q-input class="q-ml-sm" style="width:49%;float:left;" rounded label="End Date" style="margin:0;padding:0;" outlined dense v-model="mdl_filter_end_date">
+                            <template v-slot:prepend>
+                              <q-icon name="event" class="cursor-pointer">
+                                <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                                  <q-date mask="YYYY-MM-DD" v-model="mdl_filter_end_date">
+                                    <div class="row items-center justify-end">
+                                      <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                    </div>
+                                  </q-date>
+                                </q-popup-proxy>
+                              </q-icon>
+                            </template>
+                          </q-input>
+                    </div>
+                    <div class="col-12">
+                        <q-btn rounded :disabled="!(mdl_filter_account || mdl_filter_start_date || mdl_filter_end_date)" @click="findOptions()" style="width: 140px" class="text-blue q-px-sm q-ml-sm" outline dense icon="search" label="Find"></q-btn>
+                        <q-btn rounded @click="resetFind()" style="width: 140px" class="q-px-sm q-ml-sm" outline dense icon="search" label="Clear"></q-btn>
+                    </div>
+                </div>
+                <div class="q-mt-md">
+
+                </div>
+          </div>
+    </q-drawer>
+          <div>
+        <q-item class="q-pa-none">
+              <q-item-section>
+                <q-btn rounded
+                style="width: 175px;"
+            class="custom_btn_dropdown"
+            dense
+            @click="add_new_sales_order=true"
+                  split
+                  outline rounded
+                  color=""
+                  no-caps
+                  icon="add"
+                  label="Create Sales Order"
+                >
+                </q-btn>
+              </q-item-section>
+              <q-item-section style="display: block;" class="detail_cls">
+
+              <q-select rounded
+                  v-if="saved_find_list.length>0"
+                  label="Select Find"
+                  dense
+                  rounded
+                  outlined
+                  v-model="mdl_select_find"
+                  option-value="formListFindId"
+                  option-label="description"
+                  :options="select_find_options"
+                  style="margin:0;margin-left:3px;padding:0;width: 160px"
+                  class="text-capitalize float-right"
+                  @input="searchSelectFind"
+                >
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No results
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+
+              <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Saved Finds" icon="save" @click="open_saved_finds_drawer=true"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Find Options" icon="search" @click="open_find_options_drawer=true"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-orderId' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline dense icon="close" label="Clear"></q-btn>
+              </q-item-section>
+            </q-item>
+                    <q-card class="main_list" flat>
+                      <q-card-section class="q-px-xs">
+                        <q-table
+                        bordered
+                        flat
+                        @request="onPageChange"
+                        :wrap-cells="true"
+                              :data="order_list"
+                              :filter="filter"
+                              table-header-class="custom_table_header"
+                              :columns="table_columns"
+                              row-key="notificationMessageId"
+                              separator="cell"
+                              dense
+                              :pagination.sync="pagination"
+                              :card-class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'"
+                            >
+                                <template v-slot:body-cell-account="props">
+                                  <q-td :props="props">
+                                    <a :href="'ViewAccount?partyId=' + props.row.partyId">{{props.row.account}}</a>
+                                  </q-td>
+                                </template>
+                                <template v-slot:body-cell-order="props">
+                                  <q-td :props="props">
+                                    <a :href="'ViewOrder?orderId=' + props.row.orderId">{{props.row.orderId}}</a>
+                                  </q-td>
+                                </template>
+                                <template v-slot:body-cell-agreementdate="props">
+                                  <q-td :props="props">
+                                    {{formatDate(props.row.agreementDate)}}
+                                  </q-td>
+                                </template>
+                                <template v-slot:body-cell-fromdate="props">
+                                  <q-td :props="props">
+                                    {{formatDate(props.row.fromDate)}}
+                                  </q-td>
+                                </template>
+                                <template v-slot:body-cell-thrudate="props">
+                                  <q-td :props="props">
+                                    {{formatDate(props.row.thruDate)}}
+                                  </q-td>
+                                </template>
+                            </q-table>
+                      </q-card-section>
+                    </q-card>
+              </div>
+    </div>
+</template>
+<script>
+module.exports = {
+    data: function () {
+        return {
+            order_list: [],
+            new_store: "",
+            account_options: [],
+            add_new_sales_order: false,
+            pagination: {
+                page: 1,
+                rowsPerPage: 15,
+                rowsNumber: 0,
+                sortBy: '',
+                descending: true,
+              },
+            filter_params: {},
+            filter: "",
+            table_columns: [
+               {
+                 name: 'account',
+                 field: 'account',
+                 label: 'Account',
+                 align: 'left',
+                 sortable: true,
+                 style: 'min-width: 19%;width: 19%;'
+               },
+               {
+                 name: 'order',
+                 field: 'order',
+                 label: 'Order',
+                 align: 'left',
+                 sortable: true,
+                 style: 'min-width: 23%;width: 23%;'
+               },
+               { name: 'ordername', align: 'left', label: 'Order Name',style: 'min-width: 22%;width: 22%;', field: '', sortable: true },
+               { name: 'status', align: 'left', label: 'Status',style: 'min-width: 14%;width: 14%;', field: 'status', sortable: true },
+               { name: 'total', align: 'left', label: 'Total',style: 'min-width: 14%;width: 14%;', field: '', sortable: true }            ],
+            column_to_field_mapping: {"order":"orderId", "account": "customerPartyId"},
+            open_find_options_drawer: false,
+            mdl_filter_sales_person:null,
+            mdl_filter_account:null,
+            mdl_filter_start_date:null,
+            mdl_filter_end_date:null,
+            sales_person_options_master: [],
+            sales_person_options: [],
+            role_options_master: [{"label":"Sales Account","value":"Account"},{"label":"Account","value":"Account"}],
+            role_options: [{"label":"Sales Account","value":"Account"},{"label":"Account","value":"Account"}],
+            mdl_filter_order_by:null,
+            orderby_options_master: [{"label":"Sales Account (Asc)","value":"combinedname"},
+                                     {"label":"Sales Account (Desc)","value":"-combinedname"}],
+            orderby_options: [{"label":"Sales Account (Asc)","value":"combinedname"},
+                                     {"label":"Sales Account (Desc)","value":"-combinedname"}],
+            open_saved_finds_drawer: false,
+            saved_find_list: [],
+            save_new_find: '',
+            select_find_options:[],
+            mdl_select_find: null,
+            new_customer: null,
+            store_options: [],
+            store_options_master: []
+        }
+    },
+    methods: {
+        filterFnAccount(val, update, abort) {
+            let self = this;
+            if (val.length < 2) {
+                abort()
+                return
+            }
+            if (val === '') {
+                update(() => {
+                    self.account_options = [];
+                })
+                return
+            }
+            self.searchPartyList(val.toLowerCase(), "Customer").then(function(resp){
+                update(() => {
+                    self.account_options = resp;
+                })
+            });
+        },
+        searchPartyList (search_keyword, role_type) {
+            var self = this;
+            var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            allParms["hasAllParms"] = true;
+            allParms["pageIndex"] = 0;
+            allParms["term"] = search_keyword;
+            allParms["roleTypeId"] = role_type;
+            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError
+            });
+        },
+        onPageChange (props) {
+            let self = this;
+            const page = props.pagination.page;
+            const rowsNumber = props.pagination.rowsNumber;
+            const rowsPerPage = props.pagination.rowsPerPage;
+            const sortBy = props.pagination.sortBy;
+            const descending = props.pagination.descending;
+            if (sortBy) {
+                if (descending) {
+                    self.filter_params["orderByField"] = "-" + (self.column_to_field_mapping[sortBy] || sortBy);
+                }
+                else {
+                    self.filter_params["orderByField"] = (self.column_to_field_mapping[sortBy] || sortBy);
+                }
+            }
+            else {
+                self.filter_params["orderByField"] = "-orderId";
+            }
+            const startRow = (page - 1) * rowsPerPage;
+            const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage;
+            if (self.filter_params) {
+                var allParams = JSON.parse(JSON.stringify(self.filter_params));
+                allParams["pageOffset"] = startRow;
+                allParams["pageLimit"] = fetchCount;
+                allParams["moquiSessionToken"] = self.$root.moquiSessionToken;
+            }
+            else {
+                var allParams = $.extend({pageOffset: startRow, pageLimit: fetchCount ,moquiSessionToken:self.$root.moquiSessionToken }, {});
+            }
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:async function(resp) {
+                    self.pagination.rowsNumber = resp.count;
+                    self.order_list = await Promise.all(resp.orderList.map(async function(item){
+                        if (item.customerPartyId) {
+                            await self.getRelatedAccount(item.customerPartyId).then(function(resp){
+                                item["account"] = resp.party.partyId + ": " +resp.party.organizationName;
+                                if (!resp.party.organizationName) {
+                                    item["account"] = resp.party.partyId + ": " + resp.party.firstName + " " + resp.party.lastName
+                                }
+                                item["partyId"] = resp.party.partyId;
+                              }, Promise.resolve([]))
+                        }
+                        item["order"] = item["orderId"] + ":" + item["orderPartSeqId"];
+                        return item;
+                    }));
+                    self.pagination.page = page;
+                    self.pagination.rowsPerPage = rowsPerPage;
+                    self.pagination.sortBy = sortBy;
+                    self.pagination.descending = descending;
+                }
+            });
+        },
+        formatDate (dt) {
+            if (dt) {
+                dt = new Date(dt);
+                return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0');
+            }
+        },
+          filterFnStore (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.store_options = self.store_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.store_options = self.store_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+          filterFnOrderBy (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.orderby_options = self.orderby_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.orderby_options = self.orderby_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+        findOptions() {
+            let self = this;
+            self.filter_params = {};
+            if (self.mdl_filter_start_date) {
+                self.filter_params["fromDate"] = new Date(self.mdl_filter_start_date);
+            }
+            if (self.mdl_filter_end_date) {
+                self.filter_params["thruDate"] = new Date(new Date(self.mdl_filter_end_date).setUTCHours(23,59,59,999));
+            }
+            if (self.mdl_filter_account) {
+                self.filter_params["customerPartyId"] = self.mdl_filter_account.value;
+            }
+            if (self.mdl_filter_order_by) {
+                if (self.mdl_filter_order_by.value.startsWith("-")) {
+                    self.pagination.sortBy = self.mdl_filter_order_by.value.slice(1);
+                    self.pagination.descending = true;
+                }
+                else {
+                    self.pagination.sortBy = self.mdl_filter_order_by.value;
+                    self.pagination.descending = false;
+                }
+            }
+            self.pagination.page = 1;
+            self.onPageChange({
+              pagination: self.pagination,
+            });
+        },
+        resetFind() {
+            let self = this;
+            self.mdl_filter_end_date = null;
+            self.mdl_filter_start_date = null;
+            self.mdl_filter_account = null;
+            self.mdl_filter_order_by = null;
+            self.filter_params = {};
+            self.mdl_select_find = null;
+            self.pagination.sortBy = "";
+            self.pagination.descending = true;
+            self.pagination.page = 1;
+            self.onPageChange({
+              pagination: self.pagination,
+            });
+        },
+        getSavedFinds () {
+            var self = this;
+            var allParms = $.extend({ formLocation: "component://Sales/screen/SubscriptionManagement/Order/FindOrder.xml.form_list$OrderList",
+                moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/finds", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.saved_find_list = resp.savedFindList;
+                    self.select_find_options = resp.savedFindList;
+                }
+            });
+        },
+        searchSavedFind(selected_item) {
+            let self = this;
+            self.mdl_filter_end_date = null;
+            self.mdl_filter_start_date = null;
+            self.mdl_filter_account = null;
+            self.mdl_filter_order_by = null;
+            self.filter_params = {};
+
+            self.mdl_select_find = selected_item;
+
+            if(selected_item.fieldList)
+            {
+                selected_item.fieldList.map(function(item){
+                    if(item.fieldOperator == 'equals')
+                    {
+                        if(item.fieldName=='fromDate')
+                        {
+                            self.mdl_filter_start_date = item.fieldValue;
+                            self.filter_params[item.fieldName] = item.fieldValue;
+                        }
+                        else if(item.fieldName=='thruDate')
+                        {
+                            self.mdl_filter_end_date = item.fieldValue;
+                            self.filter_params[item.fieldName] = item.fieldValue;
+                        }
+                        else if(item.fieldName=='customerPartyId')
+                        {
+                            self.searchPartyList(item.fieldValue, "Customer").then(function(resp){
+                                    if(resp.length > 0)
+                                    {
+                                        self.mdl_filter_account = resp[0];;
+                                    }
+                              });
+                              self.filter_params[item.fieldName] = item.fieldValue;
+                        }
+                    }
+                    return item;
+                });
+            }
+            if (Object.keys(selected_item).indexOf("orderByField") > -1) {
+                let order_by_field = selected_item.orderByField.split(",")[0];
+                if (order_by_field.startsWith("-")) {
+                    self.pagination.sortBy = order_by_field.slice(1);
+                    self.pagination.descending = true;
+                }
+                else {
+                    self.pagination.sortBy = order_by_field;
+                    self.pagination.descending = false;
+                }
+            }
+            Object.keys(self.column_to_field_mapping).forEach(function(item){
+                if (self.pagination.sortBy == self.column_to_field_mapping[item]){
+                    self.pagination.sortBy = item;
+                }
+            })
+            if (self.pagination.descending) {
+                self.mdl_filter_order_by = self.orderby_options.find(function(item){
+                    return item.value === "-" + self.pagination.sortBy;
+                });
+            }
+            else {
+                self.mdl_filter_order_by = self.orderby_options.find(function(item){
+                    return item.value === self.pagination.sortBy;
+                });
+            }
+            self.pagination.page = 1;
+            self.onPageChange({
+              pagination: self.pagination,
+            });
+        },
+        searchSelectFind(obj) {
+            this.searchSavedFind(obj);
+        },
+        storeSavedFinds () {
+            var vm = this;
+            let order_by_name = "";
+            if (vm.pagination.descending) {
+                order_by_name = "-" + (vm.column_to_field_mapping[vm.pagination.sortBy] || vm.pagination.sortBy);
+            }
+            else {
+                order_by_name = (vm.column_to_field_mapping[vm.pagination.sortBy] || vm.pagination.sortBy);
+            }
+
+            var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
+             formLocation: 'component://Sales/screen/SubscriptionManagement/Order/FindOrder.xml.form_list$OrderList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/add", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    if (vm.mdl_filter_end_date) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "thruDate", vm.mdl_filter_end_date);
+                    }
+                    if (vm.mdl_filter_start_date) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "fromDate", vm.mdl_filter_start_date);
+                    }
+                    if (vm.mdl_filter_account) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "accountPartyId", vm.mdl_filter_account.value);
+                    }
+                    setTimeout( () => {
+                        vm.getSavedFinds();
+                    }, 900 );
+                    vm.save_new_find = '';
+                    vm.$q.notify({
+                        message: 'Saved successfully.',
+                        position: 'bottom-left',
+                      });
+                }
+            });
+        },
+        storeSavedFindsFields (formListFindId, fieldName, fieldValue) {
+            var vm = this;
+
+            var allParms = $.extend({ formListFindId: formListFindId, fieldName: fieldName, fieldValue: fieldValue,
+             fieldOperator: "equals" ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/addFields", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+
+                }
+            });
+        },
+        fetchStoreOptions () {
+            var self = this;
+            var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/storeOptions", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.store_options = resp.storeOptions.map(function(item){
+                        item["label"] = item["productStoreId"] + ": " + item["storeName"]
+                        return item;
+                    });
+                    self.store_options_master = JSON.parse(JSON.stringify(self.store_options));
+                }
+            });
+        },
+        async getRelatedAccount(partyId) {
+            var vm = this;
+            var allParms = $.extend({ partyId: partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getDetail", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError
+            });
+        },
+        addNewSalesOrder() {
+            let self = this;
+              var allParams = $.extend({productStoreId: self.new_store.productStoreId,
+                                    customerPartyId: (self.new_customer ? self.new_customer.value : null),
+                                      moquiSessionToken:self.$root.moquiSessionToken }, {});
+              $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/create", headers:{Accept:'application/json'}, data:allParams,
+                  error:moqui.handleAjaxError, success:function(resp) {
+                      self.new_store = null;
+                      self.new_customer = null;
+                      self.add_new_sales_order = false;
+                      setTimeout( () => {
+                        self.onPageChange({
+                          pagination: self.pagination,
+                        });
+                      }, 900 );
+                      self.$q.notify({
+                        message: 'New sales order created successfully.',
+                        position: 'bottom-left',
+                      });
+                  }
+              });
+        },
+    },
+    created: function () {
+        this.onPageChange({
+          pagination: this.pagination,
+        });
+        this.getSavedFinds();
+        this.fetchStoreOptions();
+        //this.storeSavedFinds();
+    }
+}
+</script>
+<style>
+    .custom_table_header {
+        height: 38px !important;
+    }
+    .detail_cls .q-field__label {
+        top: 10px !important;
+    }
+    .detail_cls .q-field--float .q-field__label {
+        top: 0px !important;
+    }
+    body {
+        overflow-x: hidden !important;
+    }
+    .max_width_700 {
+        max-width: 700px !important;
+    }
+    .custom_height_with_scroll {
+        max-height: 180px;
+        overflow-x: hidden !important;
+        overflow-y: auto;
+    }
+    .custom_height_with_scroll_main {
+        max-height: 80vh;
+        overflow-x: hidden !important;
+        overflow-y: auto;
+    }
+    .custom_style {
+        background: #ECF2FF;
+    }
+    .custom_radius {
+        border-radius: 8px;
+    }
+    .right_options_popup .q-field__label {
+        background: transparent !important;
+    }
+    .right_options_popup .q-field__input {
+        background: transparent !important;
+    }
+    .right_options_popup .q-field--float .q-field__label {
+        background: grey !important;
+        color: white !important;
+        border-radius: 8px !important;
+    }
+    .main_list .q-card__section {
+        padding: 1px !important
+    }
+</style>
