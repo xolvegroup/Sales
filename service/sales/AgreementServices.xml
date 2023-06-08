@@ -150,6 +150,7 @@ along with this software (see the LICENSE.md file). If not, see
             <entity-find entity-name="mantle.party.agreement.AgreementItemAndProductPrice" list="agreementItemListMain">
                 <econdition field-name="agreementId"/>
                 <econdition field-name="agreementItemTypeEnumId" value="AitPricing"/> <!-- Exclude subscriptions -->
+                <order-by field-name="agreementItemSeqId"/>
             </entity-find>
             <set field="agreementItemList" from="[]"/>
             <if condition="agreementItemListMain">
