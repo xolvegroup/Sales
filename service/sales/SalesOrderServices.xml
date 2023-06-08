@@ -12,7 +12,8 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
 
     <service verb="update" noun="ShipToParty">
         <in-parameters>
@@ -118,6 +119,68 @@ along with this software (see the LICENSE.md file). If not, see
                 <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
                 <field-map field-name="contactMechId" from="billToPostalContactMechId"/>
             </service-call>
+        </actions>
+    </service>
+    <service verb="find" noun="Orders">
+        <in-parameters>
+            <parameter name="customerPartyId"/>
+            <parameter name="pageOffset" default-value="" type="Integer"/>
+            <parameter name="pageLimit" default-value="" type="Integer"/>
+            <parameter name="orderByField" default-value="-orderId"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderList" type="List"/>
+            <parameter name="count" type="Integer"/>
+        </out-parameters>
+        <actions>
+            <entity-find-count entity-name="mantle.order.OrderPartFindView" count-field="count" distinct="true">
+                <!--                <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>-->
+                <!--                <econdition field-name="otherPartyId" from="otherPartyId" ignore-if-empty="true"/>-->
+                <!--                <econdition field-name="agreementDate" operator="greater-equals" from="fromDate" ignore-if-empty="true"/>-->
+                <!--                <econdition field-name="agreementDate" operator="less-equals" from="thruDate" ignore-if-empty="true"/>-->
+                <!--                <search-form-inputs>-->
+                <!--                    <default-parameters partStatusId="OrderOpen,OrderProposed,OrderRequested,OrderPlaced,OrderApproved,OrderHold" partStatusId_op="in"/>-->
+                <!--                </search-form-inputs>-->
+                <select-field field-name="orderId,orderPartSeqId,orderId,statusId,customerPartyId"/>
+            </entity-find-count>
+            <entity-find offset="pageOffset" limit="pageLimit" entity-name="mantle.order.OrderPartFindView"
+                         list="orderListMain">
+                <!--                <search-form-inputs>-->
+                <!--                    <default-parameters partStatusId="OrderOpen,OrderProposed,OrderRequested,OrderPlaced,OrderApproved,OrderHold" partStatusId_op="in"/>-->
+                <!--                </search-form-inputs>-->
+                <econdition field-name="customerPartyId" from="customerPartyId" ignore-if-empty="true"/>
+                <order-by field-name="${orderByField}"/>
+                <select-field field-name="orderId,orderPartSeqId,orderId,statusId,customerPartyId"/>
+            </entity-find>
+            <set field="orderList" from="[]"/>
+            <if condition="orderListMain">
+                <iterate list="orderListMain" entry="oi">
+                    <set field="orderItem" from="new HashMap()"/>
+                    <script>
+                        orderItem.putAll(oi)
+                        orderList.add(orderItem)
+                    </script>
+                    <entity-find-one entity-name="moqui.basic.StatusItem" value-field="status">
+                        <field-map field-name="statusId" from="oi.statusId"/>
+                        <field-map field-name="statusTypeId" value="OrderHeader"/>
+                    </entity-find-one>
+                    <if condition="status">
+                        <script>
+                            orderItem.put("status",status.description)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="get" noun="StoreOptions">
+        <out-parameters>
+            <parameter name="storeOptions" type="list"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.product.store.ProductStore" list="storeOptions">
+                <order-by field-name="storeName"/>
+            </entity-find>
         </actions>
     </service>
 </services>

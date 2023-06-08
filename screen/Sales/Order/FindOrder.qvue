@@ -1,5 +1,72 @@
 <template>
     <div>
+    <q-dialog v-model="add_new_sales_order">
+          <q-card class="q-pa-none detail_cls" style="width: 50vw; max-width: 50vw;">
+            <q-card-section>
+              <div class="row q-px-md q-py-sm">
+                <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                    Create Sales Order
+                </div>
+                <div class="col-1">
+                    <q-btn flat rounded dense icon="close" class="float-right" v-close-popup></q-btn>
+                </div>
+            </div>
+            </q-card-section>
+            <q-separator></q-separator>
+
+            <q-card-section class="q-ma-md edit_page">
+                                    <q-select rounded
+                            label="Store*"
+                            dense
+                            outlined
+                            v-model="new_store"
+                            use-input
+                            color="red"
+                            :input-class="!$q.dark.isActive?'bg-white':''"
+                            input-debounce="0"
+                            option-value="value"
+                            option-label="label"
+                            :options="store_options"
+                            @filter="filterFnStore"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+                          <q-select rounded
+                        dense
+                        :input-class="!$q.dark.isActive?'bg-white':''"
+                        class="q-pt-sm"
+                        label="Customer"
+                        outlined
+                        v-model="new_customer"
+                        use-input
+                        input-debounce="700"
+                        option-value="value"
+                        option-label="label"
+                        :options="account_options"
+                        @filter="filterFnAccount"
+                        >
+                        <template v-slot:no-option>
+                            <q-item>
+                              <q-item-section class="text-grey">
+                                No results
+                              </q-item-section>
+                            </q-item>
+                        </template>
+                    </q-select>
+            </q-card-section>
+            <q-separator></q-separator>
+            <q-card-actions class="q-pa-md" align="left">
+              <q-btn rounded :disable="!(new_store)" @click="addNewSalesOrder()" outline dense label="Create" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn rounded v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
     <q-drawer
             side="right"
             v-model="open_saved_finds_drawer"
@@ -20,7 +87,7 @@
                     </div>
                 </div>
                 <div class="row q-mt-md q-col-gutter-md detail_cls">
-                    <div class="col-12 q-pb-lg" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-agreementId' && mdl_filter_order_by !== null)">
+                    <div class="col-12 q-pb-lg" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-orderId' && mdl_filter_order_by !== null)">
                            <div class="row">
                                 <div class="col-6 q-pb-sm" v-if="mdl_filter_account">
                                     <span class="text-subtitle2">Sales Account : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_account.value }}</span>
@@ -145,6 +212,19 @@
           <div>
         <q-item class="q-pa-none">
               <q-item-section>
+                <q-btn rounded
+                style="width: 175px;"
+            class="custom_btn_dropdown"
+            dense
+            @click="add_new_sales_order=true"
+                  split
+                  outline rounded
+                  color=""
+                  no-caps
+                  icon="add"
+                  label="Create Sales Order"
+                >
+                </q-btn>
               </q-item-section>
               <q-item-section style="display: block;" class="detail_cls">
 
@@ -173,7 +253,7 @@
 
               <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Saved Finds" icon="save" @click="open_saved_finds_drawer=true"></q-btn>
               <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Find Options" icon="search" @click="open_find_options_drawer=true"></q-btn>
-              <q-btn rounded style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-agreementId' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline dense icon="close" label="Clear"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-orderId' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline dense icon="close" label="Clear"></q-btn>
               </q-item-section>
             </q-item>
                     <q-card class="main_list" flat>
@@ -183,7 +263,7 @@
                         flat
                         @request="onPageChange"
                         :wrap-cells="true"
-                              :data="agreement_list"
+                              :data="order_list"
                               :filter="filter"
                               table-header-class="custom_table_header"
                               :columns="table_columns"
@@ -193,14 +273,14 @@
                               :pagination.sync="pagination"
                               :card-class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'"
                             >
-                                <template v-slot:body-cell-customer="props">
+                                <template v-slot:body-cell-account="props">
                                   <q-td :props="props">
-                                    <a :href="'ViewAccount?partyId=' + props.row.partyId">{{props.row.customer}}</a>
+                                    <a :href="'ViewAccount?partyId=' + props.row.partyId">{{props.row.account}}</a>
                                   </q-td>
                                 </template>
-                                <template v-slot:body-cell-agreementid="props">
+                                <template v-slot:body-cell-order="props">
                                   <q-td :props="props">
-                                    <a :href="'ViewAgreement?agreementId=' + props.row.agreementId">{{props.row.agreementId}}</a>
+                                    <a :href="'ViewOrder?orderId=' + props.row.orderId">{{props.row.orderId}}</a>
                                   </q-td>
                                 </template>
                                 <template v-slot:body-cell-agreementdate="props">
@@ -228,10 +308,10 @@
 module.exports = {
     data: function () {
         return {
-            agreement_list: [],
-            new_sales_account_name: "",
+            order_list: [],
+            new_store: "",
             account_options: [],
-            add_new_sales_account: false,
+            add_new_sales_order: false,
             pagination: {
                 page: 1,
                 rowsPerPage: 15,
@@ -243,28 +323,25 @@ module.exports = {
             filter: "",
             table_columns: [
                {
-                 name: 'customer',
-                 field: 'customer',
-                 label: 'Customer',
-                 align: 'left',
-                 sortable: false,
-                 style: 'min-width: 16%;width: 16%;'
-               },
-               {
-                 name: 'agreementid',
-                 field: 'agreementId',
-                 label: 'Agreement',
+                 name: 'account',
+                 field: 'account',
+                 label: 'Account',
                  align: 'left',
                  sortable: true,
-                 style: 'min-width: 20%;width: 20%;'
+                 style: 'min-width: 19%;width: 19%;'
                },
-               { name: 'description', align: 'left', label: 'Description',style: 'min-width: 20%;width: 20%;', field: 'description', sortable: true },
-               { name: 'agreementdate', align: 'left', label: 'Agreement Date',style: 'min-width: 12%;width: 12%;', field: 'agreementDate', sortable: true },
-               { name: 'fromdate', align: 'left', label: 'From Date',style: 'min-width: 12%;width: 12%;', field: 'fromDate', sortable: true },
-               { name: 'thrudate', align: 'left', label: 'Thru Date',style: 'min-width: 12%;width: 12%;', field: 'thruDate', sortable: true },
-            ],
-            column_to_field_mapping: {"agreementid":"agreementId", "description": "description", "agreementdate": "agreementDate",
-                                        "fromdate": "fromDate", "thrudate": "thruDate"},
+               {
+                 name: 'order',
+                 field: 'order',
+                 label: 'Order',
+                 align: 'left',
+                 sortable: true,
+                 style: 'min-width: 23%;width: 23%;'
+               },
+               { name: 'ordername', align: 'left', label: 'Order Name',style: 'min-width: 22%;width: 22%;', field: '', sortable: true },
+               { name: 'status', align: 'left', label: 'Status',style: 'min-width: 14%;width: 14%;', field: 'status', sortable: true },
+               { name: 'total', align: 'left', label: 'Total',style: 'min-width: 14%;width: 14%;', field: '', sortable: true }            ],
+            column_to_field_mapping: {"order":"orderId", "account": "customerPartyId"},
             open_find_options_drawer: false,
             mdl_filter_sales_person:null,
             mdl_filter_account:null,
@@ -272,8 +349,8 @@ module.exports = {
             mdl_filter_end_date:null,
             sales_person_options_master: [],
             sales_person_options: [],
-            role_options_master: [{"label":"Sales Account","value":"Account"},{"label":"Customer","value":"Customer"}],
-            role_options: [{"label":"Sales Account","value":"Account"},{"label":"Customer","value":"Customer"}],
+            role_options_master: [{"label":"Sales Account","value":"Account"},{"label":"Account","value":"Account"}],
+            role_options: [{"label":"Sales Account","value":"Account"},{"label":"Account","value":"Account"}],
             mdl_filter_order_by:null,
             orderby_options_master: [{"label":"Sales Account (Asc)","value":"combinedname"},
                                      {"label":"Sales Account (Desc)","value":"-combinedname"}],
@@ -283,7 +360,10 @@ module.exports = {
             saved_find_list: [],
             save_new_find: '',
             select_find_options:[],
-            mdl_select_find: null
+            mdl_select_find: null,
+            new_customer: null,
+            store_options: [],
+            store_options_master: []
         }
     },
     methods: {
@@ -299,7 +379,7 @@ module.exports = {
                 })
                 return
             }
-            self.searchPartyList(val.toLowerCase(), "Account").then(function(resp){
+            self.searchPartyList(val.toLowerCase(), "Customer").then(function(resp){
                 update(() => {
                     self.account_options = resp;
                 })
@@ -332,7 +412,7 @@ module.exports = {
                 }
             }
             else {
-                self.filter_params["orderByField"] = "-agreementId";
+                self.filter_params["orderByField"] = "-orderId";
             }
             const startRow = (page - 1) * rowsPerPage;
             const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage;
@@ -345,16 +425,20 @@ module.exports = {
             else {
                 var allParams = $.extend({pageOffset: startRow, pageLimit: fetchCount ,moquiSessionToken:self.$root.moquiSessionToken }, {});
             }
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:async function(resp) {
                     self.pagination.rowsNumber = resp.count;
-                    self.agreement_list = await Promise.all(resp.agreements.map(async function(item){
-                        if (item.otherPartyId) {
-                            await self.getRelatedAccount(item.otherPartyId).then(function(resp){
-                                item["customer"] = resp.party.organizationName;
+                    self.order_list = await Promise.all(resp.orderList.map(async function(item){
+                        if (item.customerPartyId) {
+                            await self.getRelatedAccount(item.customerPartyId).then(function(resp){
+                                item["account"] = resp.party.partyId + ": " +resp.party.organizationName;
+                                if (!resp.party.organizationName) {
+                                    item["account"] = resp.party.partyId + ": " + resp.party.firstName + " " + resp.party.lastName
+                                }
                                 item["partyId"] = resp.party.partyId;
                               }, Promise.resolve([]))
                         }
+                        item["order"] = item["orderId"] + ":" + item["orderPartSeqId"];
                         return item;
                     }));
                     self.pagination.page = page;
@@ -370,17 +454,17 @@ module.exports = {
                 return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0');
             }
         },
-          filterFnRole (val, update) {
+          filterFnStore (val, update) {
             let self = this;
               if (val === '') {
                 update(() => {
-                  this.role_options = self.role_options_master
+                  this.store_options = self.store_options_master
                 })
                 return
               }
               update(() => {
               const needle = val.toLowerCase()
-              this.role_options = self.role_options.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+              this.store_options = self.store_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
             })
           },
           filterFnOrderBy (val, update) {
@@ -406,7 +490,7 @@ module.exports = {
                 self.filter_params["thruDate"] = new Date(new Date(self.mdl_filter_end_date).setUTCHours(23,59,59,999));
             }
             if (self.mdl_filter_account) {
-                self.filter_params["otherPartyId"] = self.mdl_filter_account.value;
+                self.filter_params["customerPartyId"] = self.mdl_filter_account.value;
             }
             if (self.mdl_filter_order_by) {
                 if (self.mdl_filter_order_by.value.startsWith("-")) {
@@ -440,7 +524,7 @@ module.exports = {
         },
         getSavedFinds () {
             var self = this;
-            var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Agreement/FindAgreement.xml.form_list$AgreementList",
+            var allParms = $.extend({ formLocation: "component://Sales/screen/SubscriptionManagement/Order/FindOrder.xml.form_list$OrderList",
                 moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/finds", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
@@ -474,9 +558,9 @@ module.exports = {
                             self.mdl_filter_end_date = item.fieldValue;
                             self.filter_params[item.fieldName] = item.fieldValue;
                         }
-                        else if(item.fieldName=='otherPartyId')
+                        else if(item.fieldName=='customerPartyId')
                         {
-                            self.searchPartyList(item.fieldValue, "Account").then(function(resp){
+                            self.searchPartyList(item.fieldValue, "Customer").then(function(resp){
                                     if(resp.length > 0)
                                     {
                                         self.mdl_filter_account = resp[0];;
@@ -533,7 +617,7 @@ module.exports = {
             }
 
             var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
-             formLocation: 'component://Sales/screen/Sales/Agreement/FindAgreement.xml.form_list$AgreementList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+             formLocation: 'component://Sales/screen/SubscriptionManagement/Order/FindOrder.xml.form_list$OrderList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
             $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/add", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     if (vm.mdl_filter_end_date) {
@@ -567,6 +651,19 @@ module.exports = {
                 }
             });
         },
+        fetchStoreOptions () {
+            var self = this;
+            var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/storeOptions", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.store_options = resp.storeOptions.map(function(item){
+                        item["label"] = item["productStoreId"] + ": " + item["storeName"]
+                        return item;
+                    });
+                    self.store_options_master = JSON.parse(JSON.stringify(self.store_options));
+                }
+            });
+        },
         async getRelatedAccount(partyId) {
             var vm = this;
             var allParms = $.extend({ partyId: partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
@@ -574,12 +671,35 @@ module.exports = {
                 error:moqui.handleAjaxError
             });
         },
+        addNewSalesOrder() {
+            let self = this;
+              var allParams = $.extend({productStoreId: self.new_store.productStoreId,
+                                    customerPartyId: (self.new_customer ? self.new_customer.value : null),
+                                      moquiSessionToken:self.$root.moquiSessionToken }, {});
+              $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/create", headers:{Accept:'application/json'}, data:allParams,
+                  error:moqui.handleAjaxError, success:function(resp) {
+                      self.new_store = null;
+                      self.new_customer = null;
+                      self.add_new_sales_order = false;
+                      setTimeout( () => {
+                        self.onPageChange({
+                          pagination: self.pagination,
+                        });
+                      }, 900 );
+                      self.$q.notify({
+                        message: 'New sales order created successfully.',
+                        position: 'bottom-left',
+                      });
+                  }
+              });
+        },
     },
     created: function () {
         this.onPageChange({
           pagination: this.pagination,
         });
         this.getSavedFinds();
+        this.fetchStoreOptions();
         //this.storeSavedFinds();
     }
 }
