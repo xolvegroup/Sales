@@ -183,4 +183,49 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
+    <service verb="get" noun="ShippingDetails">
+        <in-parameters>
+            <parameter name="orderId" />
+            <parameter name="orderPartSeqId" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="shipOptsOut" type="list"/>
+            <parameter name="orderHeader" type="Map"/>
+            <parameter name="formattedGrandTotal" type="String"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.order.OrderHeader" value-field="orderHeader"/>
+            <set field="formattedGrandTotal" from="ec.l10n.formatCurrency(orderHeader.grandTotal ?: 0, orderHeader?.currencyUomId)"/>
+            <service-call name="mantle.product.StoreServices.get#StoreShippingOptions" out-map="shipOptsOut"
+                      in-map="[productStoreId:orderHeader.productStoreId, orderId:orderId, orderPartSeqId:orderPartSeqId,
+                            postalContactMechId:postalContactMechId, getRates:true]"/>
+        </actions>
+    </service>
+    <service verb="get" noun="CurBillToContactMech">
+        <in-parameters>
+            <parameter name="orderId" />
+            <parameter name="orderPartSeqId" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderPartContactMech" type="Map"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.order.OrderPartContactMech" value-field="orderPartContactMech">
+                <econdition field-name="orderId"/>
+                <econdition field-name="orderPartSeqId"/>
+                <econdition field-name="contactMechPurposeId" value="PostalBilling"/>
+            </entity-find-one>
+        </actions>
+    </service>
+    <service verb="get" noun="PaymentTerms">
+        <out-parameters>
+            <parameter name="termList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.account.invoice.SettlementTermAndEnumMember" list="termList">
+                <econdition field-name="enumGroupEnumId" value="EngPaymentTermType"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
 </services>

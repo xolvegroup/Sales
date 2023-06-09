@@ -156,7 +156,7 @@
                                 <b>To: {{selected_bill_to_address.postalAddress.toName}}</b>
                             </div>
                             <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.attnName">
-                                <b>To: {{selected_bill_to_address.postalAddress.attnName}}</b>
+                                <b>Attention: {{selected_bill_to_address.postalAddress.attnName}}</b>
                             </div>
                             <div class="q-py-xs">
                                 <span v-if="selected_bill_to_address.postalAddress.address1">{{selected_bill_to_address.postalAddress.address1}}</span>
@@ -169,6 +169,15 @@
                             </div>
                             <div class="q-py-xs" v-if="selected_bill_to_address.add_last_line">
                                 {{selected_bill_to_address.add_last_line}}
+                            </div>
+                            <div class="q-py-xs" v-if="selected_bill_to_address.telecomNumber">
+                                T: <span v-if="selected_bill_to_address.telecomNumber.countryCode">{{selected_bill_to_address.telecomNumber.countryCode}}-</span>
+                                <span v-if="selected_bill_to_address.telecomNumber.areaCode">{{selected_bill_to_address.telecomNumber.areaCode}}-</span>
+                                <span v-if="selected_bill_to_address.telecomNumber.contactNumber">{{selected_bill_to_address.telecomNumber.contactNumber}}</span>
+                                <span v-if="selected_bill_to_address.telecomNumber.extension">x{{selected_bill_to_address.telecomNumber.extension}}</span>
+                            </div>
+                            <div class="q-py-xs" v-if="selected_bill_to_address.emailAddress">
+                                <a :href="'mailto:' + selected_bill_to_address.emailAddress">{{selected_bill_to_address.emailAddress}}</a>
                             </div>
                         </div>
                     </q-card>
