@@ -292,5 +292,8 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="getGeoRegionsForDropDown" require-authentication="anonymous-all">
             <method type="post"><service name="org.moqui.impl.BasicServices.get#GeoRegionsForDropDown"/></method>
         </resource>
+        <resource name="placeOrder" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.place#Order"/></method>
+        </resource>
     </resource>
 </resource>

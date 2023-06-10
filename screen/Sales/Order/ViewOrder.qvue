@@ -11,7 +11,7 @@
                         {{order_part_info.customerDetail.firstName}} {{order_part_info.customerDetail.lastName}}
                     </span>
                     </div>
-                    <q-btn icon="open_in_new" rounded @click="change_bill_party=true" class="text-green float-right q-px-sm q-mt-none text-capitalize" outline dense label="Place Warnings"></q-btn>
+                    <q-btn icon="open_in_new" rounded @click="modal_place_warning=true" class="text-green float-right q-px-sm q-mt-none text-capitalize" outline dense label="Place Warnings"></q-btn>
                 </q-card-section>
                 <q-card-section class="correct_input_fields">
                     <div class="row q-mt-sm">
@@ -581,6 +581,33 @@
             </q-card-actions>
           </q-card>
         </q-dialog>
+
+        <q-dialog v-model="modal_place_warning">
+          <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+            <q-card-section>
+            <div class="row q-px-sm">
+                <div class="col-10">
+                    <div class="text-h5">Place Warnings</div>
+                </div>
+                <div class="col-2 text-right">
+                    <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+                </div>
+            </div>
+            </q-card-section>
+
+            <q-separator class="q-mx-none"></q-separator>
+
+            <q-card-section style="font-size: 16px;padding-bottom: 0px;" class="q-mt-sm q-mx-sm">
+                 <div class="q-pb-sm" v-for="item in place_warnings_list"> {{ item }}</div>
+            </q-card-section>
+
+            <q-card-actions class="q-mx-sm q-mb-sm" align="left">
+              <q-btn size="16px" rounded @click="placeOrder" outline dense label="Place Order Anyway"  class="text-capitalize" color="primary" />
+            </q-card-actions>
+
+          </q-card>
+        </q-dialog>
+
         <q-dialog v-model="select_bill_to_address">
           <q-card class="detail_cls q-px-none q-pt-sm" style="min-width: 700px">
             <q-card-section>
@@ -883,7 +910,9 @@ module.exports = {
           obj_add:{
                         to_name:' ',
                         attention:' '
-                    }
+                    },
+          modal_place_warning: false,
+          place_warnings_list: []
         }
     },
     methods: {
@@ -1140,6 +1169,7 @@ module.exports = {
                         self.order_part = self.order_part_info.orderPart;
                         self.status_item = resp.statusItem;
                         self.order_items_list = resp.orderItemList;
+                        self.place_warnings_list = resp.placeWarnings;
                         if (self.order_part_info.customerBillToDetail) {
                             self.customer_bill_to_detail = self.order_part_info.customerBillToDetail;
                         }
@@ -1531,6 +1561,18 @@ module.exports = {
                         self.obj_add = {};
                         self.add_dialog = false;
                         self.getPartyContactInfo(self.customer_bill_to_detail.partyId);
+                    }
+                });
+            },
+            placeOrder () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = {orderId: params.orderId, orderPartSeqId: self.order_part.orderPartSeqId, moquiSessionToken:self.$root.moquiSessionToken};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/placeOrder", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.modal_place_warning=false;
                     }
                 });
             },
