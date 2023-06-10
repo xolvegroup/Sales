@@ -1070,20 +1070,20 @@ module.exports = {
                                 let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
                                         + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
                                         + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
-                                        + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                        (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                        + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                        (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                         + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "");
+                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "");
                                 self.postal_address_list.push({label: label, value: item.postalContactMechId});
                                 return item;
                             });
                             self.postal_address_list_master = JSON.parse(JSON.stringify(self.postal_address_list));
                             if (self.agreement_contact && self.agreement_contact.contactMechId) {
                                 self.selected_bill_to_address = self.postal_addresses_master.find(function(item){
-                                    item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                        (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                    item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                        (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                         + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "")
+                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
                                     return item.postalContactMechId === self.agreement_contact.contactMechId
                                 })
                             }
@@ -1113,10 +1113,10 @@ module.exports = {
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateBillToContactMech", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.selected_bill_to_address = self.postal_addresses_master.find(function(item){
-                            item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                            item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                 + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "")
+                                item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
                             return item.postalContactMechId === self.bill_to_address.value
                         })
                         self.select_bill_to_address = false;

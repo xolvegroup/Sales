@@ -286,5 +286,11 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="updateOrderPart" require-authentication="anonymous-all">
             <method type="post"><service name="mantle.order.OrderServices.update#OrderPart"/></method>
         </resource>
+        <resource name="getGeoCountries" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.get#GeoCountries"/></method>
+        </resource>
+        <resource name="getGeoRegionsForDropDown" require-authentication="anonymous-all">
+            <method type="post"><service name="org.moqui.impl.BasicServices.get#GeoRegionsForDropDown"/></method>
+        </resource>
     </resource>
 </resource>

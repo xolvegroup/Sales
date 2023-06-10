@@ -228,4 +228,17 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
+    <service verb="get" noun="GeoCountries">
+        <in-parameters>
+            <parameter name="geoName" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="geoList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.Geo" list="geoList">
+            <econdition field-name="geoTypeEnumId" value="GEOT_COUNTRY"/>
+            <order-by field-name="geoName"/></entity-find>
+        </actions>
+    </service>
 </services>

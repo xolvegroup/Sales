@@ -645,27 +645,27 @@
             <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
 
                     <div class="q-mt-sm q-pt-sm">
-                        <q-input label="To Name" rounded v-model="obg_add.to_name" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                        <q-input label="To Name" rounded v-model="obj_add.to_name" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
                         </q-input>
                     </div>
                     <div class="q-mt-sm q-pt-sm">
-                        <q-input label="Attention" rounded v-model="obg_add.attention" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                        <q-input label="Attention" rounded v-model="obj_add.attention" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
                         </q-input>
                     </div>
                     <div class="row q-mt-sm q-pt-sm">
                         <div class="col-6" style="display:contents">
                                 <div class="float-left q-pt-md q-pr-sm">Address 1</div>
-                            <q-input class="float-left" rounded v-model="obg_add.address_1" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                            <q-input class="float-left" rounded v-model="obj_add.address_1" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
                             </q-input>
                         </div>
                         <div class="col-6">
                                <div class="float-left q-pt-md q-pl-md q-pr-sm">Unit</div>
-                            <q-input class="float-left" rounded v-model="obg_add.unit" outlined style="margin-top:8px;margin-bottom:8px;padding:0;width:100px;" dense>
+                            <q-input class="float-left" rounded v-model="obj_add.unit" outlined style="margin-top:8px;margin-bottom:8px;padding:0;width:100px;" dense>
                             </q-input>
                         </div>
                     </div>
                     <div class="q-mt-sm q-pt-sm">
-                        <q-input label="Address 2" rounded v-model="obg_add.attention" outlined style="" dense>
+                        <q-input label="Address 2" rounded v-model="obj_add.address_2" outlined style="" dense>
                         </q-input>
                     </div>
 
@@ -673,15 +673,17 @@
                         <div class="row">
                             <div class="col-1 q-pt-xs q-mt-xs">City/Zip</div>
                             <div class="col-3 q-pl-sm">
-                                <q-input rounded  outlined style="margin:0;padding:0;" label="" dense>
-                                </q-input>
+                                <q-input rounded v-model="obj_add.city"  outlined style="margin:0;padding:0;" label="" dense>
+                                <q-tooltip anchor="bottom middle" self="top middle">City</q-tooltip></q-input>
                             </div>
                             <div class="col-2 q-pl-sm">
-                                <q-input rounded  outlined style="margin:0;padding:0;" label="" dense>
+                                <q-input rounded v-model="obj_add.postal_code"  outlined style="margin:0;padding:0;" label="" dense>
+                                <q-tooltip anchor="bottom middle" self="top middle">Zip/Postal Code</q-tooltip>
                                 </q-input>
                             </div>
                             <div class="col-2" style="display:flex">
-                                <span class="q-pt-sm q-px-sm">-</span><q-input rounded  outlined style="margin:0;padding:0;width:70px;" label="" dense>
+                                <span class="q-pt-sm q-px-sm">-</span><q-input rounded v-model="obj_add.postal_code_external" outlined style="margin:0;padding:0;width:70px;" label="" dense>
+                                    <q-tooltip anchor="bottom middle" self="top middle">Zip/Postal Code External</q-tooltip>
                                 </q-input>
                             </div>
                         </div>
@@ -695,7 +697,7 @@
                                     label="Country"
                                     dense
                                     outlined
-                                    v-model="new_country"
+                                    v-model="obj_add.country"
                                     use-input
                                     input-debounce="700"
                                     :class="!$q.dark.isActive?'bg-white':''"
@@ -704,6 +706,7 @@
                                     option-label="label"
                                     :options="country_options"
                                     @filter="filterFnCountry"
+                                    @input="changeCountry"
                                   >
                                     <template v-slot:no-option>
                                       <q-item>
@@ -719,7 +722,7 @@
                                     label="State"
                                     dense
                                     outlined
-                                    v-model="new_state"
+                                    v-model="obj_add.state"
                                     use-input
                                     input-debounce="700"
                                     :class="!$q.dark.isActive?'bg-white':''"
@@ -744,27 +747,28 @@
                     <div class="q-mt-sm q-pt-md">
                         <div class="row">
                             <div class="col-1 q-pt-xs q-mt-xs">Phone</div>
-                            <div class="col-10">
+                            <div class="col-11">
                                 <div class="float-left q-pt-xs q-mt-xs">+&nbsp;</div>
                                     <div class="float-left">
-                                     <q-input rounded  outlined style="margin:0;padding:0;width:120px" label="Country Code" dense>
+                                     <q-input rounded v-model="obj_add.country_code" outlined style="margin:0;padding:0;width:120px" label="Country Code" dense>
                                     </q-input>
                                </div>
 
                                <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
                                    <div class="float-left">
-                                        <q-input rounded class="q-pl-sm"   outlined style="margin:0;padding:0;width:120px" label="Area Code" dense>
+                                        <q-input rounded class="q-pl-sm" v-model="obj_add.area_code"  outlined style="margin:0;padding:0;width:120px" label="Area Code" dense>
                                         </q-input>
                                    </div>
 
                                     <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
                                    <div class="float-left">
-                                        <q-input rounded class="q-pl-sm"   outlined style="margin:0;padding:0;width:190px" label="Phone Number" dense>
+                                        <q-input rounded class="q-pl-sm" v-model="obj_add.phone"  outlined style="margin:0;padding:0;width:190px" label="Phone Number" dense>
                                         </q-input>
                                    </div>
                                    <div class="float-left ">
                                         <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;x&nbsp;</div>
-                                        <q-input rounded class="q-pl-sm" outlined style="margin:0;padding:0;width:50px" dense>
+                                        <q-input rounded class="q-pl-sm" v-model="obj_add.extension" outlined style="margin:0;padding:0;width:50px" dense>
+                                        <q-tooltip anchor="bottom middle" self="top middle">Extension</q-tooltip>
                                         </q-input>
                                    </div>
                             </div>
@@ -773,14 +777,14 @@
                     </div>
 
                     <div class="q-mt-sm q-pt-sm">
-                        <q-input label="Email" rounded v-model="obg_add.attention" outlined style="" dense>
+                        <q-input label="Email" rounded v-model="obj_add.email" outlined style="" dense>
                         </q-input>
                     </div>
 
             </q-card-section>
 
             <q-card-actions class="q-mx-sm q-mb-sm" align="left">
-              <q-btn size="16px" rounded :disabled="!(new_product)" @click="addAgreementItem"  outline dense label="Save"  class="text-capitalize" color="primary" />
+              <q-btn size="16px" rounded @click="storeContactInfo"  outline dense label="Save"  class="text-capitalize" color="primary" />
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -871,12 +875,12 @@ module.exports = {
           postal_address_list: [],
           payment_terms_options_master:[],
           payment_terms_options:[],
-          state_options_master:[{'label':'AL - Alabama','value':'AL - Alabama'}],
-          state_options:[{'label':'AL - Alabama','value':'AL - Alabama'}],
-          country_options_master:[{'label':'United States','value':'United States'}],
-          country_options:[{'label':'United States','value':'United States'}],
+          state_options_master:[],
+          state_options:[],
+          country_options_master:[],
+          country_options:[],
           add_dialog:false,
-          obg_add:{
+          obj_add:{
                         to_name:' ',
                         attention:' '
                     }
@@ -1194,22 +1198,6 @@ module.exports = {
                     }
                 });
             },
-            getAgreementParties () {
-                var self = this;
-                const params = new Proxy(new URLSearchParams(window.location.search), {
-                  get: (searchParams, prop) => searchParams.get(prop),
-                });
-                var allParms = {agreementId: params.agreementId, moquiSessionToken:self.$root.moquiSessionToken };
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getAgreementParties", headers:{Accept:'application/json'}, data:allParms,
-                    error:moqui.handleAjaxError, success:function(resp) {
-                        self.agreement_parties_list = resp.agreementPartyList;
-                        self.bill_to_party_det = resp.billToParty;
-                        if (resp.billToParty) {
-                            self.getPartyContactInfo(resp.billToParty.partyId);
-                        }
-                    }
-                });
-            },
             getRoleOptions () {
                 var self = this;
                 var allParms = {moquiSessionToken:self.$root.moquiSessionToken };
@@ -1311,20 +1299,20 @@ module.exports = {
                                 let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
                                         + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
                                         + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
-                                        + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                        (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                        + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                        (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                         + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "");
+                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "");
                                 self.postal_address_list.push({label: label, value: item.postalContactMechId});
                                 return item;
                             });
                             self.postal_address_list_master = JSON.parse(JSON.stringify(self.postal_address_list));
                             if (self.order_part_contact_mech && self.order_part_contact_mech.contactMechId) {
                                 self.selected_bill_to_address = self.postal_addresses_master.find(function(item){
-                                    item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                        (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                    item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                        (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                         + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "")
+                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
                                     return item.postalContactMechId === self.order_part_contact_mech.contactMechId
                                 })
                             }
@@ -1363,9 +1351,9 @@ module.exports = {
                                     + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
                                     + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
                                     + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                    (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                    (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                     + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                    item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "");
+                                    item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "");
                             self.postal_address_ship_to_list.push({label: label, value: item.postalContactMechId});
                             return item;
                         });
@@ -1373,9 +1361,9 @@ module.exports = {
                         if (self.order_part && self.order_part.postalContactMechId) {
                             self.selected_ship_to_address = self.postal_addresses_ship_to_master.find(function(item){
                                 item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                    (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                    (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                     + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                    item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "")
+                                    item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
                                 return item.postalContactMechId === self.order_part.postalContactMechId
                             })
                         }
@@ -1405,9 +1393,9 @@ module.exports = {
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.selected_bill_to_address = self.postal_addresses_master.find(function(item){
                             item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                (item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                 + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo.geoCodeAlpha3 || "")
+                                item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
                             return item.postalContactMechId === self.bill_to_address.value
                         })
                         self.select_bill_to_address = false;
@@ -1462,6 +1450,39 @@ module.exports = {
                     }
                 });
             },
+            getGeoCountries () {
+                var self = this;
+                self.country_options_master = [];
+                self.country_options = [];
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getGeoCountries", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        resp.geoList.map(function(item){
+                            self.country_options_master.push({'label':item.geoName,'value':item.geoId})
+                            self.country_options.push({'label':item.geoName,'value':item.geoId})
+                            return item;
+                        });
+                    }
+                });
+            },
+            changeCountry(new_item) {
+                this.getGeoRegionsForDropDown(new_item.value);
+            },
+            getGeoRegionsForDropDown (country_id) {
+                var self = this;
+                self.state_options_master = [];
+                self.state_options = [];
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, geoId: country_id};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/getGeoRegionsForDropDown", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        resp.resultList.map(function(item){
+                            self.state_options_master.push({'label':item.geoName,'value':item.geoId})
+                            self.state_options.push({'label':item.geoName,'value':item.geoId})
+                            return item;
+                        });
+                    }
+                });
+            },
             updatePaymentTerms() {
                 var self = this;
                 const params = new Proxy(new URLSearchParams(window.location.search), {
@@ -1478,10 +1499,47 @@ module.exports = {
                     }
                 });
             },
+            storeContactInfo () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = {orderId: params.orderId, orderPartSeqId: self.order_part.orderPartSeqId, moquiSessionToken:self.$root.moquiSessionToken};
+
+                allParams["partyId"] = self.customer_bill_to_detail.partyId;
+                allParams["postalContactMechPurposeId"] = 'PostalBilling';
+                allParams["toName"] = self.obj_add.to_name;
+                allParams["attnName"] = self.obj_add.attention;
+                allParams["address1"] = self.obj_add.address_1;
+                allParams["unitNumber"] = self.obj_add.unit;
+                allParams["address2"] = self.obj_add.address_2;
+                allParams["city"] = self.obj_add.city;
+                allParams["countryGeoId"] = self.obj_add.country ? self.obj_add.country.value : null;
+                allParams["stateProvinceGeoId"] = self.obj_add.state ? self.obj_add.state.value : null;
+                allParams["postalCode"] = self.obj_add.postal_code;
+                allParams["postalCodeExt"] = self.obj_add.postal_code_external;
+                allParams["countryCode"] = self.obj_add.country_code;
+                allParams["areaCode"] = self.obj_add.area_code;
+                allParams["contactNumber"] = self.obj_add.phone;
+                allParams["telecomExtension"] = self.obj_add.extension;
+                allParams["emailAddress"] = self.obj_add.email;
+                allParams["telecomContactMechPurposeId"] = 'PhoneBilling';
+                allParams["emailContactMechPurposeId"] = 'EmailBilling';
+
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.obj_add = {};
+                        self.add_dialog = false;
+                        self.getPartyContactInfo(self.customer_bill_to_detail.partyId);
+                    }
+                });
+            },
     },
     created: function () {
         this.getUOM();
         this.getAgreement();
+        this.getGeoCountries();
+        this.getGeoRegionsForDropDown();
         //this.getAgreementItems();
         //this.getRoleOptions();
         //this.getProductList();
