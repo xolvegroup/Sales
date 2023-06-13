@@ -16,15 +16,15 @@
                 <q-card-section class="correct_input_fields">
                     <div class="row q-mt-sm">
                         <div class="col-md-3 col-lg-3 col-xs-12 col-sm-12">
-                            <q-input :disable="true" rounded v-model="status_item.description" outlined label="Status" style="margin:0;padding:0;" dense>
+                            <q-input readonly rounded v-model="status_item.description" outlined label="Status" style="margin:0;padding:0;" dense>
                             </q-input>
                         </div>
                         <div class="col-md-3 col-lg-3 col-xs-12 col-sm-12 q-pl-sm">
-                            <q-input :disable="true" rounded v-model="order_header.created" outlined label="Created" style="margin:0;padding:0;" dense>
+                            <q-input readonly rounded v-model="order_header.created" outlined label="Created" style="margin:0;padding:0;" dense>
                             </q-input>
                         </div>
                         <div class="col-md-3 col-lg-3 col-xs-12 col-sm-12 q-pl-sm">
-                            <q-input :disable="true" rounded v-model="order_grand_total" outlined label="Grand Total" style="margin:0;padding:0;" dense>
+                            <q-input readonly rounded v-model="order_grand_total" outlined label="Grand Total" style="margin:0;padding:0;" dense>
                             </q-input>
                         </div>
                     </div>
@@ -55,7 +55,7 @@
 
                         <div class="text-h6" style="display: flow-root;">Ship To Address
                             <q-btn icon="open_in_new" rounded @click="add_dialog=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add"></q-btn>
-                            <q-btn icon="open_in_new" rounded @click="select_bill_to_address=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Select"></q-btn>
+                            <q-btn icon="open_in_new" rounded @click="select_ship_to_address=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Select"></q-btn>
                         </div>
                         <div class="q-pl-sm" v-if="selected_ship_to_address && selected_ship_to_address.postalAddress">
                             <div class="q-py-xs q-mt-sm" v-if="selected_ship_to_address.postalAddress.toName">
@@ -412,7 +412,7 @@
             <q-card-section>
             <div class="row q-px-sm">
                 <div class="col-10">
-                    <div class="text-h5">Add Item</div>
+                    <div class="text-h5">Add Product</div>
                 </div>
                 <div class="col-2 text-right">
                     <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
@@ -423,19 +423,18 @@
             <q-separator class="q-mx-none"></q-separator>
 
             <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
-                    <q-select rounded
-                        label="Product*"
+                <q-select rounded
+                        label="Asset Class"
                         dense
                         outlined
-                        v-model="new_product"
+                        v-model="new_asset_class"
                         use-input
                         input-debounce="700"
                         :class="!$q.dark.isActive?'bg-white':''"
-                        input-debounce="0"
-                        option-value="value"
-                        option-label="label"
-                        :options="product_options"
-                        @filter="filterFnProduct"
+                        option-value="enumId"
+                        option-label="description"
+                        :options="asses_classes"
+                        @filter="filterFnAssetClasses"
                       >
                         <template v-slot:no-option>
                           <q-item>
@@ -445,51 +444,98 @@
                           </q-item>
                         </template>
                       </q-select>
-
+                      <div class="q-mt-sm q-pt-sm">
+                        <q-select rounded
+                            label="Product*"
+                            dense
+                            outlined
+                            v-model="new_product"
+                            use-input
+                            input-debounce="700"
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            option-value="value"
+                            option-label="label"
+                            :options="product_options"
+                            @filter="filterFnProduct"
+                            @input="getProductPrice"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+                        </div>
                     <div class="q-mt-sm q-pt-sm">
-                        <q-input label="Quantity" rounded v-model="new_agreement_item.quantity" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                        <q-input @input="getProductPrice" input-debounce="700" label="Quantity" rounded v-model="new_order_item.quantity" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
                         </q-input>
                     </div>
                     <div class="q-mt-sm q-pt-sm">
-                        <q-input label="Price" rounded v-model="new_agreement_item.price" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                        <q-input label="Price" rounded v-model="new_order_item.price" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                        </q-input>
+                    </div>
+                    <div class="q-mt-sm q-pt-sm">
+                        <q-input readonly label="Calc Price" rounded v-model="new_product_calc_price" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
                         </q-input>
                     </div>
                     <div class="row q-mt-sm q-pt-sm q-col-gutter-sm">
                         <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
-                            <q-input rounded label="From Date" outlined dense v-model="new_agreement_item.fromDate">
-                                <template v-slot:prepend>
-                                  <q-icon name="event" class="cursor-pointer">
-                                    <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                                      <q-date mask="YYYY-MM-DD" v-model="new_agreement_item.fromDate">
-                                        <div class="row items-center justify-end">
-                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
-                                        </div>
-                                      </q-date>
-                                    </q-popup-proxy>
-                                  </q-icon>
-                                </template>
-                              </q-input>
+                              <q-input rounded label="Required By Date" outlined dense v-model="new_order_item.requiredByDate">
+                                  <template v-slot:prepend>
+                                    <q-icon name="event" class="cursor-pointer">
+                                      <q-popup-proxy transition-show="scale" transition-hide="scale">
+                                        <q-date v-model="new_order_item.requiredByDate" mask="YYYY-MM-DD HH:mm">
+                                          <div class="row items-center justify-end">
+                                            <q-btn v-close-popup label="Close" color="primary" flat />
+                                          </div>
+                                        </q-date>
+                                      </q-popup-proxy>
+                                    </q-icon>
+                                  </template>
+
+                                  <template v-slot:append>
+                                    <q-icon name="access_time" class="cursor-pointer">
+                                      <q-popup-proxy transition-show="scale" transition-hide="scale">
+                                        <q-time v-model="new_order_item.requiredByDate" mask="YYYY-MM-DD HH:mm" format24h>
+                                          <div class="row items-center justify-end">
+                                            <q-btn v-close-popup label="Close" color="primary" flat />
+                                          </div>
+                                        </q-time>
+                                      </q-popup-proxy>
+                                    </q-icon>
+                                  </template>
+                                </q-input>
                           </div>
-                        <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
-                            <q-input rounded label="Thru Date" outlined dense v-model="new_agreement_item.thruDate">
-                                <template v-slot:prepend>
-                                  <q-icon name="event" class="cursor-pointer">
-                                    <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
-                                      <q-date mask="YYYY-MM-DD" v-model="new_agreement_item.thruDate">
-                                        <div class="row items-center justify-end">
-                                          <q-btn rounded v-close-popup label="Close" color="primary" flat />
-                                        </div>
-                                      </q-date>
-                                    </q-popup-proxy>
-                                  </q-icon>
-                                </template>
-                              </q-input>
-                        </div>
+                          <div class="col-md-6 col-lg-6 col-xs-12 col-sm-12">
+                            <q-select rounded
+                            label="Item Type*"
+                            dense
+                            outlined
+                            v-model="item_type"
+                            use-input
+                            input-debounce="700"
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            option-value="value"
+                            option-label="label"
+                            :options="item_options"
+                            @filter="filterFnItemType"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+                          </div>
                     </div>
             </q-card-section>
 
             <q-card-actions class="q-mx-sm q-mb-sm" align="left">
-              <q-btn size="16px" rounded :disabled="!(new_product)" @click="addAgreementItem"  outline dense label="Save"  class="text-capitalize" color="primary" />
+              <q-btn size="16px" rounded :disabled="!(new_product && item_type)" @click="addProductItem"  outline dense label="Add"  class="text-capitalize" color="primary" />
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -653,6 +699,50 @@
           </q-card>
         </q-dialog>
 
+        <q-dialog v-model="select_ship_to_address">
+          <q-card class="detail_cls q-px-none q-pt-sm" style="min-width: 700px">
+            <q-card-section>
+            <div class="row q-px-sm">
+                <div class="col-10">
+                    <div class="text-h5">Select Address</div>
+                </div>
+                <div class="col-2 text-right">
+                    <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+                </div>
+            </div>
+            </q-card-section>
+
+            <q-separator class="q-mx-none"></q-separator>
+
+            <q-card-section style="font-size: 16px" class="q-mt-sm q-mx-sm">
+                            <q-select rounded
+                                label="Billing Address"
+                                dense
+                                outlined
+                                v-model="ship_to_address"
+                                use-input
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                input-debounce="0"
+                                option-value="value"
+                                option-label="label"
+                                :options="postal_address_ship_to_list"
+                                @filter="filterFnShipAddress"
+                              >
+                                <template v-slot:no-option>
+                                  <q-item>
+                                    <q-item-section class="text-grey">
+                                      No results
+                                    </q-item-section>
+                                  </q-item>
+                                </template>
+                              </q-select>
+            </q-card-section>
+
+            <q-card-actions class="q-mx-sm q-mb-sm" align="left">
+              <q-btn size="16px" rounded  @click="setShipToAddress" :disabled="!(ship_to_address)" outline dense label="Set Ship To Address"  class="text-capitalize" color="primary" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
 
         <q-dialog v-model="add_dialog">
           <q-card class="detail_cls q-px-none q-pt-sm" style="min-width: 700px">
@@ -830,13 +920,19 @@ module.exports = {
             customer_bill_to_detail: {},
             customer_ship_to_detail: {},
             order_part_contact_mech: {},
+            order_part_ship_to_mech: {},
             transacting_entity:"",
+            new_product_calc_price:"",
             order_detail: {status:'Open (Tentative)', created:'2022-10-09',grand_total:' ',effective_date:'',end_date:'',part_name:' '},
             add_party: false,
             add_item: false,
             select_bill_to_address: false,
+            select_ship_to_address: false,
             bill_to_address: null,
-            new_agreement_item: {},
+            ship_to_address: null,
+            asses_classes: [],
+            asses_classes_master: [],
+            new_order_item: {},
             new_party: null,
             new_product: null,
             change_bill_to_party: null,
@@ -849,10 +945,16 @@ module.exports = {
             agreement_detail_org_party: null,
             organization_options_master: [],
             agreement_parties: [],
+            pagination_order_items: {
+                page: 0,
+                rowsPerPage: 0
+              },
             postal_addresses_master: [],
-            postal_addresses_ship_to_master: [],
             postal_address_ship_to_list: [],
             postal_address_ship_to_list_master: [],
+            ship_to_address_list_master: [],
+            item_options: [],
+            item_options_master: [],
             organization_options: [],
             subscription_list: [],
             currency_options_master: [],
@@ -890,6 +992,8 @@ module.exports = {
             order_detail_payment_terms:null,
             delete_agreement_item: false,
             delete_party_from_agreement: false,
+            new_asset_class: null,
+            item_type: null,
             order_items_list:[],
             order_items_columns: [{ name: 'product',align:'left', label: 'Product', field: 'productId' },
                                       { name: 'type',align:'left', label: 'Type', field: 'itemTypeEnumId' },
@@ -955,6 +1059,32 @@ module.exports = {
                       this.state_options = self.state_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
                     })
               },
+              filterFnAssetClasses (val, update) {
+                let self = this;
+                  if (val === '') {
+                    update(() => {
+                      this.asses_classes = self.asses_classes_master
+                    })
+                    return
+                  }
+                  update(() => {
+                      const needle = val.toLowerCase()
+                      this.asses_classes = self.asses_classes_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
+                    })
+              },
+              filterFnItemType (val, update) {
+                let self = this;
+                  if (val === '') {
+                    update(() => {
+                      this.item_options = self.item_options_master
+                    })
+                    return
+                  }
+                  update(() => {
+                      const needle = val.toLowerCase()
+                      this.item_options = self.item_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                    })
+              },
               filterFnRole (val, update) {
                 let self = this;
                   if (val === '') {
@@ -991,7 +1121,10 @@ module.exports = {
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParms = {term: search_keyword ,agreementId: params.agreementId, pageIndex: 0, hasAllParms: true, moquiSessionToken:self.$root.moquiSessionToken };
+                var allParms = {term: search_keyword ,orderId: params.orderId, pageIndex: 0, hasAllParms: true, moquiSessionToken:self.$root.moquiSessionToken };
+                if (self.new_asset_class && self.new_asset_class.enumId) {
+                    allParms["assetClassEnumId"] = self.new_asset_class.enumId;
+                }
                 return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getProductList", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError
                 });
@@ -1048,6 +1181,19 @@ module.exports = {
               update(() => {
                   const needle = val.toLowerCase()
                   this.postal_address_list = self.postal_address_list_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                })
+          },
+          filterFnShipAddress (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.postal_address_ship_to_list = self.postal_address_ship_to_list_master
+                })
+                return
+              }
+              update(() => {
+                  const needle = val.toLowerCase()
+                  this.postal_address_ship_to_list = self.postal_address_ship_to_list_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
                 })
           },
           filterFnCurrency (val, update) {
@@ -1141,23 +1287,7 @@ module.exports = {
                     }
                 });
             },
-            updateAgreementItem (item) {
-                var self = this;
-                item["moquiSessionToken"] = self.$root.moquiSessionToken;
-                if (self.agreement_detail.currencyUomId) {
-                    item["priceUomId"] = self.agreement_detail.currencyUomId
-                }
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateAgreementItem", headers:{Accept:'application/json'}, data:item,
-                    error:moqui.handleAjaxError, success:function(resp) {
-                        self.$q.notify({
-                            message: 'Updated successfully.',
-                            position: 'bottom-left',
-                          });
-                          self.getAgreementItems();
-                    }
-                });
-            },
-            getAgreement() {
+            getOrderDetail() {
                 var self = this;
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
@@ -1184,8 +1314,20 @@ module.exports = {
                         }
                         if (self.customer_ship_to_detail.partyId){
                             self.getCurBillToContactMech(self.customer_bill_to_detail.partyId);
-                            self.getPartyContactInfoList(self.customer_bill_to_detail.partyId);
+                            self.getPartyContactInfoList();
                         }
+                        if (self.order_part_info.isCustomerInternalOrg) {
+                            self.item_options_master = [{'label':'Inventory','value':'ItemInventory'},
+                                                    {'label':'Fixed Asset','value':'ItemAsset'},
+                                                    {'label':'Supplies','value':'ItemExpSupplies'}];
+                        }
+                        else {
+                            self.item_options_master = [{'label':'Product','value':'ItemProduct'},
+                                                    {'label':'Fixed Asset','value':'ItemAsset'},
+                                                    {'label':'Rental Asset','value':'ItemRental'},
+                                                    {'label':'Replacement','value':'ItemReplacement'}];
+                        }
+                        self.item_options = JSON.parse(JSON.stringify(self.item_options_master));
                         self.customerBillToDetail
                         self.getShippingDetails();
                         self.getPaymentTerms();
@@ -1203,28 +1345,6 @@ module.exports = {
                         self.order_header = resp.orderHeader;
                         self.order_header["created"] = self.formatDate(self.order_header.entryDate);
                         self.order_grand_total = resp.formattedGrandTotal;
-                    }
-                });
-            },
-            getAgreementItems () {
-                var self = this;
-                const params = new Proxy(new URLSearchParams(window.location.search), {
-                  get: (searchParams, prop) => searchParams.get(prop),
-                });
-                var allParms = {agreementId: params.agreementId, moquiSessionToken:self.$root.moquiSessionToken };
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/agreementItems", headers:{Accept:'application/json'}, data:allParms,
-                    error:moqui.handleAjaxError, success:function(resp) {
-                        self.agreement_items_list = resp.agreementItemList.map(function(item){
-                            item["fromDate"] = self.formatDate(item.fromDate);
-                            item["thruDate"] = self.formatDate(item.thruDate);
-                            if (item["price"]){
-                                item["price"] = Number(item["price"]).toLocaleString();
-                            }
-                            else {
-                                item["price"] = "";
-                            }
-                            return item;
-                        });
                     }
                 });
             },
@@ -1258,30 +1378,6 @@ module.exports = {
                     }
                 });
             },
-            addAgreementItem () {
-                var self = this;
-                const params = new Proxy(new URLSearchParams(window.location.search), {
-                  get: (searchParams, prop) => searchParams.get(prop),
-                });
-                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
-                        productId: self.new_product.value, quantity: self.new_agreement_item.quantity,
-                        unitAmount: self.new_agreement_item.price, fromDate: self.new_agreement_item.fromDate, thruDate: self.new_agreement_item.thruDate};
-                    if (self.agreement_detail.currencyUomId) {
-                        allParms["priceUomId"] = self.agreement_detail.currencyUomId
-                    }
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/addAgreementItem", headers:{Accept:'application/json'}, data:allParms,
-                    error:moqui.handleAjaxError, success:function(resp) {
-                        self.new_agreement_item = {};
-                        self.new_product = null;
-                        self.add_item = false;
-                        self.getAgreementItems();
-                        self.$q.notify({
-                            message: 'Agreement item added successfully.',
-                            position: 'bottom-left',
-                          });
-                    }
-                });
-            },
             updateBillToParty () {
                 var self = this;
                 const params = new Proxy(new URLSearchParams(window.location.search), {
@@ -1302,18 +1398,6 @@ module.exports = {
                     }
                 });
             },
-            getAgreementSubscriptions () {
-                var self = this;
-                const params = new Proxy(new URLSearchParams(window.location.search), {
-                  get: (searchParams, prop) => searchParams.get(prop),
-                });
-                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId};
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/findAgreementSubscriptions", headers:{Accept:'application/json'}, data:allParms,
-                    error:moqui.handleAjaxError, success:function(resp) {
-                        self.subscription_list = resp.agreementSubscriptionList;
-                    }
-                });
-            },
             getPartyContactInfo (party_id) {
                 var self = this;
                 self.postal_address_list = [];
@@ -1329,7 +1413,7 @@ module.exports = {
                                 let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
                                         + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
                                         + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
-                                        + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                        + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
                                         (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                         + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
                                         item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "");
@@ -1339,7 +1423,7 @@ module.exports = {
                             self.postal_address_list_master = JSON.parse(JSON.stringify(self.postal_address_list));
                             if (self.order_part_contact_mech && self.order_part_contact_mech.contactMechId) {
                                 self.selected_bill_to_address = self.postal_addresses_master.find(function(item){
-                                    item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                    item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
                                         (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                         + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
                                         item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
@@ -1365,22 +1449,21 @@ module.exports = {
                     }
                 });
             },
-            getPartyContactInfoList(partyId) {
+            getPartyContactInfoList() {
                 var self = this;
                 self.postal_address_ship_to_list = [];
-                self.postal_addresses_ship_to_master = [];
                 self.postal_address_ship_to_list_master = [];
-                self.selected_ship_to_address = {};
-                var allParms = {postalContactMechPurposeId: 'PostalShippingDest',moquiSessionToken:self.$root.moquiSessionToken, partyId: partyId,
+                self.ship_to_address_list_master = [];
+                var allParms = {postalContactMechPurposeId: 'PostalShippingDest',moquiSessionToken:self.$root.moquiSessionToken, partyId: self.customer_bill_to_detail.partyId,
                     orderPartSeqId: self.order_part.orderPartSeqId};
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getPartyContactInfoList", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
-                        self.postal_addresses_ship_to_master = resp.postalAddressList;
+                        self.ship_to_address_list_master = resp.postalAddressList;
                         resp.postalAddressList.forEach(function(item){
                             let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
                                     + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
                                     + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
-                                    + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                                    + ", " + (item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
                                     (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                     + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
                                     item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "");
@@ -1388,27 +1471,50 @@ module.exports = {
                             return item;
                         });
                         self.postal_address_ship_to_list_master = JSON.parse(JSON.stringify(self.postal_address_ship_to_list));
-                        if (self.order_part && self.order_part.postalContactMechId) {
-                            self.selected_ship_to_address = self.postal_addresses_ship_to_master.find(function(item){
-                                item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
-                                    (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
-                                    + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                    item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
-                                return item.postalContactMechId === self.order_part.postalContactMechId
-                            })
-                        }
+                        self.getCurShipToInfo();
                     }
                 });
             },
-            getAgreementTerms () {
+            getCurShipToInfo() {
+                var self = this;
+                self.selected_ship_to_address = {};
+                var allParms = {postalContactMechId: self.order_part.postalContactMechId,moquiSessionToken:self.$root.moquiSessionToken, partyId: self.customer_bill_to_detail.partyId,
+                    orderPartSeqId: self.order_part.orderPartSeqId};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getCurShipToInfo", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.selected_ship_to_address = self.ship_to_address_list_master.find(function(item){
+                            item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
+                                (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
+                                item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
+                            return item.postalContactMechId === resp.postalContactMechId;
+                        });
+
+                    }
+                });
+            },
+            setShipToAddress () {
                 var self = this;
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
-                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId};
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getAgreementTerms", headers:{Accept:'application/json'}, data:allParms,
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, orderId: self.order_part.orderId,
+                        shippingPostalContactMechId: self.ship_to_address.value, orderPartSeqId: self.order_part.orderPartSeqId};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/setOrderBillingShippingInfo", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
-                        self.agreement_terms = resp.agreementTermList
+                        self.selected_ship_to_address = self.ship_to_address_list_master.find(function(item){
+                            item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
+                                (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
+                                item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
+                            return item.postalContactMechId === self.ship_to_address.value
+                        });
+                        self.select_ship_to_address = false;
+                        self.ship_to_address = null;
+                        self.$q.notify({
+                            message: 'Saved successfully.',
+                            position: 'bottom-left',
+                          });
                     }
                 });
             },
@@ -1422,7 +1528,7 @@ module.exports = {
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/updateBillToContactMech", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.selected_bill_to_address = self.postal_addresses_master.find(function(item){
-                            item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo.geoCodeAlpha2 ? item.postalAddressStateGeo.geoCodeAlpha2 :
+                            item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
                                 (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
                                 + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
                                 item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "")
@@ -1448,7 +1554,7 @@ module.exports = {
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.selected_bill_to_address = {}
                         self.bill_to_address = null;
-                        self.getAgreement();
+                        self.getOrderDetail();
                     }
                 });
             },
@@ -1576,17 +1682,73 @@ module.exports = {
                     }
                 });
             },
+            getAssetClasses () {
+                var self = this;
+                var allParams = {moquiSessionToken:self.$root.moquiSessionToken};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getAssetClasses", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.asses_classes_master = resp.assetClassList;
+                        self.asses_classes = JSON.parse(JSON.stringify(resp.assetClassList));
+                    }
+                });
+            },
+            addProductItem () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = {quantity: self.new_order_item.quantity, unitAmount: self.new_order_item.price,
+                    calcAmount: self.new_product_calc_price, calcAmount_display: "", updateExisting: false, requireInventory: false, orderId: params.orderId, orderPartSeqId: self.order_part.orderPartSeqId, moquiSessionToken:self.$root.moquiSessionToken};
+                if (self.new_asset_class && self.new_asset_class.enumId) {
+                    allParams["assetClassEnumId"] = self.new_asset_class.enumId;
+                }
+                if (self.new_product && self.new_product.value) {
+                    allParams["productId"] = self.new_product.value;
+                }
+                if (self.new_order_item.requiredByDate) {
+                    allParams["requiredByDate"] = self.new_order_item.requiredByDate
+                }
+                if (self.item_type && self.item_type.value) {
+                    allParams["itemTypeEnumId"] = self.item_type.value;
+                }
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/addProductItem", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.add_item = false;
+                        self.$q.notify({
+                            message: 'Added successfully.',
+                            position: 'bottom-left',
+                          });
+                        self.getOrderDetail();
+                    }
+                });
+            },
+            getProductPrice () {
+                var self = this;
+                if (!self.new_product || !self.new_order_item.quantity){
+                    self.new_product_calc_price = "";
+                }
+                else {
+                    const params = new Proxy(new URLSearchParams(window.location.search), {
+                      get: (searchParams, prop) => searchParams.get(prop),
+                    });
+                    var allParams = {orderId: params.orderId, orderPartSeqId: self.order_part.orderPartSeqId, moquiSessionToken:self.$root.moquiSessionToken,
+                        productId: self.new_product.value, quantity: self.new_order_item.quantity, hasAllParms: true};
+                    $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getProductPrice", headers:{Accept:'application/json'}, data:allParams,
+                        error:moqui.handleAjaxError, success:function(resp) {
+                            self.new_product_calc_price = resp.productPrice;
+                        }
+                    });
+                }
+            },
     },
     created: function () {
         this.getUOM();
-        this.getAgreement();
+        this.getOrderDetail();
         this.getGeoCountries();
         this.getGeoRegionsForDropDown();
+        this.getAssetClasses();
         //this.getAgreementItems();
         //this.getRoleOptions();
-        //this.getProductList();
-        //this.getAgreementSubscriptions();
-        //this.getAgreementTerms();
     },
 }
 </script>

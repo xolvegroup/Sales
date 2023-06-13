@@ -241,4 +241,39 @@ along with this software (see the LICENSE.md file). If not, see
             <order-by field-name="geoName"/></entity-find>
         </actions>
     </service>
+    <service verb="get" noun="AssetClasses">
+        <out-parameters>
+            <parameter name="assetClassList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.Enumeration" list="assetClassList">
+                <econdition field-name="parentEnumId" value="AsClsInventory"/>
+                <order-by field-name="sequenceNum,description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="get" noun="ProductPrice">
+        <in-parameters>
+            <parameter name="productId" required="true"/><parameter name="quantity"/>
+            <parameter name="priceUomId"/><parameter name="pricePurposeEnumId"/>
+            <parameter name="productStoreId"/><parameter name="vendorPartyId"/><parameter name="customerPartyId"/>
+            <!-- use these to get store, vendor, customer, uom from OrderHeader/Part -->
+            <parameter name="orderId"/><parameter name="orderPartSeqId"/>
+            <parameter name="priceFormat"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="productPrice"/>
+        </out-parameters>
+        <actions>
+            <set field="productPrice" from="null" />
+            <if condition="productId"><then>
+                <if condition="!priceFormat"><set field="priceFormat" value="#,##0.000"/></if>
+                <service-call name="mantle.product.PriceServices.get#OrderProductPrice" in-map="context" out-map="priceOut"/>
+                <if condition="priceOut.price &gt; 0.0"><then>
+                    <set field="productPrice" from="ec.l10n.format(priceOut.price, priceFormat)" />
+                </then></if>
+            </then></if>
+        </actions>
+        <default-response type="none"/>
+    </service>
 </services>

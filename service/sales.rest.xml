@@ -277,6 +277,9 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="getPartyContactInfoList" require-authentication="anonymous-view">
             <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfoList"/></method>
         </resource>
+        <resource name="getCurShipToInfo" require-authentication="anonymous-view">
+            <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfo"/></method>
+        </resource>
         <resource name="getPaymentTerms" require-authentication="anonymous-view">
             <method type="get"><service name="sales.SalesOrderServices.get#PaymentTerms"/></method>
         </resource>
@@ -294,6 +297,21 @@ along with this software (see the LICENSE.md file). If not, see
         </resource>
         <resource name="placeOrder" require-authentication="anonymous-all">
             <method type="post"><service name="mantle.order.OrderServices.place#Order"/></method>
+        </resource>
+        <resource name="setOrderBillingShippingInfo" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.set#OrderBillingShippingInfo"/></method>
+        </resource>
+        <resource name="getAssetClasses" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.get#AssetClasses"/></method>
+        </resource>
+        <resource name="getProductList" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.get#ProductList"/></method>
+        </resource>
+        <resource name="getProductPrice" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.get#ProductPrice"/></method>
+        </resource>
+        <resource name="addProductItem" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.add#OrderProductQuantity"/></method>
         </resource>
     </resource>
 </resource>
