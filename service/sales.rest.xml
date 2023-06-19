@@ -313,5 +313,17 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="addProductItem" require-authentication="anonymous-all">
             <method type="post"><service name="mantle.order.OrderServices.add#OrderProductQuantity"/></method>
         </resource>
+        <resource name="deleteItem" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.delete#OrderItem"/></method>
+        </resource>
+        <resource name="updateItem" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.update#OrderItem"/></method>
+        </resource>
+        <resource name="getPaymentMethods" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.get#PaymentMethods"/></method>
+        </resource>
+        <resource name="addOrderPartPayment" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.add#OrderPartPayment"/></method>
+        </resource>
     </resource>
 </resource>

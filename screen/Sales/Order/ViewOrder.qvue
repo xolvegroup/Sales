@@ -229,11 +229,51 @@
                             Payment Information
                         </div>
                         <div class="col-3">
-                            <q-btn icon="open_in_new" rounded @click="add_party=true" class="text-blue q-px-sm q-mt-xs text-capitalize" outline dense label="Add Payment"></q-btn>
+                            <q-btn icon="open_in_new" rounded @click="add_payment=true" class="text-blue q-px-sm q-mt-xs text-capitalize" outline dense label="Add Payment"></q-btn>
                         </div>
                     </div>
                 </q-card-section>
+                <q-card-section>
+                    <div class="row" v-for="part_payment_info in part_payment_info_list">
+                        <div class="row full-width">
+                            <div class="col-9 text-bold">
+                                <span>
+                                <span v-if="part_payment_info.paymentMethodTypeEnum?.description">{{part_payment_info.paymentMethodTypeEnum?.description}}</span>
+                                <span v-else>{{part_payment_info.paymentInstrumentEnum?.description}}</span>
+                                ({{part_payment_info.paymentTypeEnum?.description}}) {{part_payment_info.partPayment.amount}}
+                                - Status: {{part_payment_info.statusItem?.description}}</span>
+                                <span v-if="part_payment_info.partPayment?.dueDate"> - Due: {{formatDate(part_payment_info.partPayment.dueDate)}}</span>
+                            </div>
+                            <div class="col-3">
 
+                            </div>
+                        </div>
+                        <div class="row q-my-sm full-width">
+                            <strong v-if="part_payment_info.paymentMethod?.description">{{part_payment_info.paymentMethod?.description}}<br></strong>
+                            <div class="full-width q-py-xs" v-if="part_payment_info.bankAccount">
+                                <span>{{part_payment_info.bankAccount.bankName}} (<span v-if="part_payment_info.bankAccountTypeEnum?.description">{{part_payment_info.bankAccountTypeEnum?.description}}</span><span v-else>part_payment_info.bankAccount.typeEnumId</span>)<br></span>
+                                <span>{{part_payment_info.bankAccount.routingNumber}}:{{part_payment_info.bankAccount.accountNumber}}<br></span>
+                            </div>
+                            <div class="full-width q-py-xs" v-if="part_payment_info.creditCard">
+                                <span><span v-if="part_payment_info.creditCardTypeEnum?.description">{{part_payment_info.creditCardTypeEnum?.description}}</span><span v-else>part_payment_info.creditCard.creditCardTypeEnumId</span><span v-if="part_payment_info.maskedCardNumber"> {{part_payment_info.maskedCardNumber}}</span><span v-if="part_payment_info.creditCard.expireDate"> {{formatDate(part_payment_info.creditCard.expireDate)}}</span></span>
+                            </div>
+                            <strong class="full-width" v-if="part_payment_info.paymentMethod?.firstNameOnAccount">{{part_payment_info.paymentMethod?.firstNameOnAccount}}<span v-if="part_payment_info.paymentMethod?.middleNameOnAccount"> {{part_payment_info.paymentMethod.middleNameOnAccount}}</span><span v-if="part_payment_info.paymentMethod?.lastNameOnAccount"> {{part_payment_info.paymentMethod?.lastNameOnAccount}}</span><br></strong>
+                            <strong class="full-width" v-if="part_payment_info.paymentMethod?.companyNameOnAccount">{{part_payment_info.paymentMethod?.companyNameOnAccount}}<br></strong>
+                            <div class="full-width" v-if="part_payment_info.address" v-html="part_payment_info.address"></div>
+                            <div class="full-width q-py-xs" v-if="part_payment_info.telecomNumber">
+                                P: <span v-if="part_payment_info.telecomNumber.countryCode">{{part_payment_info.telecomNumber.countryCode}}-</span>
+                                <span v-if="part_payment_info.telecomNumber.areaCode">{{part_payment_info.telecomNumber.areaCode}}-</span>
+                                <span v-if="part_payment_info.telecomNumber.contactNumber">{{part_payment_info.telecomNumber.contactNumber}}</span>
+                                <span v-if="part_payment_info.telecomNumber.extension">x{{part_payment_info.telecomNumber.extension}}</span>
+                            </div>
+                            <div class="full-width q-py-xs" v-if="part_payment_info.emailAddress">
+                                <a :href="'mailto:' + part_payment_info.emailAddress">{{part_payment_info.emailAddress}}</a>
+                            </div>
+                            <span v-if="part_payment_info.paymentMethod?.gatewayCimId">CIM ID: {{part_payment_info.paymentMethod.gatewayCimId}}</span>
+                            <span v-if="part_payment_info.paymentMethod?.paymentGatewayConfigId">Gateway: {{part_payment_info.paymentMethod.gatewayConfig?.description}}</span>
+                        </div>
+                    </div>
+                </q-card-section>
                 <q-card-section>
                         <div class="q-mt-sm correct_input_fields">
                             <q-select rounded
@@ -290,8 +330,8 @@
                               :pagination.sync="pagination_order_items"
                             >
                                 <template v-slot:body-cell-price="props">
-                                    <q-td>
-                                        <q-input v-if="order_part_info.partEditable && props.row.isPromo != 'Y'" label="Price" v-model="props.row.unitAmount" rounded outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                    <q-td style="width: 170px;">
+                                        <q-input v-if="order_part_info.partEditable && props.row.isPromo != 'Y'" label="Price" v-model="props.row.unitAmount" rounded outlined style="width: 138px;margin-top:8px;margin-bottom:8px;padding:0;" dense>
                                         </q-input>
                                         <span v-if="!(order_part_info.partEditable && props.row.isPromo != 'Y')">
                                             {{props.row.unitAmount}}
@@ -299,12 +339,18 @@
                                     </q-td>
                                 </template>
                                 <template v-slot:body-cell-quantity="props">
-                                    <q-td>
-                                        <q-input v-if="order_part_info.partEditable && props.row.isPromo != 'Y'" label="Quantity" v-model="props.row.quantity" rounded outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                                    <q-td style="width: 170px;">
+                                        <q-input v-if="order_part_info.partEditable && props.row.isPromo != 'Y'" label="Quantity" v-model="props.row.quantity" rounded outlined style="width: 138px;margin-top:8px;margin-bottom:8px;padding:0;" dense>
                                         </q-input>
                                         <span v-if="!(order_part_info.partEditable && props.row.isPromo != 'Y')">
                                             {{props.row.quantity}}
                                         </span>
+                                    </q-td>
+                                </template>
+                                <template v-slot:body-cell-action="props">
+                                    <q-td class="text-right" style="width: 170px;">
+                                        <q-btn @click="updateItem(props.row)" v-if="order_part_info.partEditable && props.row.isPromo != 'Y'" rounded outline dense icon="edit" class="text-capitalize text-primary">Update</q-btn>
+                                        <q-btn rounded outline @click="confirmDelete(props.row)" dense icon="delete" class="text-capitalize text-red"></q-btn>
                                     </q-td>
                                 </template>
                             </q-table>
@@ -313,16 +359,16 @@
 
             </q-card>
         </div>
-        <q-dialog v-model="delete_agreement_item" persistent>
+        <q-dialog v-model="delete_order_item" persistent>
           <q-card style="max-width: 450px" class="q-pa-md">
             <q-card-section class="row items-center">
               <q-avatar icon="delete" color="red" text-color="white"></q-avatar>
-              <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to delete this agreement item?</span>
+              <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to delete this order item?</span>
             </q-card-section>
 
             <q-card-actions align="right">
               <q-btn rounded outlined label="Cancel" color="grey" v-close-popup></q-btn>
-              <q-btn rounded v-if="" outlined label="Delete" color="red" @click="deleteAgreementItem"></q-btn>
+              <q-btn rounded v-if="" outlined label="Delete" color="red" @click="deleteItem"></q-btn>
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -404,6 +450,50 @@
 
             <q-card-actions class="q-mx-sm q-mb-sm" align="left">
               <q-btn size="16px" rounded :disabled="!(new_party && new_role)" @click="addPartyToAgreement"  outline dense label="Save"  class="text-capitalize" color="primary" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="add_payment">
+          <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+            <q-card-section>
+            <div class="row q-px-sm">
+                <div class="col-10">
+                    <div class="text-h5">Add Payment</div>
+                </div>
+                <div class="col-2 text-right">
+                    <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+                </div>
+            </div>
+            </q-card-section>
+
+            <q-separator class="q-mx-none"></q-separator>
+
+            <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                            <q-select rounded
+                                label="Payment Method"
+                                dense
+                                outlined
+                                v-model="new_payment_method"
+                                use-input
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                input-debounce="0"
+                                option-value="paymentMethodId"
+                                option-label="label"
+                                :options="payment_options"
+                                @filter="filterFnPaymentMethod"
+                              >
+                                <template v-slot:no-option>
+                                  <q-item>
+                                    <q-item-section class="text-grey">
+                                      No results
+                                    </q-item-section>
+                                  </q-item>
+                                </template>
+                              </q-select>
+            </q-card-section>
+
+            <q-card-actions class="q-mx-sm q-mb-sm" align="left">
+              <q-btn size="16px" rounded :disabled="!(new_payment_method)" @click="addPayment"  outline dense label="Add"  class="text-capitalize" color="primary" />
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -913,6 +1003,7 @@ module.exports = {
     data: function () {
         return {
             order_part_info: {},
+            part_payment_info_list: [],
             order_part: {},
             status_item: {},
             order_grand_total: "",
@@ -925,6 +1016,7 @@ module.exports = {
             new_product_calc_price:"",
             order_detail: {status:'Open (Tentative)', created:'2022-10-09',grand_total:' ',effective_date:'',end_date:'',part_name:' '},
             add_party: false,
+            add_payment: false,
             add_item: false,
             select_bill_to_address: false,
             select_ship_to_address: false,
@@ -932,6 +1024,8 @@ module.exports = {
             ship_to_address: null,
             asses_classes: [],
             asses_classes_master: [],
+            payment_options_master: [],
+            payment_options: [],
             new_order_item: {},
             new_party: null,
             new_product: null,
@@ -943,6 +1037,7 @@ module.exports = {
             new_role: null,
             agreement_detail_cur_uom: null,
             agreement_detail_org_party: null,
+            new_payment_method: null,
             organization_options_master: [],
             agreement_parties: [],
             pagination_order_items: {
@@ -956,30 +1051,11 @@ module.exports = {
             item_options: [],
             item_options_master: [],
             organization_options: [],
-            subscription_list: [],
             currency_options_master: [],
             currency_options: [],
             role_options_master: [],
             role_options: [],
             pagination: {
-                page: 0,
-                rowsPerPage: 0
-              },
-            subscription_list:[{'internal_id':'100103','external_id':'1234567890'}],
-            subscription_columns: [{ name: 'description',align:'left', label: 'Description', field: 'description' },
-                            { name: 'internal_id',align:'left', label: 'Internal ID', field: 'subscriptionId' },
-                            { name: 'external_id',align:'left', label: 'External ID', field: 'externalSubscriptionId' }
-                          ],
-            pagination_agreement_parties: {
-                page: 0,
-                rowsPerPage: 0
-              },
-            agreement_parties_list:[],
-            agreement_parties_columns: [{ name: 'party',align:'left', label: 'Party', field: '' },
-                            { name: 'role',align:'left', label: 'Role', field: 'roleTypeId' },
-                            { name: 'action',align:'left', label: '', field: '' },
-                          ],
-            pagination_agreement_items: {
                 page: 0,
                 rowsPerPage: 0
               },
@@ -990,7 +1066,7 @@ module.exports = {
             selected_bill_to_address: {},
             selected_ship_to_address: {},
             order_detail_payment_terms:null,
-            delete_agreement_item: false,
+            delete_order_item: false,
             delete_party_from_agreement: false,
             new_asset_class: null,
             item_type: null,
@@ -998,9 +1074,10 @@ module.exports = {
             order_items_columns: [{ name: 'product',align:'left', label: 'Product', field: 'productId' },
                                       { name: 'type',align:'left', label: 'Type', field: 'itemTypeEnumId' },
                                       { name: 'description',align:'left', label: 'Description', field: 'itemDescription' },
-                                      { name: 'list_price',align:'left', label: 'List Price', field: 'list_price' },
-                                      { name: 'price',align:'left', label: 'Price', field: 'unitAmount' },
-                                      { name: 'quantity',align:'left', label: 'Quantity', field: 'quantity' },
+                                      { name: 'list_price',align:'left', label: 'List Price', field: 'unitListPrice' },
+                                      { name: 'price', align:'left', label: 'Price', field: 'unitAmount' },
+                                      { name: 'quantity', align:'left', label: 'Quantity', field: 'quantity' },
+                                      { name: 'action',align:'right', label: 'Action', field: '', sortable: false },
                                       ],
           postal_address_list_master: [],
           postal_address_list: [],
@@ -1070,6 +1147,19 @@ module.exports = {
                   update(() => {
                       const needle = val.toLowerCase()
                       this.asses_classes = self.asses_classes_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
+                    })
+              },
+              filterFnPaymentMethod (val, update) {
+                let self = this;
+                  if (val === '') {
+                    update(() => {
+                      this.payment_options = self.payment_options_master
+                    })
+                    return
+                  }
+                  update(() => {
+                      const needle = val.toLowerCase()
+                      this.payment_options = self.payment_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
                     })
               },
               filterFnItemType (val, update) {
@@ -1242,25 +1332,45 @@ module.exports = {
                     }
                 });
             },
-            confirmDeleteAgreementItem (item) {
+            confirmDelete (item) {
                 var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                                  get: (searchParams, prop) => searchParams.get(prop),
+                                });
                 self.item_to_delete = {};
                 self.item_to_delete["moquiSessionToken"] = self.$root.moquiSessionToken;
-                self.item_to_delete["agreementId"] = item.agreementId;
-                self.item_to_delete["agreementItemSeqId"] = item.agreementItemSeqId;
-                self.delete_agreement_item = true;
+                self.item_to_delete["orderId"] = item.orderId;
+                self.item_to_delete["orderItemSeqId"] = item.orderItemSeqId;
+                self.delete_order_item = true;
             },
-            deleteAgreementItem() {
+            deleteItem() {
                 let self = this;
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/deleteAgreementItem", headers:{Accept:'application/json'}, data:self.item_to_delete,
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/deleteItem", headers:{Accept:'application/json'}, data:self.item_to_delete,
                     error:moqui.handleAjaxError, success:function(resp) {
+                        self.delete_order_item = false;
                         self.$q.notify({
-                            message: 'Agreement item deleted successfully.',
+                            message: 'Deleted successfully.',
                             position: 'bottom-left',
-                        });
-                        self.delete_agreement_item = false;
-                        self.item_to_delete = {};
-                        self.getAgreementItems();
+                          });
+                        self.getOrderDetail();
+                    }
+                });
+            },
+            updateItem(item) {
+                let self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                                  get: (searchParams, prop) => searchParams.get(prop),
+                                });
+                let item_to_update = JSON.parse(JSON.stringify(item));
+                item_to_update["moquiSessionToken"] = self.$root.moquiSessionToken;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/updateItem", headers:{Accept:'application/json'}, data:item_to_update,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.delete_order_item = false;
+                        self.$q.notify({
+                            message: 'Updated successfully.',
+                            position: 'bottom-left',
+                          });
+                        self.getOrderDetail();
                     }
                 });
             },
@@ -1296,6 +1406,18 @@ module.exports = {
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getSingle", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.order_part_info = resp.orderPartInfoList[0];
+                        self.part_payment_info_list = self.order_part_info.partPaymentInfoList.map(function(item){
+                            item["bank_details"] = (item.bankAccount?(item.bankAccount.bankName||''):'');
+                            if (item.postalAddress) {
+                                item["address"] = (item.postalAddress?.address1 || "") + (item.postalAddress?.unitNumber ? (" #" + (item.postalAddress?.unitNumber || "")):"")
+                                        + "<br>" + (item.postalAddress?.address2?item.postalAddress?.address2 + ", " : "") + (item.postalAddress?.city || "")
+                                        + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
+                                        (item.postalAddressStateGeo && item.postalAddressStateGeo?.geoName ? item.postalAddressStateGeo?.geoName:""))
+                                        + " " + (item.postalAddress?.postalCode || "") + (item.postalAddress?.postalCodeExt ? ("-" +
+                                        item.postalAddress?.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "");
+                            }
+                            return item;
+                        });
                         self.order_part = self.order_part_info.orderPart;
                         self.status_item = resp.statusItem;
                         self.order_items_list = resp.orderItemList;
@@ -1692,6 +1814,19 @@ module.exports = {
                     }
                 });
             },
+            getPaymentMethods () {
+                var self = this;
+                var allParams = {moquiSessionToken:self.$root.moquiSessionToken};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getPaymentMethods", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.payment_options_master = resp.paymentOptions.map(function(item){
+                            item["label"] = item.typeDescription + " - " + (item.description||'') + (item.gatewayDescription ? (" - " + item.gatewayDescription):'');
+                            return item;
+                        });
+                        self.payment_options = JSON.parse(JSON.stringify(self.payment_options_master));
+                    }
+                });
+            },
             addProductItem () {
                 var self = this;
                 const params = new Proxy(new URLSearchParams(window.location.search), {
@@ -1740,6 +1875,22 @@ module.exports = {
                     });
                 }
             },
+            addPayment () {
+                let self = this;
+                var allParams = {moquiSessionToken:self.$root.moquiSessionToken, orderId: self.order_part.orderId,
+                    orderPartSeqId: self.order_part.orderPartSeqId, paymentMethodId:self.new_payment_method.paymentMethodId};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/addOrderPartPayment", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.add_payment = false;
+                        self.new_payment_method = null;
+                        self.$q.notify({
+                            message: 'Added successfully.',
+                            position: 'bottom-left',
+                          });
+                        self.getOrderDetail();
+                    }
+                });
+            }
     },
     created: function () {
         this.getUOM();
@@ -1747,6 +1898,7 @@ module.exports = {
         this.getGeoCountries();
         this.getGeoRegionsForDropDown();
         this.getAssetClasses();
+        this.getPaymentMethods();
         //this.getAgreementItems();
         //this.getRoleOptions();
     },
