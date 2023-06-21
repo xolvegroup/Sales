@@ -54,7 +54,7 @@
                     <q-card flat bordered style="min-height: 62px;" class="custom_radius q-pa-sm">
 
                         <div class="text-h6" style="display: flow-root;">Ship To Address
-                            <q-btn icon="open_in_new" rounded @click="add_dialog=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add"></q-btn>
+                            <q-btn icon="open_in_new" rounded @click="add_which='ship',add_dialog=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add"></q-btn>
                             <q-btn icon="open_in_new" rounded @click="select_ship_to_address=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Select"></q-btn>
                         </div>
                         <div class="q-pl-sm" v-if="selected_ship_to_address && selected_ship_to_address.postalAddress">
@@ -73,7 +73,7 @@
                             <div class="q-py-xs" v-if="selected_ship_to_address.postalAddress.address2">
                                 {{selected_ship_to_address.postalAddress.address2}}
                             </div>
-                            <div class="q-py-xs" v-if="selected_ship_to_address.add_last_line">
+                            <div class="q-py-xs" v-if="selected_ship_to_address.add_last_line && selected_ship_to_address.add_last_line.trim() != ','">
                                 {{selected_ship_to_address.add_last_line}}
                             </div>
                             <div class="q-py-xs" v-if="selected_ship_to_address.telecomNumber">
@@ -86,7 +86,7 @@
                                 <a :href="'mailto:' + selected_ship_to_address.emailAddress">{{selected_ship_to_address.emailAddress}}</a>
                             </div>
                         </div>
-                        <div v-if="selected_ship_to_address">
+                        <div v-if="!selected_ship_to_address">
                             <div class="q-py-xs q-mt-sm text-italic">
                                 Please select an address using the 'Select' button. If none are listed add a new address.
                             </div>
@@ -181,7 +181,7 @@
                     <q-card flat bordered style="min-height: 62px;" class="custom_radius q-pa-sm">
 
                         <div class="text-h6" style="display: flow-root;">Bill To Address
-                        <q-btn icon="open_in_new" rounded @click="add_dialog=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add"></q-btn>
+                        <q-btn icon="open_in_new" rounded @click="add_which='bill',add_dialog=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Add"></q-btn>
                         <q-btn icon="open_in_new" rounded @click="select_bill_to_address=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Select"></q-btn>
                         </div>
                         <div class="q-pl-sm" v-if="selected_bill_to_address && selected_bill_to_address.postalAddress">
@@ -200,7 +200,7 @@
                             <div class="q-py-xs" v-if="selected_bill_to_address.postalAddress.address2">
                                 {{selected_bill_to_address.postalAddress.address2}}
                             </div>
-                            <div class="q-py-xs" v-if="selected_bill_to_address.add_last_line">
+                            <div class="q-py-xs" v-if="selected_bill_to_address.add_last_line && selected_bill_to_address.add_last_line.trim() != ','">
                                 {{selected_bill_to_address.add_last_line}}
                             </div>
                             <div class="q-py-xs" v-if="selected_bill_to_address.telecomNumber">
@@ -806,7 +806,7 @@
 
             <q-card-section style="font-size: 16px" class="q-mt-sm q-mx-sm">
                             <q-select rounded
-                                label="Billing Address"
+                                label="Shipping Address"
                                 dense
                                 outlined
                                 v-model="ship_to_address"
@@ -860,14 +860,14 @@
                         </q-input>
                     </div>
                     <div class="row q-mt-sm q-pt-sm">
-                        <div class="col-6" style="display:contents">
+                        <div class="col-8">
                                 <div class="float-left q-pt-md q-pr-sm">Address 1</div>
-                            <q-input class="float-left" rounded v-model="obj_add.address_1" outlined style="margin-top:8px;margin-bottom:8px;padding:0;" dense>
+                            <q-input class="float-left" rounded v-model="obj_add.address_1" outlined style="margin-top:8px;margin-bottom:8px;padding:0;width: 80%;" dense>
                             </q-input>
                         </div>
-                        <div class="col-6">
+                        <div class="col-4">
                                <div class="float-left q-pt-md q-pl-md q-pr-sm">Unit</div>
-                            <q-input class="float-left" rounded v-model="obj_add.unit" outlined style="margin-top:8px;margin-bottom:8px;padding:0;width:100px;" dense>
+                            <q-input class="float-left" rounded v-model="obj_add.unit" outlined style="margin-top:8px;margin-bottom:8px;padding:0;width:162px;" dense>
                             </q-input>
                         </div>
                     </div>
@@ -1088,6 +1088,7 @@ module.exports = {
           country_options_master:[],
           country_options:[],
           add_dialog:false,
+          add_which: "",
           obj_add:{
                         to_name:' ',
                         attention:' '
@@ -1571,7 +1572,7 @@ module.exports = {
                     }
                 });
             },
-            getPartyContactInfoList() {
+            getPartyContactInfoList(postalContactMechId) {
                 var self = this;
                 self.postal_address_ship_to_list = [];
                 self.postal_address_ship_to_list_master = [];
@@ -1593,15 +1594,26 @@ module.exports = {
                             return item;
                         });
                         self.postal_address_ship_to_list_master = JSON.parse(JSON.stringify(self.postal_address_ship_to_list));
-                        self.getCurShipToInfo();
+                        if (postalContactMechId) {
+                            self.getCurShipToInfo(postalContactMechId);
+                        }
+                        else {
+                            self.getCurShipToInfo();
+                        }
                     }
                 });
             },
-            getCurShipToInfo() {
+            getCurShipToInfo(postalContactMechId) {
                 var self = this;
                 self.selected_ship_to_address = {};
-                var allParms = {postalContactMechId: self.order_part.postalContactMechId,moquiSessionToken:self.$root.moquiSessionToken, partyId: self.customer_bill_to_detail.partyId,
+                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, partyId: self.customer_bill_to_detail.partyId,
                     orderPartSeqId: self.order_part.orderPartSeqId};
+                if (postalContactMechId) {
+                    allParms["postalContactMechId"] = postalContactMechId;
+                }
+                else {
+                    allParms["postalContactMechId"] = self.order_part.postalContactMechId;
+                }
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getCurShipToInfo", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.selected_ship_to_address = self.ship_to_address_list_master.find(function(item){
@@ -1765,7 +1777,6 @@ module.exports = {
                 var allParams = {orderId: params.orderId, orderPartSeqId: self.order_part.orderPartSeqId, moquiSessionToken:self.$root.moquiSessionToken};
 
                 allParams["partyId"] = self.customer_bill_to_detail.partyId;
-                allParams["postalContactMechPurposeId"] = 'PostalBilling';
                 allParams["toName"] = self.obj_add.to_name;
                 allParams["attnName"] = self.obj_add.attention;
                 allParams["address1"] = self.obj_add.address_1;
@@ -1781,14 +1792,31 @@ module.exports = {
                 allParams["contactNumber"] = self.obj_add.phone;
                 allParams["telecomExtension"] = self.obj_add.extension;
                 allParams["emailAddress"] = self.obj_add.email;
-                allParams["telecomContactMechPurposeId"] = 'PhoneBilling';
-                allParams["emailContactMechPurposeId"] = 'EmailBilling';
+                if (self.add_which == "bill") {
+                    allParams["postalContactMechPurposeId"] = 'PostalBilling';
+                    allParams["telecomContactMechPurposeId"] = 'PhoneBilling';
+                    allParams["emailContactMechPurposeId"] = 'EmailBilling';
+                }
+                else {
+                    allParams["postalContactMechPurposeId"] = 'PostalShippingDest';
+                    allParams["telecomContactMechPurposeId"] = 'PhoneShippingDest';
+                    allParams["emailContactMechPurposeId"] = 'EmailShippingDest';
+                }
 
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.obj_add = {};
                         self.add_dialog = false;
-                        self.getPartyContactInfo(self.customer_bill_to_detail.partyId);
+                        if (self.add_which == "ship") {
+                            self.getPartyContactInfoList(resp.postalContactMechId);
+                        }
+                        else {
+                            self.getPartyContactInfo(self.customer_bill_to_detail.partyId);
+                        }
+                        self.$q.notify({
+                            message: 'Added successfully.',
+                            position: 'bottom-left',
+                          });
                     }
                 });
             },
