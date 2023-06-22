@@ -313,6 +313,9 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="addProductItem" require-authentication="anonymous-all">
             <method type="post"><service name="mantle.order.OrderServices.add#OrderProductQuantity"/></method>
         </resource>
+        <resource name="updateBillToParty" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesOrderServices.update#BillToParty"/></method>
+        </resource>
         <resource name="deleteItem" require-authentication="anonymous-all">
             <method type="post"><service name="mantle.order.OrderServices.delete#OrderItem"/></method>
         </resource>

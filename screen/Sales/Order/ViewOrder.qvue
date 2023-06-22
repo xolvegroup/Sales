@@ -1435,7 +1435,7 @@ module.exports = {
                         else {
                             self.customer_ship_to_detail = self.order_part_info.customerDetail;
                         }
-                        if (self.customer_ship_to_detail.partyId){
+                        if (self.customer_ship_to_detail?.partyId){
                             self.getCurBillToContactMech(self.customer_bill_to_detail.partyId);
                             self.getPartyContactInfoList();
                         }
@@ -1503,17 +1503,13 @@ module.exports = {
             },
             updateBillToParty () {
                 var self = this;
-                const params = new Proxy(new URLSearchParams(window.location.search), {
-                  get: (searchParams, prop) => searchParams.get(prop),
-                });
-                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
-                        partyId: self.change_bill_to_party.value};
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateBillToParty", headers:{Accept:'application/json'}, data:allParms,
+                var allParms = {orderId: self.order_part.orderId, orderPartSeqId: self.order_part.orderPartSeqId,moquiSessionToken:self.$root.moquiSessionToken,
+                        newBillToPartyId: self.change_bill_to_party.value, currentBillToPartyId: self.customer_bill_to_detail?.partyId};
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/updateBillToParty", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.change_bill_to_party = null;
                         self.change_bill_party = false;
-                        //self.getAgreementParties();
-                        self.resetBillingAddress();
+                        self.getOrderDetail();
                         self.$q.notify({
                             message: 'Changed successfully.',
                             position: 'bottom-left',
@@ -1577,23 +1573,25 @@ module.exports = {
                 self.postal_address_ship_to_list = [];
                 self.postal_address_ship_to_list_master = [];
                 self.ship_to_address_list_master = [];
-                var allParms = {postalContactMechPurposeId: 'PostalShippingDest',moquiSessionToken:self.$root.moquiSessionToken, partyId: self.customer_bill_to_detail.partyId,
+                var allParms = {postalContactMechPurposeId: 'PostalShippingDest',moquiSessionToken:self.$root.moquiSessionToken, partyId: self.customer_ship_to_detail?.partyId,
                     orderPartSeqId: self.order_part.orderPartSeqId};
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getPartyContactInfoList", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
-                        self.ship_to_address_list_master = resp.postalAddressList;
-                        resp.postalAddressList.forEach(function(item){
-                            let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
-                                    + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
-                                    + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
-                                    + ", " + (item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
-                                    (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
-                                    + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
-                                    item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "");
-                            self.postal_address_ship_to_list.push({label: label, value: item.postalContactMechId});
-                            return item;
-                        });
-                        self.postal_address_ship_to_list_master = JSON.parse(JSON.stringify(self.postal_address_ship_to_list));
+                        if (resp.postalAddressList) {
+                            self.ship_to_address_list_master = resp.postalAddressList;
+                            resp.postalAddressList.forEach(function(item){
+                                let label = (item.postalAddress.toName || "") + " - " + (item.postalAddress.attnName || "")
+                                        + " - " + (item.postalAddress.address1 || "") + (item.postalAddress.unitNumber ? (" #" + (item.postalAddress.unitNumber || "")):"")
+                                        + ", " + (item.postalAddress.address2 || "") + ", " + (item.postalAddress.city || "")
+                                        + ", " + (item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
+                                        (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
+                                        + " " + (item.postalAddress.postalCode || "") + (item.postalAddress.postalCodeExt ? ("-" +
+                                        item.postalAddress.postalCodeExt):"") + " " + (item.postalAddressCountryGeo?.geoCodeAlpha3 || "");
+                                self.postal_address_ship_to_list.push({label: label, value: item.postalContactMechId});
+                                return item;
+                            });
+                            self.postal_address_ship_to_list_master = JSON.parse(JSON.stringify(self.postal_address_ship_to_list));
+                        }
                         if (postalContactMechId) {
                             self.getCurShipToInfo(postalContactMechId);
                         }
@@ -1677,32 +1675,18 @@ module.exports = {
                     }
                 });
             },
-            resetBillingAddress () {
-                var self = this;
-                const params = new Proxy(new URLSearchParams(window.location.search), {
-                  get: (searchParams, prop) => searchParams.get(prop),
-                });
-                var allParms = {moquiSessionToken:self.$root.moquiSessionToken, agreementId: params.agreementId,
-                        action: "delete"};
-                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateBillToContactMech", headers:{Accept:'application/json'}, data:allParms,
-                    error:moqui.handleAjaxError, success:function(resp) {
-                        self.selected_bill_to_address = {}
-                        self.bill_to_address = null;
-                        self.getOrderDetail();
-                    }
-                });
-            },
             updateShipToParty () {
                 var self = this;
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParms = {moquiSessionToken:self.$root.moquiSessionToken, orderId: params.orderId, orderPartSeqId: self.order_part.orderPartSeqId,
-                newShipToPartyId: self.change_ship_to_party.value, currentShipToPartyId: self.customer_ship_to_detail.partyId};
+                newShipToPartyId: self.change_ship_to_party.value, currentShipToPartyId: self.customer_ship_to_detail?.partyId};
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/updateShipToParty", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.change_ship_to_party = null;
                         self.change_ship_party = false;
+                        self.getOrderDetail();
                     }
                 });
             },
@@ -1776,7 +1760,6 @@ module.exports = {
                 });
                 var allParams = {orderId: params.orderId, orderPartSeqId: self.order_part.orderPartSeqId, moquiSessionToken:self.$root.moquiSessionToken};
 
-                allParams["partyId"] = self.customer_bill_to_detail.partyId;
                 allParams["toName"] = self.obj_add.to_name;
                 allParams["attnName"] = self.obj_add.attention;
                 allParams["address1"] = self.obj_add.address_1;
@@ -1796,11 +1779,13 @@ module.exports = {
                     allParams["postalContactMechPurposeId"] = 'PostalBilling';
                     allParams["telecomContactMechPurposeId"] = 'PhoneBilling';
                     allParams["emailContactMechPurposeId"] = 'EmailBilling';
+                    allParams["partyId"] = self.customer_bill_to_detail?.partyId;
                 }
                 else {
                     allParams["postalContactMechPurposeId"] = 'PostalShippingDest';
                     allParams["telecomContactMechPurposeId"] = 'PhoneShippingDest';
                     allParams["emailContactMechPurposeId"] = 'EmailShippingDest';
+                    allParams["partyId"] = self.customer_ship_to_detail?.partyId;
                 }
 
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
