@@ -347,6 +347,13 @@
                                         </span>
                                     </q-td>
                                 </template>
+                                <template v-slot:body-cell-type="props">
+                                    <q-td style="width: 170px;">
+                                        <span>
+                                            {{props.row.item_type_name}} <span v-if="props.row.isPromo == 'Y'">(Promotion)</span>
+                                        </span>
+                                    </q-td>
+                                </template>
                                 <template v-slot:body-cell-action="props">
                                     <q-td class="text-right" style="width: 170px;">
                                         <q-btn @click="updateItem(props.row)" v-if="order_part_info.partEditable && props.row.isPromo != 'Y'" rounded outline dense icon="edit" class="text-capitalize text-primary">Update</q-btn>
@@ -1071,8 +1078,8 @@ module.exports = {
             new_asset_class: null,
             item_type: null,
             order_items_list:[],
-            order_items_columns: [{ name: 'product',align:'left', label: 'Product', field: 'productId' },
-                                      { name: 'type',align:'left', label: 'Type', field: 'itemTypeEnumId' },
+            order_items_columns: [{ name: 'product',align:'left', label: 'Product', field: 'product_name' },
+                                      { name: 'type',align:'left', label: 'Type', field: 'item_type_name' },
                                       { name: 'description',align:'left', label: 'Description', field: 'itemDescription' },
                                       { name: 'list_price',align:'left', label: 'List Price', field: 'unitListPrice' },
                                       { name: 'price', align:'left', label: 'Price', field: 'unitAmount' },
@@ -1207,7 +1214,7 @@ module.exports = {
                         })
                     });
                 },
-              getProductList (search_keyword) {
+              async getProductList (search_keyword) {
                 var self = this;
                 const params = new Proxy(new URLSearchParams(window.location.search), {
                   get: (searchParams, prop) => searchParams.get(prop),
@@ -1398,6 +1405,18 @@ module.exports = {
                     }
                 });
             },
+            splitByFirstOccurrence(str, separator) {
+              var index = str.indexOf(separator);
+
+              if (index !== -1) {
+                var firstPart = str.slice(0, index);
+                var secondPart = str.slice(index + 1);
+                return secondPart.trim();
+              }
+
+              // If the separator is not found, return the original string as the first part and an empty string as the second part
+              return str;
+            },
             getOrderDetail() {
                 var self = this;
                 const params = new Proxy(new URLSearchParams(window.location.search), {
@@ -1405,7 +1424,7 @@ module.exports = {
                 });
                 var allParms = {orderId: params.orderId, moquiSessionToken:self.$root.moquiSessionToken };
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getSingle", headers:{Accept:'application/json'}, data:allParms,
-                    error:moqui.handleAjaxError, success:function(resp) {
+                    error:moqui.handleAjaxError, success:async function(resp) {
                         self.order_part_info = resp.orderPartInfoList[0];
                         self.part_payment_info_list = self.order_part_info.partPaymentInfoList.map(function(item){
                             item["bank_details"] = (item.bankAccount?(item.bankAccount.bankName||''):'');
@@ -1421,7 +1440,17 @@ module.exports = {
                         });
                         self.order_part = self.order_part_info.orderPart;
                         self.status_item = resp.statusItem;
-                        self.order_items_list = resp.orderItemList;
+                        self.order_items_list = await Promise.all(resp.orderItemList.map(async function(item){
+                            await self.getProductList(item.productId.toLowerCase()).then(function(resp){
+                                item["product_name"] = self.splitByFirstOccurrence(resp.options[0]["label"], ":")
+                            }, Promise.resolve([]));
+
+                            await self.getItemDetail(item.itemTypeEnumId).then(function(resp){
+                                item["item_type_name"] = resp.itemType.description
+                            }, Promise.resolve([]));
+
+                            return item;
+                        }));
                         self.place_warnings_list = resp.placeWarnings;
                         if (self.order_part_info.customerBillToDetail) {
                             self.customer_bill_to_detail = self.order_part_info.customerBillToDetail;
@@ -1903,6 +1932,28 @@ module.exports = {
                         self.getOrderDetail();
                     }
                 });
+            },
+            getFormattedNumbers () {
+                let self = this;
+                var allParams = {moquiSessionToken:self.$root.moquiSessionToken, numberToFormat:"-9999", uomID: "USD"};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getFormattedNumbers", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.add_payment = false;
+                        self.new_payment_method = null;
+                        self.$q.notify({
+                            message: 'Added successfully.',
+                            position: 'bottom-left',
+                          });
+                        self.getOrderDetail();
+                    }
+                });
+            },
+            async getItemDetail (itemTypeEnumId) {
+                let self = this;
+                var allParams = {moquiSessionToken:self.$root.moquiSessionToken, itemTypeEnumId:itemTypeEnumId};
+                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getItemDetail", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError
+                });
             }
     },
     created: function () {
@@ -1912,6 +1963,8 @@ module.exports = {
         this.getGeoRegionsForDropDown();
         this.getAssetClasses();
         this.getPaymentMethods();
+        //this.getFormattedNumbers();
+        this.getItemDetail();
         //this.getAgreementItems();
         //this.getRoleOptions();
     },

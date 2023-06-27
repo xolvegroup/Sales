@@ -328,5 +328,11 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="addOrderPartPayment" require-authentication="anonymous-all">
             <method type="post"><service name="mantle.order.OrderServices.add#OrderPartPayment"/></method>
         </resource>
+        <resource name="getFormattedNumbers" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.get#FormattedNumbers"/></method>
+        </resource>
+        <resource name="getItemDetail" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.get#ItemDetail"/></method>
+        </resource>
     </resource>
 </resource>

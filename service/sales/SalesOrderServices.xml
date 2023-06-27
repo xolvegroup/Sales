@@ -291,4 +291,29 @@ along with this software (see the LICENSE.md file). If not, see
         </actions>
         <default-response type="none"/>
     </service>
+    <service verb="get" noun="FormattedNumbers">
+        <in-parameters>
+            <parameter name="numberToFormat"/>
+            <parameter name="uomID"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="formattedGrandTotal" type="String"/>
+        </out-parameters>
+        <actions>
+            <set field="formattedGrandTotal" from="ec.l10n.formatCurrency(numberToFormat ?: 0, uomID)"/>
+        </actions>
+    </service>
+    <service verb="get" noun="ItemDetail">
+        <in-parameters>
+            <parameter name="itemTypeEnumId"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="itemType" type="String"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.basic.Enumeration" value-field="itemType">
+                <field-map field-name="enumId" from="itemTypeEnumId"/>
+            </entity-find-one>
+        </actions>
+    </service>
 </services>
