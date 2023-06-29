@@ -255,7 +255,7 @@
                                 <span>{{part_payment_info.bankAccount.routingNumber}}:{{part_payment_info.bankAccount.accountNumber}}<br></span>
                             </div>
                             <div class="full-width q-py-xs" v-if="part_payment_info.creditCard">
-                                <span><span v-if="part_payment_info.creditCardTypeEnum?.description">{{part_payment_info.creditCardTypeEnum?.description}}</span><span v-else>part_payment_info.creditCard.creditCardTypeEnumId</span><span v-if="part_payment_info.maskedCardNumber"> {{part_payment_info.maskedCardNumber}}</span><span v-if="part_payment_info.creditCard.expireDate"> {{formatDate(part_payment_info.creditCard.expireDate)}}</span></span>
+                                <span><span v-if="part_payment_info.creditCardTypeEnum?.description">{{part_payment_info.creditCardTypeEnum?.description}}</span><span v-else>part_payment_info.creditCard.creditCardTypeEnumId</span><span v-if="part_payment_info.maskedCardNumber"> {{part_payment_info.maskedCardNumber}}</span><span v-if="part_payment_info.creditCard.expireDate"> {{part_payment_info.creditCard.expireDate}}</span></span>
                             </div>
                             <strong class="full-width" v-if="part_payment_info.paymentMethod?.firstNameOnAccount">{{part_payment_info.paymentMethod?.firstNameOnAccount}}<span v-if="part_payment_info.paymentMethod?.middleNameOnAccount"> {{part_payment_info.paymentMethod.middleNameOnAccount}}</span><span v-if="part_payment_info.paymentMethod?.lastNameOnAccount"> {{part_payment_info.paymentMethod?.lastNameOnAccount}}</span><br></strong>
                             <strong class="full-width" v-if="part_payment_info.paymentMethod?.companyNameOnAccount">{{part_payment_info.paymentMethod?.companyNameOnAccount}}<br></strong>
@@ -270,7 +270,10 @@
                                 <a :href="'mailto:' + part_payment_info.emailAddress">{{part_payment_info.emailAddress}}</a>
                             </div>
                             <span v-if="part_payment_info.paymentMethod?.gatewayCimId">CIM ID: {{part_payment_info.paymentMethod.gatewayCimId}}</span>
-                            <span v-if="part_payment_info.paymentMethod?.paymentGatewayConfigId">Gateway: {{part_payment_info.paymentMethod.gatewayConfig?.description}}</span>
+                            <span v-if="part_payment_info.paymentMethod?.paymentGatewayConfigId">Gateway:
+                            <span v-if="part_payment_info.paymentMethod.gatewayConfig?.description">{{part_payment_info.paymentMethod.gatewayConfig?.description}}</span>
+                            <span v-else><span v-if="part_payment_info.paymentMethod?.paymentGatewayConfigId === 'FinancialAccountLocal'">Financial Account Local</span></span>
+                            </span>
                         </div>
                     </div>
                 </q-card-section>
@@ -1441,8 +1444,10 @@ module.exports = {
                         self.order_part = self.order_part_info.orderPart;
                         self.status_item = resp.statusItem;
                         self.order_items_list = await Promise.all(resp.orderItemList.map(async function(item){
-                            await self.getProductList(item.productId.toLowerCase()).then(function(resp){
-                                item["product_name"] = self.splitByFirstOccurrence(resp.options[0]["label"], ":")
+                            await self.getProductList(item.productId).then(function(resp){
+                                if (resp.options.length > 0) {
+                                    item["product_name"] = self.splitByFirstOccurrence(resp.options[0]["label"], ":")
+                                }
                             }, Promise.resolve([]));
 
                             await self.getItemDetail(item.itemTypeEnumId).then(function(resp){
@@ -1483,6 +1488,7 @@ module.exports = {
                         self.customerBillToDetail
                         self.getShippingDetails();
                         self.getPaymentTerms();
+                        self.getPaymentMethods();
                     }
                 });
             },
@@ -1858,7 +1864,7 @@ module.exports = {
             },
             getPaymentMethods () {
                 var self = this;
-                var allParams = {moquiSessionToken:self.$root.moquiSessionToken};
+                var allParams = {moquiSessionToken:self.$root.moquiSessionToken, customerBillToPartyId: self.customer_bill_to_detail.partyId};
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getPaymentMethods", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.payment_options_master = resp.paymentOptions.map(function(item){
@@ -1935,16 +1941,16 @@ module.exports = {
             },
             getFormattedNumbers () {
                 let self = this;
-                var allParams = {moquiSessionToken:self.$root.moquiSessionToken, numberToFormat:"-9999", uomID: "USD"};
+                var allParams = {moquiSessionToken:self.$root.moquiSessionToken,customerBillToPartyId: "100055", numberToFormat:"-9999", uomID: "USD"};
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getFormattedNumbers", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.add_payment = false;
                         self.new_payment_method = null;
-                        self.$q.notify({
-                            message: 'Added successfully.',
-                            position: 'bottom-left',
-                          });
-                        self.getOrderDetail();
+                        //self.$q.notify({
+                        //    message: 'Added successfully.',
+                        //    position: 'bottom-left',
+                        //  });
+                        //self.getOrderDetail();
                     }
                 });
             },
@@ -1962,9 +1968,8 @@ module.exports = {
         this.getGeoCountries();
         this.getGeoRegionsForDropDown();
         this.getAssetClasses();
-        this.getPaymentMethods();
         //this.getFormattedNumbers();
-        this.getItemDetail();
+        //this.getItemDetail();
         //this.getAgreementItems();
         //this.getRoleOptions();
     },
