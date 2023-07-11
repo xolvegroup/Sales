@@ -500,10 +500,13 @@
                                   </q-item>
                                 </template>
                               </q-select>
+                              <div class="q-mt-sm q-pt-sm">
+                                  <q-input label="Amount" rounded v-model="new_payment_method_amount" outlined style="" dense />
+                              </div>
             </q-card-section>
 
             <q-card-actions class="q-mx-sm q-mb-sm" align="left">
-              <q-btn size="16px" rounded :disabled="!(new_payment_method)" @click="addPayment"  outline dense label="Add"  class="text-capitalize" color="primary" />
+              <q-btn size="16px" rounded :disabled="!(new_payment_method)" @click="checkPaymentAmount"  outline dense label="Add"  class="text-capitalize" color="primary" />
             </q-card-actions>
           </q-card>
         </q-dialog>
@@ -1005,18 +1008,32 @@
             </q-card-actions>
           </q-card>
         </q-dialog>
+        <q-dialog v-model="confirm_amount" persistent>
+          <q-card style="max-width: 450px" class="q-pa-md">
+            <q-card-section class="row items-center">
+              <q-avatar icon="info" color="blue" text-color="white"></q-avatar>
+              <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">If you add this payment, you are going to exceed order grand total. Are you sure you want to add this payment?</span>
+            </q-card-section>
 
+            <q-card-actions align="right">
+              <q-btn no-caps rounded outline label="Cancel" color="grey" v-close-popup></q-btn>
+              <q-btn no-caps rounded outline label="Add" color="primary" @click="addPayment"></q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
     </div>
 </template>
 <script>
 module.exports = {
     data: function () {
         return {
+            confirm_amount: false,
             order_part_info: {},
             part_payment_info_list: [],
             order_part: {},
             status_item: {},
             order_grand_total: "",
+            order_grand_total_main: 0,
             order_header: {},
             customer_bill_to_detail: {},
             customer_ship_to_detail: {},
@@ -1048,6 +1065,7 @@ module.exports = {
             agreement_detail_cur_uom: null,
             agreement_detail_org_party: null,
             new_payment_method: null,
+            new_payment_method_amount: null,
             organization_options_master: [],
             agreement_parties: [],
             pagination_order_items: {
@@ -1429,6 +1447,7 @@ module.exports = {
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getSingle", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:async function(resp) {
                         self.order_part_info = resp.orderPartInfoList[0];
+                        self.order_grand_total_main = (resp.orderHeader && resp.orderHeader?.grandTotal) ? resp.orderHeader?.grandTotal : 0;
                         self.part_payment_info_list = self.order_part_info.partPaymentInfoList.map(function(item){
                             item["bank_details"] = (item.bankAccount?(item.bankAccount.bankName||''):'');
                             if (item.postalAddress) {
@@ -1923,14 +1942,38 @@ module.exports = {
                     });
                 }
             },
+            checkPaymentAmount() {
+                let self = this;
+                self.new_payment_method_amount;
+                self.order_grand_total_main;
+                let total_payment_amount = 0;
+                self.part_payment_info_list.forEach(function(item){
+                    total_payment_amount = total_payment_amount + ((item.partPayment && item.partPayment.amount) ? item.partPayment.amount:0);
+                    return item;
+                });
+                if (self.new_payment_method_amount) {
+                    console.log(parseFloat(total_payment_amount) + parseFloat(self.new_payment_method_amount));
+                    let new_payment_amount = parseFloat(total_payment_amount) + parseFloat(self.new_payment_method_amount);
+                    console.log(self.order_grand_total_main);
+                    if (new_payment_amount > self.order_grand_total_main) {
+                        self.confirm_amount = true;
+                    }
+                }
+                else {
+                    self.addPayment();
+                }
+            },
             addPayment () {
                 let self = this;
                 var allParams = {moquiSessionToken:self.$root.moquiSessionToken, orderId: self.order_part.orderId,
-                    orderPartSeqId: self.order_part.orderPartSeqId, paymentMethodId:self.new_payment_method.paymentMethodId};
+                    orderPartSeqId: self.order_part.orderPartSeqId, paymentMethodId:self.new_payment_method.paymentMethodId,
+                    amount: self.new_payment_method_amount};
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/orders/addOrderPartPayment", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
+                        self.confirm_amount = false;
                         self.add_payment = false;
                         self.new_payment_method = null;
+                        self.new_payment_method_amount = null;
                         self.$q.notify({
                             message: 'Added successfully.',
                             position: 'bottom-left',
