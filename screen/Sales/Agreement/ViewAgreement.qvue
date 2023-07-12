@@ -4,6 +4,8 @@
             <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm">
                 <q-card-section>
                     <div class="text-h6">Agreement #{{agreement_detail.agreementId}} - {{agreement_detail.description}}</div>
+                    <div class="text-h6 q-pt-sm text-grey-8">Agreement Party: <span v-if="agreement_party && agreement_party.organizationName">{{agreement_party.organizationName}}</span>
+                    <span v-if="agreement_party && (agreement_party.firstName || agreement_party.lastName)">{{agreement_party.firstName}} {{agreement_party.lastName}}</span></div>
                 </q-card-section>
                 <q-card-section class="correct_input_fields">
                     <div class="row">
@@ -611,6 +613,7 @@
 module.exports = {
     data: function () {
         return {
+            agreement_party: {},
             transacting_entity:"",
             agreement_detail: {},
             add_party: false,
@@ -927,7 +930,12 @@ module.exports = {
                         }
                         self.agreement_detail_org_party = self.organization_options.find(function(item){
                             return item.partyId === self.agreement_detail.organizationPartyId;
-                        })
+                        });
+                        if (self.agreement_detail.otherPartyId) {
+                            self.getPartyDetail(self.agreement_detail.otherPartyId).then(function(resp){
+                                self.agreement_party = resp.party;
+                              });
+                        }
                     }
                 });
             },
@@ -1141,6 +1149,13 @@ module.exports = {
                         self.bill_to_address = null;
                         self.getAgreement();
                     }
+                });
+            },
+            getPartyDetail(partyId) {
+                var vm = this;
+                var allParms = $.extend({ partyId: partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getDetail", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError
                 });
             }
     },
