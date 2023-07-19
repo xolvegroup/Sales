@@ -317,10 +317,10 @@ along with this software (see the LICENSE.md file). If not, see
                                     <field-map field-name="orderPartSeqId" from="orderPart.orderPartSeqId"/>
                                     <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
                                 </entity-find-one>
-                                <if condition="curBillToContactMech != null">
+                                <if condition="curBillToContactMech">
                                     <service-call name="mantle.party.ContactServices.get#PartyContactInfo" out-map="curBillToInfo"
                                                   in-map="[partyId:customerBillToDetail.partyId, postalContactMechId:curBillToContactMech.contactMechId]"/>
-                                    <set field="contactInfo" from="curBillToInfo"/>
+                                    <!--<set field="contactInfo" from="curBillToInfo"/>-->
                                 </if>
                                 <!-- addresses on profile -->
                                 <service-call name="mantle.party.ContactServices.get#PartyContactInfoList" out-map="customerBillingInfo"
@@ -359,8 +359,12 @@ along with this software (see the LICENSE.md file). If not, see
                                     </box-toolbar>
                                     <box-body>
                                         <label text="Please select an address using the 'Select' button.
-                                        If none are listed add a new address." condition="!contactInfo" type="i"/>
-                                        <text type="html,vuet,qvt" location="component://Sales/template/ContactInfo.html.gstring"/>
+                                        If none are listed add a new address." condition="!curBillToInfo" type="i"/>
+                                        <section name="BillToAddressDisplay" condition="curBillToInfo">
+                                            <widgets>
+                                                <text type="html,vuet,qvt" location="component://Sales/template/BillToContactInfo.html.gstring"/>
+                                            </widgets>
+                                        </section>
                                     </box-body>
                                 </container-box>
 
