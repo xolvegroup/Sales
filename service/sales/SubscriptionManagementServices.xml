@@ -16,21 +16,17 @@ along with this software (see the LICENSE.md file). If not, see
 
     <!-- Use this to create a new Agreement for subscription products
      This service will create the following records: Agreement, AgreementItem, ProductPrice -->
-    <service verb="create" noun="Agreement">
+    <service verb="create" noun="Agreement"><description>This service is specific to Xolve Sales and Subscription Managmeent.
+        It creates an agreement from a Sales Order using the SO form within Xolve Sales.
+        Does not work with Moqui out of the box sales order screen.</description>
         <in-parameters>
             <parameter name="agreementDate" type="Timestamp" default="ec.user.nowTimestamp"/>
             <parameter name="orderId" required="true"/>
-            <!--
-            <parameter name="fromDate"/>
-            <parameter name="thruDate"/>
-            <parameter name="description"/>
-            <parameter name="currencyUomId"/>
-            -->
         </in-parameters>
         <out-parameters><parameter name="agreementId"/></out-parameters>
         <actions>
             <!-- Get order data and create / update agreement
-             OrderPart for agreement data like start/end dates
+             OrderPart for agreement data like stPiCreditCardart/end dates
              OrderPart and OrderPartParty for bill to / ship to and all other parties (
              if bill to / ship to is same as customer on order then there will not be data in OrderPartParty)
              OrderItem: Mirror the subscription services logic that gets all digital products on the order that also have a SubscriptionResource
@@ -40,6 +36,7 @@ along with this software (see the LICENSE.md file). If not, see
             <entity-find entity-name="mantle.order.OrderPart" list="orderPartList">
                 <econdition field-name="orderId"/>
             </entity-find>
+            <!-- Only supports single part orders, so the index is hard coded e.g., orderPartList[0] -->
             <entity-find entity-name="mantle.order.OrderItem" list="orderItemList">
                 <econdition field-name="orderId"/>
                 <econdition field-name="orderPartSeqId" from="orderPartList[0].orderPartSeqId"/>
@@ -49,7 +46,6 @@ along with this software (see the LICENSE.md file). If not, see
                 <econdition field-name="orderPartSeqId" from="orderPartList[0].orderPartSeqId"/>
             </entity-find>
             <set field="agreementTypeEnumId" value="AgrSales"/>
-            <set field="agreementItemTypeEnumId" value="AitPricing"/>
             <set field="currencyUomId" from="orderHeader.currencyUomId"/>
             <set field="otherPartyId" from="orderPartList[0].customerPartyId"/>
             <set field="customerPartyId" from="otherPartyId"/>
@@ -59,21 +55,48 @@ along with this software (see the LICENSE.md file). If not, see
             <set field="description" from="orderPartList[0].partName"/>
             <set field="priceTypeEnumId" value="PptCurrent"/>
             <set field="pricePurposeEnumId" value="PppUsage"/>
+            <!-- Get any subscriptions that were created during order approval -->
             <!-- Create Agreement -->
             <service-call name="create#mantle.party.agreement.Agreement" out-map="context" in-map="context"/>
             
             <!-- Loop orderItem and create AgreementItem and ProductPrice for each subscription.
              TODO: Change this to only get subscription products on the order. Maybe directly pull from Subscription(s) that were just created during order approval.-->
             <iterate list="orderItemList" entry="orderItem">
-                <log level="warn" message="Order Item Logger - orderId: ${orderItem.orderId}"/>
-                <log level="warn" message="Order Item Logger - productId: ${orderItem.productId}"/>
                 <set field="productId" from="orderItem.productId"/>
                 <set field="price" from="orderItem.unitAmount"/>
-                <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
-                <log level="warn" message="After call to AgreementItem"/>
-                <!-- From date and thru date matches agreement dates. -->
-                <service-call name="create#mantle.product.ProductPrice" out-map="context" in-map="context"/>
-
+                <if condition="productId == 'XOLVE_SUBSCRIPTION'">
+                    <!-- Add subscription item and linkage to Agreement -->
+                    <entity-find-one entity-name="mantle.product.subscription.Subscription" value-field="subscription">
+                        <field-map field-name="orderId" from="orderItem.orderId"/>
+                        <field-map field-name="orderItemSeqId" from="orderItem.orderItemSeqId"/>
+                    </entity-find-one>
+                    <set field="subscriptionId" from="subscription.subscriptionId"/>
+                    <!-- TODO: update subscription description and externalId -->
+                    <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
+                    <service-call name="create#mantle.party.agreement.AgreementItemSubscription" out-map="context" in-map="context"/>
+                    <set field="productId" value="XCU"/>
+                    <set field="agreementItemTypeEnumId" value="AitPricing"/>
+                    <set field="price" value="0"/>
+                    <set field="fromDate" from="ec.user.nowTimestamp"/>
+                    <!-- 14 day trial period -->
+                    <set field="thruDate" from="new Timestamp(fromDate.time + (14*24*60*60*1000))"/>
+                    <set field="agreementItemSeqId" from="agreementItemSeqId + 1"/>
+                    <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
+                    <service-call name="create#mantle.product.ProductPrice" out-map="context" in-map="context"/>
+                    <!-- Create another agreement item for the price after trial period -->
+                    <set field="fromDate" from="new Timestamp(thruDate.time + (24*60*60*1000))"/> <!-- Start charging day after trial period ends -->
+                    <set field="thruDate" value=""/>
+                    <set field="price" value="1"/> <!-- refactor to get list price for XCU from ProductPrice -->
+                    <set field="agreementItemSeqId" from="agreementItemSeqId + 1"/>
+                    <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
+                    <set field="productPriceId" from="productPriceId + 1"/>
+                    <service-call name="create#mantle.product.ProductPrice" out-map="context" in-map="context"/>
+                <else>
+                    <!-- From date and thru date matches agreement dates. -->
+                    <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
+                    <service-call name="create#mantle.product.ProductPrice" out-map="context" in-map="context"/>
+                </else>
+                </if>
                 <!-- Link AgreementItem with Subscription
                 <service-call name="create#AgreementItemSubscription" out-map="context" in-map="context"/>
                 -->

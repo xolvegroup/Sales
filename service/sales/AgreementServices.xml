@@ -213,7 +213,9 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="billToParty"/>
         </out-parameters>
         <actions>
-            <entity-find entity-name="mantle.party.agreement.AgreementPartyDetail" list="agreementPartyList"/>
+            <entity-find entity-name="mantle.party.agreement.AgreementPartyDetail" list="agreementPartyList">
+                <econdition field-name="agreementId" from="agreementId"/>
+            </entity-find>
             <entity-find-one entity-name="mantle.party.agreement.AgreementPartyDetail" value-field="billToParty">
                 <field-map field-name="agreementId"/>
                 <field-map field-name="roleTypeId" value="CustomerBillTo"/>
