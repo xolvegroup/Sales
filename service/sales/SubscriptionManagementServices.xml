@@ -62,23 +62,24 @@ along with this software (see the LICENSE.md file). If not, see
             <!-- Loop orderItem and create AgreementItem and ProductPrice for each subscription.
              TODO: Change this to only get subscription products on the order. Maybe directly pull from Subscription(s) that were just created during order approval.-->
             <iterate list="orderItemList" entry="orderItem">
+                <entity-find-one entity-name="mantle.product.subscription.Subscription" value-field="subscription">
+                    <field-map field-name="orderId" from="orderItem.orderId"/>
+                    <field-map field-name="orderItemSeqId" from="orderItem.orderItemSeqId"/>
+                </entity-find-one>
                 <set field="productId" from="orderItem.productId"/>
                 <set field="price" from="orderItem.unitAmount"/>
-                <if condition="productId == 'XOLVE_SUBSCRIPTION'">
+                <if condition="subscription">
                     <!-- Add subscription item and linkage to Agreement -->
-                    <entity-find-one entity-name="mantle.product.subscription.Subscription" value-field="subscription">
-                        <field-map field-name="orderId" from="orderItem.orderId"/>
-                        <field-map field-name="orderItemSeqId" from="orderItem.orderItemSeqId"/>
-                    </entity-find-one>
                     <set field="subscriptionId" from="subscription.subscriptionId"/>
                     <!-- TODO: update subscription description and externalId -->
                     <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
                     <service-call name="create#mantle.party.agreement.AgreementItemSubscription" out-map="context" in-map="context"/>
+                    <!-- TODO: Refactor to determine consumption product dynamically -->
                     <set field="productId" value="XCU"/>
                     <set field="agreementItemTypeEnumId" value="AitPricing"/>
                     <set field="price" value="0"/>
                     <set field="fromDate" from="ec.user.nowTimestamp"/>
-                    <!-- 14 day trial period -->
+                    <!-- 14 day trial period TODO: figure out dynamically if trial is offered and parameterize the duration -->
                     <set field="thruDate" from="new Timestamp(fromDate.time + (14*24*60*60*1000))"/>
                     <set field="agreementItemSeqId" from="agreementItemSeqId + 1"/>
                     <service-call name="create#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
