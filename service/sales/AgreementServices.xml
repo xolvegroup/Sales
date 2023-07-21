@@ -126,6 +126,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
+    <!-- TODO: Combine update#BillToContactMech and updateShipToContactMech and parameterize ship to vs. bill to -->
     <service verb="update" noun="BillToContactMech">
         <in-parameters>
             <parameter name="agreementId" required="true"/>
@@ -146,6 +147,56 @@ along with this software (see the LICENSE.md file). If not, see
                     <field-map field-name="contactMechId" from="billToPostalContactMechId"/>
                 </service-call>
             </if>
+        </actions>
+    </service>
+    <service verb="update" noun="ShipToContactMech">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="shipToPostalContactMechId"/>
+            <parameter name="action" default-value="add"/>
+        </in-parameters>
+        <actions>
+            <!-- Clear existing setting from AgreementContactMech -->
+            <service-call name="delete#mantle.party.agreement.AgreementContactMech">
+                <field-map field-name="agreementId" from="agreementId"/>
+                <field-map field-name="contactMechPurposeId" value="PostalShippingDest"/>
+                <field-map field-name="contactMechId" value="*"/>
+            </service-call>
+            <if condition="action != 'delete'">
+                <service-call name="create#mantle.party.agreement.AgreementContactMech">
+                    <field-map field-name="agreementId" from="agreementId"/>
+                    <field-map field-name="contactMechPurposeId" value="PostalShippingDest"/>
+                    <field-map field-name="contactMechId" from="shipToPostalContactMechId"/>
+                </service-call>
+            </if>
+        </actions>
+    </service>
+    <service verb="update" noun="PaymentMethod">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="paymentMethodId" required="true"/>
+        </in-parameters>
+        <actions>
+            <service-call name="update#mantle.party.agreement.Agreement" out-map="context" in-map="context"/>
+        </actions>
+    </service>
+    <service verb="find" noun="PaymentMethod">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="methodInfo" type="Map"/><!-- This parameter name is required to use the display template in xml screen. -->
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
+            <service-call name="sales.AgreementServices.find#AgreementParties" in-map="[agreementId:agreementId]" out-map="context"/>
+            <service-call name="mantle.account.PaymentMethodServices.get#PartyPaymentMethodInfoList"
+                          in-map="[partyId:billToParty.partyId]" out-map="ppmiOut"/>
+            <iterate list="ppmiOut.methodInfoList" entry="mi">
+                <if condition="mi.paymentMethodId == agreement.paymentMethodId">
+                    <set field="methodInfo" from="mi"/>
+                </if>
+            </iterate>
         </actions>
     </service>
     <service verb="find" noun="AgreementItems">
@@ -221,6 +272,7 @@ along with this software (see the LICENSE.md file). If not, see
                 <field-map field-name="roleTypeId" value="CustomerBillTo"/>
             </entity-find-one>
             <if condition="!billToParty">
+                <!-- Customer on the Agreement and bill to party are the same -->
                 <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
                 <entity-find-one entity-name="mantle.party.PartyDetail" value-field="billToParty">
                     <field-map field-name="partyId" from="agreement.otherPartyId"/>

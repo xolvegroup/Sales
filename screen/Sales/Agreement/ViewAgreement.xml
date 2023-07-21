@@ -19,6 +19,9 @@ along with this software (see the LICENSE.md file). If not, see
     <transition name="addAgreementParty"><service-call name="create#mantle.party.agreement.AgreementParty"/><default-response url="."/></transition>
     <transition name="removeAgreementParty"><service-call name="delete#mantle.party.agreement.AgreementParty"/><default-response url="."/></transition>
     <transition name="updateBillToParty"><service-call name="sales.AgreementServices.update#BillToParty"/><default-response url="."/></transition>
+    <transition name="updateBillToContactMech"><service-call name="sales.AgreementServices.update#BillToContactMech"/><default-response url="."/></transition>
+    <transition name="updateShipToContactMech"><service-call name="sales.AgreementServices.update#ShipToContactMech"/><default-response url="."/></transition>
+    <transition name="updatePaymentMethod"><service-call name="sales.AgreementServices.update#PaymentMethod"/><default-response url="."/></transition>
     <transition name="addAgreementItem"><service-call name="sales.AgreementServices.create#AgreementItem"/><default-response url="."/></transition>
     <transition name="updateAgreementItem"><service-call name="sales.AgreementServices.update#AgreementItem"/><default-response url="."/></transition>
     <transition name="deleteAgreementItem"><service-call name="delete#mantle.party.agreement.AgreementItem"/><default-response url="."/></transition>
@@ -29,6 +32,7 @@ along with this software (see the LICENSE.md file). If not, see
         <service-call name="sales.AgreementServices.find#AgreementItems" in-map="[agreementId:agreementId]" out-map="context"/>
         <service-call name="sales.AgreementServices.find#AgreementParties" in-map="[agreementId:agreementId]" out-map="context"/>
         <service-call name="sales.AgreementServices.find#AgreementSubscriptions" in-map="[agreementId:agreementId]" out-map="context"/>
+        <service-call name="sales.AgreementServices.find#PaymentMethod" in-map="[agreementId:agreementId]" out-map="context"/>
         <!-- Get customer details for display -->
         <entity-find-one entity-name="mantle.party.PartyDetail" value-field="customer">
             <field-map field-name="partyId" from="agreement.otherPartyId"/>
@@ -96,6 +100,7 @@ along with this software (see the LICENSE.md file). If not, see
                                     <box-header title="Subscriptions Associated with this Agreement"/>
                                     <box-body>
                                         <form-list name="SubscriptionForm" list="agreementSubscriptionList">
+                                            <field name="description"><default-field><display/></default-field></field>
                                             <field name="subscriptionId"><default-field title="Internal ID"><display/></default-field></field>
                                             <field name="resourceInstanceId"><default-field title="External ID"><display/></default-field></field>
                                         </form-list>
@@ -109,12 +114,94 @@ along with this software (see the LICENSE.md file). If not, see
                                         <label text="Price Rule: Discount applies to usage over committed amount" type="p"/>
                                     </box-body>
                                 </container-box>
+                                <container-box>
+                                    <box-header title="Agreement Parties"/>
+                                    <box-toolbar>
+                                        <container-dialog id="AddPartyDialog" button-text="Add Party">
+                                            <form-single name="CreateAgreementParty" transition="addAgreementParty" map="agreement">
+                                                <field name="agreementId"><default-field><hidden/></default-field></field>
+                                                <field name="partyId"><default-field title="Party"><drop-down>
+                                                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0"/></drop-down>
+                                                </default-field></field>
+                                                <field name="roleTypeId"><default-field title="Role">
+                                                    <drop-down><entity-options key="${roleTypeId}" text="${description}">
+                                                        <entity-find entity-name="mantle.party.RoleGroupMemberAndType" cache="true">
+                                                            <econdition field-name="roleGroupEnumId" value="RgpAgreement"/>
+                                                            <order-by field-name="description"/></entity-find>
+                                                    </entity-options></drop-down>
+                                                </default-field></field>
+                                                <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
+                                            </form-single>
+                                        </container-dialog>
+                                    </box-toolbar>
+                                    <box-body>
+                                        <form-list name="AgreementPartyForm" list="agreementPartyList">
+                                            <field name="partyId">
+                                                <default-field title="Party">
+                                                    <link url="viewAccount" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
+                                                </default-field>
+                                            </field>
+                                            <field name="description"><default-field title="Role"><display/></default-field></field>
+                                            <field name="removeButton" align="right"><default-field title="">
+                                                <link url="removeAgreementParty" icon="fa fa-trash"
+                                                      parameter-map="[agreementId:agreementId, partyId:partyId, roleTypeId:roleTypeId]"
+                                                      confirmation="Are you sure you want to remove this party from the Agreement?"/>
+                                            </default-field></field>
+                                        </form-list>
+                                    </box-body>
+                                </container-box>
                             </widgets>
                         </section>
                     </box-body>
                 </container-box>
+
             </row-col>
             <row-col lg="6">
+                <section name="ShipToAddress">
+                    <actions>
+                        <entity-find-one entity-name="mantle.party.agreement.AgreementContactMech" value-field="curShipToContactMech">
+                            <field-map field-name="agreementId"/>
+                            <field-map field-name="contactMechPurposeId" value="PostalShippingDest"/>
+                        </entity-find-one>
+                        <if condition="curShipToContactMech">
+                            <service-call name="mantle.party.ContactServices.get#PartyContactInfo" out-map="curShipToInfo"
+                                          in-map="[partyId:agreement.otherPartyId, postalContactMechId:curShipToContactMech.contactMechId]"/>
+                        </if>
+                        <!-- addresses on profile -->
+                        <service-call name="mantle.party.ContactServices.get#PartyContactInfoList" out-map="customerShipToInfo"
+                                      in-map="[partyId:agreement.otherPartyId, postalContactMechPurposeId:'PostalShippingDest']"/>
+                    </actions>
+                    <widgets>
+                        <container-box>
+                            <box-header title="Ship To Address"/>
+                            <box-toolbar>
+                                <container-dialog id="SelectShipToAddress" button-text="Select">
+                                    <form-single name="SetShippingInfoForm" transition="updateShipToContactMech">
+                                        <field name="agreementId"><default-field><hidden/></default-field></field>
+                                        <field name="shipToPostalContactMechId" from="curShipToContactMech?.contactMechId"><default-field title="Ship To Address">
+                                            <drop-down>
+                                                <list-options list="customerShipToInfo.postalAddressList" key="${postalContactMechId}" text="PostalAddressInfoTemplate"/>
+                                            </drop-down></default-field>
+                                        </field>
+                                        <field name="submitButton"><default-field title="Submit"><submit/></default-field></field>
+                                    </form-single>
+                                </container-dialog>
+
+                            </box-toolbar>
+                            <box-body>
+                                <label text="Please select an address using the 'Select' button.
+                                           " condition="!curShipToInfo" type="i"/>
+                                <section name="ShipToAddressDisplay" condition="curShipToInfo">
+                                    <widgets>
+                                        <text type="html,vuet,qvt" location="component://Sales/template/ShipToContactInfo.html.gstring"/>
+                                    </widgets>
+                                </section>
+                            </box-body>
+                        </container-box>
+
+                    </widgets>
+                </section>
+
                 <container-box>
                     <box-header title="Bill To Party: ${ec.resource.expand('PartyNameOnlyTemplate','',billToParty)}"/>
                     <box-toolbar>
@@ -129,53 +216,85 @@ along with this software (see the LICENSE.md file). If not, see
                         </container-dialog>
                     </box-toolbar>
                     <box-body>
-                        <container-box><box-header title="Bill To Address"/>
-                            <box-toolbar>
+                        <section name="BillToAddress">
+                            <actions>
+                                <entity-find-one entity-name="mantle.party.agreement.AgreementContactMech" value-field="curBillToContactMech">
+                                    <field-map field-name="agreementId"/>
+                                    <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+                                </entity-find-one>
+                                <if condition="curBillToContactMech">
+                                    <service-call name="mantle.party.ContactServices.get#PartyContactInfo" out-map="curBillToInfo"
+                                                  in-map="[partyId:billToParty.partyId, postalContactMechId:curBillToContactMech.contactMechId]"/>
+                                </if>
+                                <!-- addresses on profile -->
+                                <service-call name="mantle.party.ContactServices.get#PartyContactInfoList" out-map="customerBillingInfo"
+                                              in-map="[partyId:billToParty.partyId, postalContactMechPurposeId:'PostalBilling']"/>
+                            </actions>
+                            <widgets>
+                                <container-box><box-header title="Bill To Address"/>
+                                    <box-toolbar>
+                                        <container-dialog id="SelectBillToAddress" button-text="Select">
+                                            <form-single name="SetBillingInfoForm" transition="updateBillToContactMech">
+                                                <field name="agreementId"><default-field><hidden/></default-field></field>
+                                                <field name="billToPostalContactMechId" from="curBillToContactMech?.contactMechId"><default-field title="Billing Address">
+                                                    <drop-down>
+                                                        <list-options list="customerBillingInfo.postalAddressList" key="${postalContactMechId}" text="PostalAddressInfoTemplate"/>
+                                                    </drop-down></default-field>
+                                                </field>
+                                                <field name="submitButton"><default-field title="Submit"><submit/></default-field></field>
+                                            </form-single>
+                                        </container-dialog>
+                                        <!-- This code is from the order screen. Need to figure out how to reuse or create something new.
+                                        <dynamic-dialog id="UpdatePostalInfo" button-text="Edit" transition="UpdateContactInfo"
+                                                        width="800" condition="curBillToInfo"
+                                                        parameter-map="[partyId:customerBillToDetail.partyId, postalContactMechId:contactInfo.postalContactMechId,
+                                                        postalContactMechPurposeId:contactInfo.postalContactMechPurposeId, orderId:orderId]"/>
+                                        <dynamic-dialog id="AddPostalInfo" button-text="Add" transition="UpdateContactInfo"
+                                                        width="800"
+                                                        parameter-map="[partyId:customerBillToDetail.partyId, postalContactMechPurposeId:'PostalBilling',
+                                            telecomContactMechPurposeId:'PhoneBilling', emailContactMechPurposeId:'EmailBilling', orderId:orderId, postalContactMechId:null]"/>
+                                        -->
+                                    </box-toolbar>
+                                    <box-body>
+                                        <label text="Please select an address using the 'Select' button.
+                                                If none are listed add a new address." condition="!curBillToInfo" type="i"/>
+                                        <section name="BillToAddressDisplay" condition="curBillToInfo">
+                                            <widgets>
+                                                <text type="html,vuet,qvt" location="component://Sales/template/BillToContactInfo.html.gstring"/>
+                                            </widgets>
+                                        </section>
+                                    </box-body>
+                                </container-box>
+                                <container-box>
+                                    <box-header title="Payment Information"/>
+                                    <box-toolbar>
+                                        <container-dialog id="AddPaymentInfo" button-text="Select Payment Method">
+                                            <form-single name="AddPaymentForm" transition="updatePaymentMethod" focus-field="paymentMethodId">
+                                                <field name="agreementId"><default-field><hidden/></default-field></field>
+                                                <field name="paymentMethodId"><default-field title="Payment Method"><drop-down allow-empty="true">
+                                                    <entity-options key="${paymentMethodId}" text="PaymentMethodDetailTemplate">
+                                                        <entity-find entity-name="mantle.account.method.PaymentMethodDetail">
+                                                            <date-filter/>
+                                                            <econdition field-name="ownerPartyId" from="billToParty.partyId"/>
+                                                        </entity-find></entity-options>
+                                                </drop-down></default-field></field>
+                                                <field name="submitButton"><default-field title="Select"><submit/></default-field></field>
+                                            </form-single>
+                                        </container-dialog>
+                                    </box-toolbar>
+                                    <box-body>
+                                        <section name="MethodInfoDisplay" condition="methodInfo">
+                                            <widgets>
+                                                <text type="html,vuet,qvt" location="component://SimpleScreens/template/party/PaymentMethodInfo.html.gstring"/>
+                                            </widgets>
+                                        </section>
+                                        </box-body>
+                                </container-box>
+                            </widgets>
+                        </section>
+                    </box-body>
+                </container-box>
 
-                            </box-toolbar>
-                            <box-body>
-                                <label text="456 Reseller Drive" type="p"/>
-                                <label text="Denver, CO 80208" type="p"/>
-                            </box-body>
-                        </container-box>
-                    </box-body>
-                </container-box>
-                <container-box>
-                    <box-header title="Agreement Parties"/>
-                    <box-toolbar>
-                        <container-dialog id="AddPartyDialog" button-text="Add Party">
-                            <form-single name="CreateAgreementParty" transition="addAgreementParty" map="agreement">
-                                <field name="agreementId"><default-field><hidden/></default-field></field>
-                                <field name="partyId"><default-field title="Party"><drop-down>
-                                    <dynamic-options transition="searchPartyList" server-search="true" min-length="0"/></drop-down>
-                                </default-field></field>
-                                <field name="roleTypeId"><default-field title="Role">
-                                    <drop-down><entity-options key="${roleTypeId}" text="${description}">
-                                        <entity-find entity-name="mantle.party.RoleGroupMemberAndType" cache="true">
-                                            <econdition field-name="roleGroupEnumId" value="RgpAgreement"/>
-                                            <order-by field-name="description"/></entity-find>
-                                    </entity-options></drop-down>
-                                </default-field></field>
-                                <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
-                            </form-single>
-                        </container-dialog>
-                    </box-toolbar>
-                    <box-body>
-                        <form-list name="AgreementPartyForm" list="agreementPartyList">
-                            <field name="partyId">
-                                <default-field title="Party">
-                                    <link url="viewAccount" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
-                                </default-field>
-                            </field>
-                            <field name="description"><default-field title="Role"><display/></default-field></field>
-                            <field name="removeButton" align="right"><default-field title="">
-                                <link url="removeAgreementParty" icon="fa fa-trash"
-                                      parameter-map="[agreementId:agreementId, partyId:partyId, roleTypeId:roleTypeId]"
-                                      confirmation="Are you sure you want to remove this party from the Agreement?"/>
-                            </default-field></field>
-                        </form-list>
-                    </box-body>
-                </container-box>
             </row-col>
         </container-row>
         <container-row>
