@@ -893,7 +893,7 @@ module.exports = {
         async getAllSalesPerson(salesOpId) {
             var vm = this;
             var allParms = $.extend({ roleTypeId: "SalesRepresentative", salesOpportunityId: salesOpId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/contacts", headers:{Accept:'application/json'}, data:allParms,
+            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getContacts", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError
             });
         }

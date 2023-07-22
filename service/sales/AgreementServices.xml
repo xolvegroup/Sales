@@ -38,11 +38,13 @@ along with this software (see the LICENSE.md file). If not, see
         </in-parameters>
         <out-parameters>
             <parameter name="agreement"/>
-            <parameter name="agreementContact"/>
+            <parameter name="agreementContact" type="list"/>
         </out-parameters>
         <actions>
             <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
-            <entity-find-one entity-name="mantle.party.agreement.AgreementContactMech" value-field="agreementContact"/>
+            <entity-find entity-name="mantle.party.agreement.AgreementContactMech" list="agreementContact" >
+                <econdition field-name="agreementId" from="agreementId"/>
+            </entity-find>
         </actions>
     </service>
     <service verb="find" noun="Agreements">
@@ -330,7 +332,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="OrganizationOptions">
+    <service verb="find" noun="OrganizationOptions">
         <out-parameters>
             <parameter name="orgOptions" type="List"/>
         </out-parameters>
@@ -342,7 +344,7 @@ along with this software (see the LICENSE.md file). If not, see
             <order-by field-name="organizationName"/></entity-find>
         </actions>
     </service>
-    <service verb="get" noun="RoleOptions">
+    <service verb="find" noun="RoleOptions">
         <out-parameters>
             <parameter name="roleList" type="List"/>
         </out-parameters>
@@ -352,7 +354,7 @@ along with this software (see the LICENSE.md file). If not, see
             <order-by field-name="description"/></entity-find>
         </actions>
     </service>
-    <service verb="get" noun="ProductList">
+    <service verb="search" noun="ProductList">
         <in-parameters>
             <parameter name="term"/>
             <parameter name="productFeatureIds"/>

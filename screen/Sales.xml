@@ -6,6 +6,7 @@
         <subscreens-item name="ViewContact" menu-title="View Contact" menu-index="101" location="component://Sales/screen/Sales/ViewContact.xml" menu-include="false"/>
         <subscreens-item name="ViewOpportunity" menu-title="View Opportunity" menu-index="101" location="component://Sales/screen/Sales/ViewOpportunity.xml" menu-include="false"/>
         <subscreens-item name="ViewAgreement" menu-title="View Agreement" menu-index="101" location="component://Sales/screen/Sales/ViewAgreement.xml" menu-include="false"/>
+        <subscreens-item name="ViewOrder" menu-title="View Order" menu-index="101" location="component://Sales/screen/Sales/ViewAgreement.xml" menu-include="false"/>
     </subscreens>
     <widgets>
         <subscreens-panel id="SalesPanel" type="popup"/>

@@ -654,7 +654,7 @@ module.exports = {
         fetchStoreOptions () {
             var self = this;
             var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/storeOptions", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getStoreOptions", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.store_options = resp.storeOptions.map(function(item){
                         item["label"] = item["productStoreId"] + ": " + item["storeName"]

@@ -912,7 +912,7 @@ module.exports = {
         getStatuses () {
             var self = this;
             var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks/statuses", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks/getStatuses", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.status_options_master = resp.statusList;
                     self.status_options = resp.statusList;
@@ -1130,6 +1130,9 @@ module.exports = {
                 var allParams = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getContactInfoList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
+                        self.emailAddressList = [];
+                        self.telecomNumberList = [];
+                        self.webAddressList = [];
                         if (Object.keys(resp).indexOf("emailAddressList") > -1) {
                             self.emailAddressList = resp.emailAddressList;
                         }
@@ -1307,7 +1310,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/organizationOptions", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getOrganizationOptions", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.organization_options = resp.orgOptions.map(function(item){
                             item["label"] = item["pseudoId"] + ": " + item["organizationName"];

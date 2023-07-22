@@ -870,7 +870,7 @@ module.exports = {
         getStatuses () {
             var self = this;
             var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks/statuses", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks/getStatuses", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.status_options_master = resp.statusList;
                     self.status_options = resp.statusList;
@@ -1122,6 +1122,9 @@ module.exports = {
                 var allParams = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getContactInfoList", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
+                        self.emailAddressList = [];
+                        self.telecomNumberList = [];
+                        self.webAddressList = [];
                         if (Object.keys(resp).indexOf("emailAddressList") > -1) {
                             self.emailAddressList = resp.emailAddressList;
                         }
@@ -1368,7 +1371,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParms = $.extend({ partyId: params.partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/contacts/relatedAccounts", headers:{Accept:'application/json'}, data:allParms,
+                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/contacts/getRelatedAccounts", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         vm.related_accounts = resp.accountList;
                     }

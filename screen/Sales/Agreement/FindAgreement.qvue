@@ -474,7 +474,7 @@ module.exports = {
                             self.mdl_filter_end_date = item.fieldValue;
                             self.filter_params[item.fieldName] = item.fieldValue;
                         }
-                        else if(item.fieldName=='otherPartyId')
+                        else if(item.fieldName=='accountPartyId')
                         {
                             self.searchPartyList(item.fieldValue, "Account").then(function(resp){
                                     if(resp.length > 0)
@@ -482,7 +482,7 @@ module.exports = {
                                         self.mdl_filter_account = resp[0];;
                                     }
                               });
-                              self.filter_params[item.fieldName] = item.fieldValue;
+                              self.filter_params["otherPartyId"] = item.fieldValue;
                         }
                     }
                     return item;

@@ -642,7 +642,7 @@ module.exports = {
         async getAllRelatedAccounts(partyId) {
             var vm = this;
             var allParms = $.extend({ partyId: partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/contacts/relatedAccounts", headers:{Accept:'application/json'}, data:allParms,
+            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/contacts/getRelatedAccounts", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError
             });
         }

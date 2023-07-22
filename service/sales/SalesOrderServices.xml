@@ -173,7 +173,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
-    <service verb="get" noun="StoreOptions">
+    <service verb="find" noun="StoreOptions">
         <out-parameters>
             <parameter name="storeOptions" type="list"/>
         </out-parameters>
@@ -183,7 +183,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="ShippingDetails">
+    <service verb="find" noun="ShippingDetails">
         <in-parameters>
             <parameter name="orderId" />
             <parameter name="orderPartSeqId" />
@@ -201,7 +201,7 @@ along with this software (see the LICENSE.md file). If not, see
                             postalContactMechId:postalContactMechId, getRates:true]"/>
         </actions>
     </service>
-    <service verb="get" noun="CurBillToContactMech">
+    <service verb="find" noun="CurBillToContactMech">
         <in-parameters>
             <parameter name="orderId" />
             <parameter name="orderPartSeqId" />
@@ -217,7 +217,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find-one>
         </actions>
     </service>
-    <service verb="get" noun="PaymentTerms">
+    <service verb="find" noun="PaymentTerms">
         <out-parameters>
             <parameter name="termList" type="List"/>
         </out-parameters>
@@ -228,7 +228,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="GeoCountries">
+    <service verb="find" noun="GeoCountries">
         <in-parameters>
             <parameter name="geoName" />
         </in-parameters>
@@ -241,7 +241,7 @@ along with this software (see the LICENSE.md file). If not, see
             <order-by field-name="geoName"/></entity-find>
         </actions>
     </service>
-    <service verb="get" noun="AssetClasses">
+    <service verb="find" noun="AssetClasses">
         <out-parameters>
             <parameter name="assetClassList" type="List"/>
         </out-parameters>
@@ -252,7 +252,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="PaymentMethods">
+    <service verb="find" noun="PaymentMethods">
         <in-parameters>
             <parameter name="customerBillToPartyId" />
         </in-parameters>
@@ -265,7 +265,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="ProductPrice">
+    <service verb="find" noun="ProductPrice">
         <in-parameters>
             <parameter name="productId" required="true"/><parameter name="quantity"/>
             <parameter name="priceUomId"/><parameter name="pricePurposeEnumId"/>
@@ -289,7 +289,7 @@ along with this software (see the LICENSE.md file). If not, see
         </actions>
         <default-response type="none"/>
     </service>
-    <service verb="get" noun="FormattedNumbers">
+    <service verb="find" noun="FormattedNumbers">
         <in-parameters>
             <parameter name="numberToFormat"/>
             <parameter name="uomID"/>
@@ -301,7 +301,7 @@ along with this software (see the LICENSE.md file). If not, see
             <set field="formattedGrandTotal" from="ec.l10n.formatCurrency(numberToFormat ?: 0, uomID)"/>
         </actions>
     </service>
-    <service verb="get" noun="ItemDetail">
+    <service verb="find" noun="ItemDetail">
         <in-parameters>
             <parameter name="itemTypeEnumId"/>
         </in-parameters>

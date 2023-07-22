@@ -408,7 +408,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
-    <service verb="get" noun="PartyDetail">
+    <service verb="find" noun="PartyDetail">
         <in-parameters>
             <parameter name="partyId" required="true" />
         </in-parameters>
@@ -421,7 +421,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find-one>
         </actions>
     </service>
-    <service verb="get" noun="AllSalesPerson">
+    <service verb="find" noun="AllSalesPerson">
         <in-parameters>
             <parameter name="partyIdList" type="List" />
         </in-parameters>
@@ -436,7 +436,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="SavedFinds">
+    <service verb="find" noun="SavedFinds">
         <in-parameters>
             <parameter name="formLocation" required="true"/>
         </in-parameters>
@@ -468,7 +468,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
-    <service verb="post" noun="SavedFinds">
+    <service verb="create" noun="SavedFinds">
         <in-parameters>
             <parameter name="description" required="true"/>
             <parameter name="formLocation" required="true"/>
@@ -489,7 +489,7 @@ along with this software (see the LICENSE.md file). If not, see
                           in-map="[formListFindId:context.formListFindId, userId:ec.user.userId]"/>
         </actions>
     </service>
-    <service verb="post" noun="SavedFindsFields">
+    <service verb="create" noun="SavedFindsFields">
         <in-parameters>
             <parameter name="formListFindId" required="true"/>
             <parameter name="fieldName" />
@@ -507,7 +507,7 @@ along with this software (see the LICENSE.md file). If not, see
                          fieldOperator:fieldOperator, fieldFrom:fieldFrom, fieldThru:fieldThru]"/>
         </actions>
     </service>
-    <service verb="get" noun="PartyNoteList">
+    <service verb="find" noun="PartyNoteList">
         <in-parameters>
             <parameter name="partyId" required="true"/>
         </in-parameters>
@@ -541,7 +541,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
-    <service verb="get" noun="OpportunityNoteList">
+    <service verb="find" noun="OpportunityNoteList">
         <in-parameters>
             <parameter name="salesOpportunityId" required="true"/>
         </in-parameters>
@@ -575,7 +575,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
-    <service verb="get" noun="PhoneOptions">
+    <service verb="find" noun="PhoneOptions">
         <out-parameters>
             <parameter name="phoneOptions"/>
         </out-parameters>
@@ -586,7 +586,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="WebOptions">
+    <service verb="find" noun="WebOptions">
         <out-parameters>
             <parameter name="webOptions"/>
         </out-parameters>
@@ -597,7 +597,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="EmailOptions">
+    <service verb="find" noun="EmailOptions">
         <out-parameters>
             <parameter name="emailOptions"/>
         </out-parameters>
@@ -608,7 +608,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="AllTask">
+    <service verb="find" noun="AllTask">
         <in-parameters>
             <parameter name="partyId" required="true"/>
         </in-parameters>
@@ -621,7 +621,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="Statuses">
+    <service verb="find" noun="Statuses">
         <out-parameters>
             <parameter name="statusList" type="List"/>
         </out-parameters>
@@ -633,7 +633,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="SalesOpportunity">
+    <service verb="find" noun="SalesOpportunity">
         <in-parameters>
             <parameter name="partyId" required="true"/>
         </in-parameters>
@@ -646,7 +646,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="SalesOrders">
+    <service verb="find" noun="SalesOrders">
         <in-parameters>
             <parameter name="partyId" required="true"/>
         </in-parameters>
@@ -659,7 +659,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="OrderStatuses">
+    <service verb="find" noun="OrderStatuses">
         <out-parameters>
             <parameter name="statusList" type="List"/>
         </out-parameters>
@@ -671,7 +671,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="AllRelatedAccounts">
+    <service verb="find" noun="AllRelatedAccounts">
         <in-parameters>
             <parameter name="partyId" required="true"/>
         </in-parameters>
@@ -766,7 +766,7 @@ along with this software (see the LICENSE.md file). If not, see
             </else></if>
         </actions>
     </service>
-    <service verb="get" noun="ContactList">
+    <service verb="find" noun="ContactList">
         <in-parameters>
             <parameter name="partyId" required="true"/>
         </in-parameters>
@@ -806,7 +806,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
-    <service verb="get" noun="UOM">
+    <service verb="find" noun="UOM">
         <out-parameters>
             <parameter name="statusList" type="List"/>
         </out-parameters>
@@ -817,7 +817,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="OpportunityTasks">
+    <service verb="find" noun="OpportunityTasks">
         <in-parameters>
             <parameter name="salesOpportunityId" required="true"/>
         </in-parameters>
@@ -855,7 +855,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
-    <service verb="get" noun="SingleSalesOpportunity">
+    <service verb="find" noun="SingleSalesOpportunity">
         <in-parameters>
             <parameter name="salesOpportunityId" required="true"/>
         </in-parameters>
@@ -875,7 +875,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find-one>
         </actions>
     </service>
-    <service verb="get" noun="OpportunityContacts">
+    <service verb="find" noun="OpportunityContacts">
         <in-parameters>
             <parameter name="salesOpportunityId" required="true"/>
             <parameter name="roleTypeId"/>
@@ -910,7 +910,7 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
-    <service verb="get" noun="OppContactOptions">
+    <service verb="find" noun="OppContactOptions">
         <in-parameters>
             <parameter name="accountPartyId" required="true"/>
         </in-parameters>
@@ -924,7 +924,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="StageOptions">
+    <service verb="find" noun="StageOptions">
         <out-parameters>
             <parameter name="stageList" />
         </out-parameters>
@@ -934,7 +934,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="SalesTeam">
+    <service verb="find" noun="SalesTeam">
         <out-parameters>
             <parameter name="stageList" />
         </out-parameters>
@@ -945,7 +945,7 @@ along with this software (see the LICENSE.md file). If not, see
             </entity-find>
         </actions>
     </service>
-    <service verb="get" noun="SalesPersonOptions">
+    <service verb="find" noun="SalesPersonOptions">
         <out-parameters>
             <parameter name="personOptions" />
         </out-parameters>

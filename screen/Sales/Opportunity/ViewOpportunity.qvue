@@ -755,7 +755,7 @@ module.exports = {
         getStageOptions () {
             var self = this;
             var allParms = { moquiSessionToken:self.$root.moquiSessionToken };
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/stageOptions", headers:{Accept:'application/json'}, data:allParms,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getStageOptions", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.stage_options_master = resp.stageList;
                     self.stage_options = JSON.parse(JSON.stringify(resp.stageList));
@@ -844,7 +844,7 @@ module.exports = {
         getStatuses () {
             var self = this;
             var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks/statuses", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks/getStatuses", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.status_options_master = resp.statusList;
                     self.status_options = resp.statusList;
@@ -922,7 +922,7 @@ module.exports = {
               get: (searchParams, prop) => searchParams.get(prop),
             });
             var allParams = $.extend({ salesOpportunityId: params.salesOpportunityId, moquiSessionToken:self.$root.moquiSessionToken }, {});
-            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/singleOpportunity", headers:{Accept:'application/json'}, data:allParams,
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getSingleOpportunity", headers:{Accept:'application/json'}, data:allParams,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.current_opportunity = resp.opportunity;
                     self.formatted_estimated_amount = resp.formatted_estimated_amount;
@@ -960,7 +960,7 @@ module.exports = {
               get: (searchParams, prop) => searchParams.get(prop),
             });
             var allParms = $.extend({ accountPartyId: self.current_opportunity.accountPartyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/contactOptions", headers:{Accept:'application/json'}, data:allParms,
+            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getContactOptions", headers:{Accept:'application/json'}, data:allParms,
                 error:moqui.handleAjaxError, success:function(resp) {
                     self.contact_options = resp.contactList.map(function(item){
                         item.label = (item.firstName || '') + " " + (item.lastName || '');
@@ -1121,7 +1121,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({ salesOpportunityId: params.salesOpportunityId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/notes", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getNotes", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.partyNoteList = resp.opportunityNoteList;
                     }
@@ -1175,7 +1175,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParams = $.extend({ salesOpportunityId: params.salesOpportunityId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/tasks", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getTasks", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.task_list = resp.weList;
                     }
@@ -1187,7 +1187,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParms = $.extend({ roleTypeId: "Contact", salesOpportunityId: params.salesOpportunityId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/contacts", headers:{Accept:'application/json'}, data:allParms,
+                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getContacts", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         vm.opp_contacts = resp.contactList;
                     }
@@ -1199,7 +1199,7 @@ module.exports = {
                   get: (searchParams, prop) => searchParams.get(prop),
                 });
                 var allParms = $.extend({ roleTypeId: "SalesRepresentative", salesOpportunityId: params.salesOpportunityId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
-                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/contacts", headers:{Accept:'application/json'}, data:allParms,
+                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getContacts", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         vm.sales_team = resp.contactList;
                     }
@@ -1208,7 +1208,7 @@ module.exports = {
             getSalesPersonOptions () {
                 var self = this;
                 var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
-                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/salesTeamOptions", headers:{Accept:'application/json'}, data:allParams,
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/opportunity/getSalesTeamOptions", headers:{Accept:'application/json'}, data:allParams,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.sales_team_options_master = resp.personOptions.map(function(item){
                             item["label"] = (item.firstName || '') + " " + (item.lastName || '');
