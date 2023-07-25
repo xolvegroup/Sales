@@ -256,6 +256,12 @@ along with this software (see the LICENSE.md file). If not, see
         <resource name="updateShipToContactMech" require-authentication="anonymous-all">
             <method type="post"><service name="sales.AgreementServices.update#ShipToContactMech"/></method>
         </resource>
+        <resource name="getPaymentMethod" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#PaymentMethod"/></method>
+        </resource>
+        <resource name="updatePaymentMethod" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#PaymentMethod"/></method>
+        </resource>
     </resource>
     <resource name="orders" require-authentication="anonymous-view">
         <method type="get"><service name="sales.SalesOrderServices.find#Orders"/></method>

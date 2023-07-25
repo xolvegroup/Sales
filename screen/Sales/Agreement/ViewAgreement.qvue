@@ -243,6 +243,39 @@
                         </div>
                     </q-card>
                 </q-card-section>
+
+                <q-card-section>
+                    <q-card flat bordered style="min-height: 62px;" class="custom_radius q-pa-sm">
+
+                        <div class="text-h6">Payment Information
+                        <q-btn icon="open_in_new" rounded @click="add_payment=true" class="text-blue q-px-sm q-mt-xs text-capitalize float-right" outline dense label="Select Payment Method"></q-btn>
+                        </div>
+                        <div class="row" v-if="part_payment_info">
+                            <div class="row q-my-sm full-width">
+                                <strong v-if="part_payment_info.paymentMethod?.description">{{part_payment_info.paymentMethod?.description}}<br></strong>
+                                <div class="full-width q-py-xs" v-if="part_payment_info.bankAccount">
+                                    <span>{{part_payment_info.bankAccount.bankName}} (<span v-if="part_payment_info.bankAccountTypeEnum?.description">{{part_payment_info.bankAccountTypeEnum?.description}}</span><span v-else>part_payment_info.bankAccount.typeEnumId</span>)<br></span>
+                                    <span>{{part_payment_info.bankAccount.routingNumber}}:{{part_payment_info.bankAccount.accountNumber}}<br></span>
+                                </div>
+                                <div class="full-width q-py-xs" v-if="part_payment_info.creditCard">
+                                    <span><span v-if="part_payment_info.creditCardTypeEnum?.description">{{part_payment_info.creditCardTypeEnum?.description}}</span><span v-else>part_payment_info.creditCard.creditCardTypeEnumId</span><span v-if="part_payment_info.maskedCardNumber"> {{part_payment_info.maskedCardNumber}}</span><span v-if="part_payment_info.creditCard.expireDate"> {{part_payment_info.creditCard.expireDate}}</span></span>
+                                </div>
+                                <strong class="full-width" v-if="part_payment_info.paymentMethod?.firstNameOnAccount">{{part_payment_info.paymentMethod?.firstNameOnAccount}}<span v-if="part_payment_info.paymentMethod?.middleNameOnAccount"> {{part_payment_info.paymentMethod.middleNameOnAccount}}</span><span v-if="part_payment_info.paymentMethod?.lastNameOnAccount"> {{part_payment_info.paymentMethod?.lastNameOnAccount}}</span><br></strong>
+                                <strong class="full-width" v-if="part_payment_info.paymentMethod?.companyNameOnAccount">{{part_payment_info.paymentMethod?.companyNameOnAccount}}<br></strong>
+                                <div class="full-width" v-if="part_payment_info.address" v-html="part_payment_info.address"></div>
+                                <div class="full-width q-py-xs" v-if="part_payment_info.telecomNumber">
+                                    P: <span v-if="part_payment_info.telecomNumber.countryCode">{{part_payment_info.telecomNumber.countryCode}}-</span>
+                                    <span v-if="part_payment_info.telecomNumber.areaCode">{{part_payment_info.telecomNumber.areaCode}}-</span>
+                                    <span v-if="part_payment_info.telecomNumber.contactNumber">{{part_payment_info.telecomNumber.contactNumber}}</span>
+                                    <span v-if="part_payment_info.telecomNumber.extension">x{{part_payment_info.telecomNumber.extension}}</span>
+                                </div>
+                                <div class="full-width q-py-xs" v-if="part_payment_info.emailAddress">
+                                    <a :href="'mailto:' + part_payment_info.emailAddress">{{part_payment_info.emailAddress}}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </q-card>
+                </q-card-section>
             </q-card>
 
             <q-card flat bordered :class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'" class="q-pa-sm q-mt-sm">
@@ -692,8 +725,8 @@
                                 input-debounce="0"
                                 option-value="value"
                                 option-label="label"
-                                :options="postal_address_list"
-                                @filter="filterFnBillAddress"
+                                :options="ship_to_postal_address_list"
+                                @filter="filterFnShipAddress"
                               >
                                 <template v-slot:no-option>
                                   <q-item>
@@ -710,12 +743,61 @@
             </q-card-actions>
           </q-card>
         </q-dialog>
+        <q-dialog v-model="add_payment">
+          <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+            <q-card-section>
+            <div class="row q-px-sm">
+                <div class="col-10">
+                    <div class="text-h5">Select Payment Method</div>
+                </div>
+                <div class="col-2 text-right">
+                    <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+                </div>
+            </div>
+            </q-card-section>
+
+            <q-separator class="q-mx-none"></q-separator>
+
+            <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                            <q-select rounded
+                                label="Payment Method"
+                                dense
+                                outlined
+                                v-model="new_payment_method"
+                                use-input
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                input-debounce="0"
+                                option-value="paymentMethodId"
+                                option-label="label"
+                                :options="payment_options"
+                                @filter="filterFnPaymentMethod"
+                              >
+                                <template v-slot:no-option>
+                                  <q-item>
+                                    <q-item-section class="text-grey">
+                                      No results
+                                    </q-item-section>
+                                  </q-item>
+                                </template>
+                              </q-select>
+            </q-card-section>
+
+            <q-card-actions class="q-mx-sm q-mb-sm" align="left">
+              <q-btn size="16px" rounded :disabled="!(new_payment_method)" @click="updatePaymentMethod" outline dense label="Add"  class="text-capitalize" color="primary" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
     </div>
 </template>
 <script>
 module.exports = {
     data: function () {
         return {
+            payment_options_master: [],
+            payment_options: [],
+            part_payment_info: {},
+            add_payment: false,
+            new_payment_method: null,
             agreement_party: {},
             customer_ship_to_detail: {},
             ship_to_address: null,
@@ -799,6 +881,19 @@ module.exports = {
         }
     },
     methods: {
+            filterFnPaymentMethod (val, update) {
+                let self = this;
+                  if (val === '') {
+                    update(() => {
+                      this.payment_options = self.payment_options_master
+                    })
+                    return
+                  }
+                  update(() => {
+                      const needle = val.toLowerCase()
+                      this.payment_options = self.payment_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                    })
+              },
             filterFnRole (val, update) {
                 let self = this;
                   if (val === '') {
@@ -838,6 +933,19 @@ module.exports = {
                 var allParms = {term: search_keyword ,agreementId: params.agreementId, pageIndex: 0, hasAllParms: true, moquiSessionToken:self.$root.moquiSessionToken };
                 return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getProductList", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError
+                });
+            },
+            getPaymentMethods () {
+                var self = this;
+                var allParams = {moquiSessionToken:self.$root.moquiSessionToken, customerBillToPartyId: self.bill_to_party_det.partyId};
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/orders/getPaymentMethods", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.payment_options_master = resp.paymentOptions.map(function(item){
+                            item["label"] = item.typeDescription + " - " + (item.description||'') + (item.gatewayDescription ? (" - " + item.gatewayDescription):'');
+                            return item;
+                        });
+                        self.payment_options = JSON.parse(JSON.stringify(self.payment_options_master));
+                    }
                 });
             },
             filterFnAccount(val, update, abort) {
@@ -894,6 +1002,19 @@ module.exports = {
                   this.postal_address_list = self.postal_address_list_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
                 })
           },
+          filterFnShipAddress (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.ship_to_postal_address_list = self.ship_to_postal_address_list_master
+                })
+                return
+              }
+              update(() => {
+                  const needle = val.toLowerCase()
+                  this.ship_to_postal_address_list = self.ship_to_postal_address_list_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+                })
+          },
           filterFnCurrency (val, update) {
             let self = this;
               if (val === '') {
@@ -938,6 +1059,26 @@ module.exports = {
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.$q.notify({
                             message: 'Updated successfully.',
+                            position: 'bottom-left',
+                          });
+                    }
+                });
+            },
+            updatePaymentMethod () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                self.agreement_detail["moquiSessionToken"] = self.$root.moquiSessionToken;
+                self.agreement_detail["agreementId"] = params.agreementId;
+                self.agreement_detail["paymentMethodId"] = self.new_payment_method.paymentMethodId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updatePaymentMethod", headers:{Accept:'application/json'}, data:self.agreement_detail,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.add_payment = false;
+                        self.new_payment_method = null;
+                        self.getPaymentMethod();
+                        self.$q.notify({
+                            message: 'Added successfully.',
                             position: 'bottom-left',
                           });
                     }
@@ -1037,6 +1178,7 @@ module.exports = {
                             return item.contactMechPurposeId === "PostalShippingDest";
                         });
                         self.getAgreementParties();
+                        self.getPaymentMethod();
                         self.getShipToPartyContactInfo(self.agreement_detail.otherPartyId);
                         self.agreement_detail_fromDate = self.formatDate(self.agreement_detail.fromDate);
                         self.agreement_detail_thruDate = self.formatDate(self.agreement_detail.thruDate);
@@ -1095,6 +1237,27 @@ module.exports = {
                         self.bill_to_party_det = resp.billToParty;
                         if (resp.billToParty) {
                             self.getPartyContactInfo(resp.billToParty.partyId);
+                            self.getPaymentMethods();
+                        }
+                    }
+                });
+            },
+            getPaymentMethod () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = {agreementId: params.agreementId, moquiSessionToken:self.$root.moquiSessionToken };
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getPaymentMethod", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.part_payment_info = resp.methodInfo;
+                        if (self.part_payment_info.postalAddress) {
+                            self.part_payment_info["address"] = (self.part_payment_info.postalAddress?.address1 || "") + (self.part_payment_info.postalAddress?.unitNumber ? (" #" + (self.part_payment_info.postalAddress?.unitNumber || "")):"")
+                                    + "<br>" + (self.part_payment_info.postalAddress?.address2?self.part_payment_info.postalAddress?.address2 + ", " : "") + (self.part_payment_info.postalAddress?.city || "")
+                                    + ", " + (self.part_payment_info.postalAddressStateGeo && self.part_payment_info.postalAddressStateGeo?.geoCodeAlpha2 ? self.part_payment_info.postalAddressStateGeo?.geoCodeAlpha2 :
+                                    (self.part_payment_info.postalAddressStateGeo && self.part_payment_info.postalAddressStateGeo?.geoName ? self.part_payment_info.postalAddressStateGeo?.geoName:""))
+                                    + " " + (self.part_payment_info.postalAddress?.postalCode || "") + (self.part_payment_info.postalAddress?.postalCodeExt ? ("-" +
+                                    self.part_payment_info.postalAddress?.postalCodeExt):"") + " " + (self.part_payment_info.postalAddressCountryGeo?.geoCodeAlpha3 || "");
                         }
                     }
                 });
@@ -1303,6 +1466,7 @@ module.exports = {
                         shipToPostalContactMechId: self.ship_to_address.value};
                 $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/agreement/updateShipToContactMech", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
+                        debugger;
                         self.selected_ship_to_address = self.ship_to_postal_addresses_master.find(function(item){
                             item["add_last_line"] = (item.postalAddress.city || "") + ", " + (item.postalAddressStateGeo && item.postalAddressStateGeo?.geoCodeAlpha2 ? item.postalAddressStateGeo?.geoCodeAlpha2 :
                                 (item.postalAddressStateGeo && item.postalAddressStateGeo.geoName ? item.postalAddressStateGeo.geoName:""))
