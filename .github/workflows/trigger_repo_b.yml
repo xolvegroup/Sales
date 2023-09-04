@@ -1,4 +1,4 @@
-name: trigger test in another repository 
+name: trigger CI in moquiprod/demo repository 
 on:
   push:
     branches:
@@ -6,7 +6,7 @@ on:
 jobs:
    trigger-test:
       runs-on:  ubuntu-latest
-        #build containner #deploy container
+        
 
 
       steps:
