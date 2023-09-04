@@ -1,0 +1,18 @@
+name: trigger test in another repository 
+on:
+  push:
+    branches:
+       - "main"
+jobs:
+   trigger-test:
+      runs-on:  ubuntu-latest
+        #build containner #deploy container
+
+
+      steps:
+        - name: trigger the automated test in another repository 
+          uses: peter-evans/repository-dispatch@v2
+          with:
+            token:  ${{ secrets.REPO_B_TOKEN }}
+            repository:  xolvegroup/moquiprod
+            event-type:  my-event-sales
