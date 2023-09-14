@@ -1251,7 +1251,7 @@ module.exports = {
                 $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/agreement/getPaymentMethod", headers:{Accept:'application/json'}, data:allParms,
                     error:moqui.handleAjaxError, success:function(resp) {
                         self.part_payment_info = resp.methodInfo;
-                        if (self.part_payment_info.postalAddress) {
+                        if (self.part_payment_info && self.part_payment_info.postalAddress) {
                             self.part_payment_info["address"] = (self.part_payment_info.postalAddress?.address1 || "") + (self.part_payment_info.postalAddress?.unitNumber ? (" #" + (self.part_payment_info.postalAddress?.unitNumber || "")):"")
                                     + "<br>" + (self.part_payment_info.postalAddress?.address2?self.part_payment_info.postalAddress?.address2 + ", " : "") + (self.part_payment_info.postalAddress?.city || "")
                                     + ", " + (self.part_payment_info.postalAddressStateGeo && self.part_payment_info.postalAddressStateGeo?.geoCodeAlpha2 ? self.part_payment_info.postalAddressStateGeo?.geoCodeAlpha2 :
