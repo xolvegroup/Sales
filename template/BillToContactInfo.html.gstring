@@ -1,10 +1,10 @@
 <address>
-<%if (curBillToInfo?.postalAddress?.toName) {%><strong>${ec.l10n.localize('To')}: ${contactInfo.postalAddress.toName}</strong><br><%}%>
-<%if (curBillToInfo?.postalAddress?.attnName) {%><strong>${ec.l10n.localize('Attn')}: ${contactInfo.postalAddress.attnName}</strong><br><%}%>
-<%if (curBillToInfo?.postalAddress?.address1) {%>${contactInfo.postalAddress.address1}<%if (contactInfo.postalAddress.unitNumber) {%> #${contactInfo.postalAddress.unitNumber}<%}%><br><%}%>
-<%if (curBillToInfo?.postalAddress?.address2) {%>${contactInfo.postalAddress.address2}<br><%}%>
-<%if (curBillToInfo?.postalAddress) {%>${contactInfo.postalAddress.city ?: ''}<%if (contactInfo.postalAddressStateGeo?.geoCodeAlpha2) {%>, ${contactInfo.postalAddressStateGeo.geoCodeAlpha2} <%} else if (contactInfo.postalAddressStateGeo?.geoName) {%> ${contactInfo.postalAddressStateGeo.geoName} <%}%>${contactInfo.postalAddress.postalCode ?: ''}<%if (contactInfo.postalAddress.postalCodeExt) {%>-${contactInfo.postalAddress.postalCodeExt}<%}%><%if (contactInfo.postalAddressCountryGeo?.geoCodeAlpha3) {%> ${contactInfo.postalAddressCountryGeo.geoCodeAlpha3}<%}%><br><%}%>
-<%if (curBillToInfo?.telecomNumber) {%><abbr title="${ec.l10n.localize('Phone')}">T:</abbr> <%if (contactInfo.telecomNumber.countryCode) {%>${contactInfo.telecomNumber.countryCode}-<%}%><%if (contactInfo.telecomNumber.areaCode) {%>${contactInfo.telecomNumber.areaCode}-<%}%>${contactInfo.telecomNumber.contactNumber ?: ''}<%if (contactInfo.telecomPartyContactMech?.extension) {%> x${contactInfo.telecomPartyContactMech.extension}<%}%><br><%}%>
-<%if (curBillToInfo?.emailAddress) {%><a href="mailto:${contactInfo.emailAddress}">${contactInfo.emailAddress}</a><%}%>
-<%if (curBillToInfo?.webAddress) {%><a href="${contactInfo.webAddress}" target="_blank">${contactInfo.webAddress}</a><%}%>
+<%if (curBillToInfo?.postalAddress?.toName) {%><strong>${ec.l10n.localize('To')}: ${curBillToInfo.postalAddress.toName}</strong><br><%}%>
+<%if (curBillToInfo?.postalAddress?.attnName) {%><strong>${ec.l10n.localize('Attn')}: ${curBillToInfo.postalAddress.attnName}</strong><br><%}%>
+<%if (curBillToInfo?.postalAddress?.address1) {%>${curBillToInfo.postalAddress.address1}<%if (curBillToInfo.postalAddress.unitNumber) {%> #${curBillToInfo.postalAddress.unitNumber}<%}%><br><%}%>
+<%if (curBillToInfo?.postalAddress?.address2) {%>${curBillToInfo.postalAddress.address2}<br><%}%>
+<%if (curBillToInfo?.postalAddress) {%>${curBillToInfo.postalAddress.city ?: ''}<%if (curBillToInfo.postalAddressStateGeo?.geoCodeAlpha2) {%>, ${curBillToInfo.postalAddressStateGeo.geoCodeAlpha2} <%} else if (curBillToInfo.postalAddressStateGeo?.geoName) {%> ${curBillToInfo.postalAddressStateGeo.geoName} <%}%>${curBillToInfo.postalAddress.postalCode ?: ''}<%if (curBillToInfo.postalAddress.postalCodeExt) {%>-${curBillToInfo.postalAddress.postalCodeExt}<%}%><%if (curBillToInfo.postalAddressCountryGeo?.geoCodeAlpha3) {%> ${curBillToInfo.postalAddressCountryGeo.geoCodeAlpha3}<%}%><br><%}%>
+<%if (curBillToInfo?.telecomNumber) {%><abbr title="${ec.l10n.localize('Phone')}">T:</abbr> <%if (curBillToInfo.telecomNumber.countryCode) {%>${curBillToInfo.telecomNumber.countryCode}-<%}%><%if (curBillToInfo.telecomNumber.areaCode) {%>${curBillToInfo.telecomNumber.areaCode}-<%}%>${curBillToInfo.telecomNumber.contactNumber ?: ''}<%if (curBillToInfo.telecomPartyContactMech?.extension) {%> x${curBillToInfo.telecomPartyContactMech.extension}<%}%><br><%}%>
+<%if (curBillToInfo?.emailAddress) {%><a href="mailto:${curBillToInfo.emailAddress}">${curBillToInfo.emailAddress}</a><%}%>
+<%if (curBillToInfo?.webAddress) {%><a href="${curBillToInfo.webAddress}" target="_blank">${curBillToInfo.webAddress}</a><%}%>
 </address>

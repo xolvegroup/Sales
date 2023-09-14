@@ -1,0 +1,1439 @@
+<template>
+    <div>
+        <div class="row">
+        <div class="col-3">
+            <q-card v-if="current_party" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius text-weight-medium detail_cls q-pa-sm my-card">
+                Contact: <q-chip :label="(current_party.firstName||'') + (current_party.lastName||'')" color="grey" text-color="white"></q-chip>
+            </q-card>
+
+
+            <q-card v-if="webAddressList.length > 0" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls q-mt-sm my-card">
+              <q-card-section class="custom_height_with_scroll q-pt-none q-px-sm">
+                <q-list>
+                              <q-item :key="item.webContactMechId" v-for="item in webAddressList" style="min-height:unset" class="q-py-none q-px-sm">
+                                <q-item-section>
+                                  <q-item-label> <a :href="item.webAddress" target="_blank">{{item.webAddress}}</a> </q-item-label>
+                                </q-item-section>
+
+                                <q-item-section style="display:block;" side top>
+                                  <q-btn rounded @click="openEditWeb(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                  <q-btn rounded outline @click="confirmDelete(item)" dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                                </q-item-section>
+                              </q-item>
+</q-list>
+              </q-card-section>
+            </q-card>
+            <q-card v-if="emailAddressList.length > 0" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls q-mt-sm my-card">
+              <q-card-section class="custom_height_with_scroll q-pt-none q-px-sm">
+                <q-list>
+
+                  <q-item :key="item.emailContactMechId" v-for="item in emailAddressList" style="min-height:unset" class="q-py-none q-px-sm">
+                    <q-item-section>
+                      <q-item-label><a :href="'mailto:' + item.emailAddress">{{item.emailAddress}}</a></q-item-label>
+                    </q-item-section>
+
+                    <q-item-section style="display:block;" side top>
+                      <q-btn rounded @click="openEditEmail(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                      <q-btn rounded outline @click="confirmDelete(item)" dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                    </q-item-section>
+                  </q-item>
+                  </q-list>
+              </q-card-section>
+            </q-card>
+
+            <q-card v-if="telecomNumberList.length > 0" flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls q-mt-sm my-card">
+              <q-card-section class="custom_height_with_scroll q-pt-none q-px-sm">
+                <q-list>
+
+
+                      <q-item :key="item.telecomContactMechId" v-for="item in telecomNumberList" style="min-height:unset" class="q-py-none q-px-sm">
+                        <q-item-section>
+                          <q-item-label class="text-italic"> T: {{item.telecomNumber.countryCode}}-{{item.telecomNumber.areaCode}}-{{item.telecomNumber.contactNumber}} X{{item.telecomPartyContactMech.extension}} </q-item-label>
+                        </q-item-section>
+
+                        <q-item-section style="display:block;" side top>
+                          <q-btn rounded @click="openEditPhone(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                          <q-btn rounded outline @click="confirmDelete(item)" dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                        </q-item-section>
+                      </q-item>
+                  </q-list>
+              </q-card-section>
+            </q-card>
+
+
+              <q-item style="min-height:unset" class="q-py-sm q-px-xs">
+                <q-item-section>
+                  <q-item-label>
+                    <q-btn-dropdown rounded dense outline icon="add" class="text-capitalize" color="primary" label="Add New">
+                      <q-list>
+                        <q-item>
+                          <q-item-section>
+                            <q-btn rounded @click="add_phone_modal=true" outline dense icon="open_in_new" class="q-mx-sm q-mt-sm text-capitalize text-primary ">&nbsp;Phone</q-btn>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item>
+                          <q-item-section>
+                            <q-btn rounded @click="add_email_modal=true" outline dense icon="open_in_new" class="q-mx-sm text-capitalize text-primary ">&nbsp;Email</q-btn>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item >
+                          <q-item-section>
+                            <q-btn rounded @click="add_url_modal=true" outline dense icon="open_in_new" class="q-mx-sm q-mb-sm text-primary ">&nbsp;&nbsp;URL</q-btn>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-btn-dropdown>
+                  </q-item-label>
+                </q-item-section>
+              </q-item>
+
+
+
+        </div>
+        <div class="col-6 q-px-sm">
+        <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card">
+            <q-tabs
+                v-model="tab"
+                  dense
+                  class="text-grey-8"
+                  active-color="primary"
+                  indicator-color="primary"
+                  align="justify"
+                  narrow-indicator
+              >
+                <q-tab name="Notes" class="text-capitalize" label="Notes"></q-tab>
+                <q-tab name="Tasks" class="text-capitalize" label="Tasks" ></q-tab>
+                <q-tab name="Calls" class="text-capitalize" label="Calls" ></q-tab>
+                <q-tab name="Emails" class="text-capitalize" label="Emails" ></q-tab>
+                <q-tab name="Meetings" class="text-capitalize" label="Meetings" ></q-tab>
+              </q-tabs>
+
+              <q-separator class="q-px-none"></q-separator>
+
+              <q-tab-panels class="bg-transparent" v-model="tab" animated>
+                  <q-tab-panel class="q-px-none" name="Notes">
+
+                    <q-card flat class="detail_cls my-card">
+                      <q-card-section style="display:flow-root">
+                        <div class="text-h6 text-primary float-left q-pt-sm">Notes</div>
+                        <q-btn rounded @click="add_note_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add Note</q-btn>
+                      </q-card-section>
+
+                      <q-card-section class="q-pt-none custom_height_with_scroll_main" style="padding: 0px">
+                            <q-list separator>
+                              <q-item class="q-py-md" :key="item.noteDate" v-for="item in partyNoteList">
+                                <q-item-section>
+                                  <q-item-label v-html="getHtmlForMD(item.noteText.replaceAll('\n', '<br>'))"></q-item-label>
+                                  <q-item-label class="q-pt-sm" caption lines="2">
+                                    <q-icon dense name="person"></q-icon> <span class="q-ml-sm">{{item.added_by}}</span>
+                                    <q-icon dense name="clock"></q-icon> <span class="q-ml-sm">{{formatDateTime(item.noteDate)}}</span>
+                                  </q-item-label>
+                                </q-item-section>
+
+                                <q-item-section side top>
+                                  <q-btn rounded @click="openEditNote(item)" outline dense icon="edit" class="text-capitalize text-primary"></q-btn>
+                                </q-item-section>
+                              </q-item>
+                            </q-list>
+                      </q-card-section>
+                    </q-card>
+
+                  </q-tab-panel>
+
+                  <q-tab-panel class="q-px-none" name="Tasks">
+
+                    <q-card flat class="detail_cls my-card">
+                      <q-card-section style="display:flow-root">
+                        <div class="text-h6 text-primary float-left q-pt-sm">Tasks</div>
+                        <q-btn rounded @click="add_task_modal=true" outline dense icon="add" class="text-capitalize text-primary float-right">New Task</q-btn>
+                      </q-card-section>
+
+                      <q-card-section >
+                        <div>
+                            Tasks created here will be associated with this sales account and assigned to the person who creates them.
+                        </div>
+                      </q-card-section>
+
+                      <q-card-section class="custom_height_with_scroll_main q-pt-none" style="padding: 0px">
+                            <q-table
+                              :data="task_list"
+                              :columns="task_columns"
+                              row-key="name"
+                              hide-bottom
+                              flat
+                              class="bg-transparent"
+                              :pagination.sync="pagination"
+                            >
+                                <template v-slot:body-cell-action="props">
+                                    <q-td key="action" :props="props">
+                                        <q-btn rounded @click="openEditTask(props.row)" outline dense icon="edit" class="text-capitalize text-primary" label="Edit"></q-btn>
+                                    </q-td>
+                                </template>
+                                <template v-slot:body-cell-description="props">
+                                    <q-td key="description" :props="props">
+                                        <span v-html="getHtmlForMD(props.row.description.replaceAll('\n', '<br>'))"></span>
+                                    </q-td>
+                                </template>
+                                <template v-slot:body-cell-status="props">
+                                  <q-td :props="props">
+                                    <q-chip
+                                      :style="'background-color: ' + status_color_map[props.row.statusId]"
+                                      text-color="white"
+                                      dense
+                                      round
+                                    > <span class="q-mr-xs" style="font-size:22px;">●</span> {{getStatusName(props.row.statusId)}}
+                                    </q-chip>
+                                  </q-td>
+                                </template>
+                            </q-table>
+                      </q-card-section>
+                    </q-card>
+                  </q-tab-panel>
+
+                  <q-tab-panel class="q-px-none" name="Calls">
+                    Contact https://www.xolvegroup.com/ for call center integration.
+                  </q-tab-panel>
+
+                  <q-tab-panel class="q-px-none" name="Emails">
+                    Contact https://www.xolvegroup.com/ for email and calendar integration.
+                  </q-tab-panel>
+
+                  <q-tab-panel class="q-px-none" name="Meetings">
+                    Contact https://www.xolvegroup.com/ for email and calendar integration.
+                  </q-tab-panel>
+                </q-tab-panels>
+            </q-card>
+        </div>
+        <div class="col-3">
+            <q-card flat bordered :class="!$q.dark.isActive?'custom_style':''" class="custom_radius detail_cls my-card">
+              <q-card-section class="q-pt-none">
+                <div class="text-h6"><span class="q-mt-sm inline-block">Sales Accounts</span> <q-btn rounded @click="add_new_sales_contact=true" outline dense icon="add" class="text-capitalize text-primary float-right">Add to Sales Account</q-btn></div>
+              </q-card-section>
+
+              <q-card-section class="q-pt-none">
+                    <q-list dense separator>
+                      <q-item :key="item.toPartyId" v-for="item in related_accounts" style="min-height:unset" class="q-py-none q-px-sm">
+                        <q-item-section>
+                          <q-item-label> <a :href="'ViewAccount?partyId=' + item.toPartyId">{{item.account_name}}</a> </q-item-label>
+                        </q-item-section>
+
+                        <q-item-section style="display:block;" side top>
+                          <q-btn rounded outline @click="confirmRemoveContactFromAcc(item)" dense icon="delete" class="text-capitalize text-primary"></q-btn>
+                        </q-item-section>
+                      </q-item>
+                  </q-list>
+              </q-card-section>
+            </q-card>
+        </div>
+    </div>
+
+
+    <q-dialog v-model="add_email_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Email</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <q-select rounded 
+                            label="Email Purpose"
+                            dense
+                            outlined
+                            v-model="mdl_filter_email_purpose"
+                            use-input
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            input-debounce="0"
+                            option-value="contactMechPurposeId"
+                            option-label="description"
+                            :options="phone_purpose_options"
+                            @filter="filterFnEmailPurpose"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input rounded v-model="mdl_email"  outlined style="margin:0;padding:0;" label="Email" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded @click="storeEmail" :disabled="!(mdl_email)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="add_phone_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 800px;max-width:800px;">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Phone</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <q-select rounded 
+                            label="Phone Purpose"
+                            dense
+                            outlined
+                            v-model="mdl_filter_phone_purpose"
+                            use-input
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            input-debounce="0"
+                            option-value="contactMechPurposeId"
+                            option-label="description"
+                            :options="phone_purpose_options"
+                            @filter="filterFnPhonePurpose"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+
+                        <div class="q-mt-sm q-pt-sm" style="display:flow-root">
+                            <div class="row">
+                                <div class="col-1 q-pt-xs q-mt-xs">Phone</div>
+
+                                <div class="col-10">
+                                    <div class="float-left q-pt-xs q-mt-xs">+&nbsp;</div>
+                                        <div class="float-left">
+                                         <q-input rounded v-model="mdl_phone.countryCode" outlined style="margin:0;padding:0;width:120px" label="Country Code" dense>
+                                        </q-input>
+                                   </div>
+
+                                   <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
+                                       <div class="float-left">
+                                            <q-input rounded class="q-pl-sm" v-model="mdl_phone.areaCode"  outlined style="margin:0;padding:0;width:120px" label="Area Code" dense>
+                                            </q-input>
+                                       </div>
+
+                                        <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
+                                       <div class="float-left">
+                                            <q-input rounded class="q-pl-sm" v-model="mdl_phone.contactNumber"  outlined style="margin:0;padding:0;width:190px" label="Phone Number" dense>
+                                            </q-input>
+                                       </div>
+                                       <div class="float-left ">
+                                            <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;x&nbsp;</div>
+                                            <q-input rounded class="q-pl-sm" v-model="mdl_phone.telecomExtension"  outlined style="margin:0;padding:0;width:50px" dense>
+                                            </q-input>
+                                       </div>
+                                </div>
+
+                            </div>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded @click="storePhone" :disabled="!(mdl_phone.countryCode && mdl_phone.areaCode && mdl_phone.contactNumber && mdl_phone.telecomExtension)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+    <q-dialog v-model="add_url_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">URL</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <q-select rounded 
+                            label="Web URL Purpose"
+                            dense
+                            outlined
+                            v-model="mdl_filter_url_purpose"
+                            use-input
+                            :class="!$q.dark.isActive?'bg-white':''"
+                            input-debounce="0"
+                            option-value="contactMechPurposeId"
+                            option-label="description"
+                            :options="url_purpose_options"
+                            @filter="filterFnUrlPurpose"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input rounded v-model="mdl_web_url"  outlined style="margin:0;padding:0;" label="Web URL" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded @click="storeWeb" :disabled="!(mdl_web_url)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="edit_email_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Email</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input rounded v-model="edit_mdl_email.emailAddress"  outlined style="margin:0;padding:0;" label="Email" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded @click="editEmail" :disabled="!(edit_mdl_email.emailAddress)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="edit_phone_modal" v-if="edit_phone_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 800px;max-width:800px;">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Phone</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm" style="display:flow-root">
+                            <div class="row">
+                                <div class="col-1 q-pt-xs q-mt-xs">Phone</div>
+                                <div class="col-10">
+                                    <div class="float-left q-pt-xs q-mt-xs">+&nbsp;</div>
+                                        <div class="float-left">
+                                         <q-input rounded v-model="edit_mdl_phone.telecomNumber.countryCode" outlined style="margin:0;padding:0;width:120px" label="Country Code" dense>
+                                        </q-input>
+                                   </div>
+
+                                   <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
+                                       <div class="float-left">
+                                            <q-input rounded class="q-pl-sm" v-model="edit_mdl_phone.telecomNumber.areaCode"  outlined style="margin:0;padding:0;width:120px" label="Area Code" dense>
+                                            </q-input>
+                                       </div>
+
+                                        <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;-&nbsp;</div>
+                                       <div class="float-left">
+                                            <q-input rounded class="q-pl-sm" v-model="edit_mdl_phone.telecomNumber.contactNumber"  outlined style="margin:0;padding:0;width:190px" label="Phone Number" dense>
+                                            </q-input>
+                                       </div>
+                                       <div class="float-left ">
+                                            <div class="float-left q-pt-xs q-mt-xs">&nbsp;&nbsp;x&nbsp;</div>
+                                            <q-input rounded class="q-pl-sm" v-model="edit_mdl_phone.telecomPartyContactMech.extension"  outlined style="margin:0;padding:0;width:50px" dense>
+                                            </q-input>
+                                       </div>
+                                </div>
+
+                            </div>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded @click="editPhone" :disabled="!(edit_mdl_phone.telecomNumber.countryCode && edit_mdl_phone.telecomNumber.areaCode && edit_mdl_phone.telecomNumber.contactNumber && edit_mdl_phone.telecomPartyContactMech.extension)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+    <q-dialog v-model="edit_url_modal">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">URL</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input rounded v-model="edit_mdl_web_url.webAddress"  outlined style="margin:0;padding:0;" label="Web URL" dense>
+                            </q-input>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded @click="editWeb" :disabled="!(edit_mdl_web_url.webAddress)" outline dense label="Save"  class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+
+    <q-dialog id="add_note_editor_id" v-model="add_note_modal" @show="initializeEditor('#addNote')">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Add Note</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <div :class="$q.dark.isActive?'text-white':'text-black'" style="border-radius: 12px !important;border: 1px solid #c2c2c2;min-height: 150px !important;" id="addNote"></div>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded @click="addNote" outline dense label="Add Note" class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog id="edit_note_editor_id" v-model="is_edit_note" @show="initializeEditor('#editNote')">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Edit Note</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <div :class="$q.dark.isActive?'text-white':'text-black'" style="border-radius: 12px !important;border: 1px solid #c2c2c2;min-height: 150px !important;" id="editNote"></div>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded @click="editNote" :disabled="!(note_edit_item.noteText)" outline dense label="Update" class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog id="add_task_editor_id" v-model="add_task_modal" @show="initializeEditor('#addTask')">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="width: 600px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">New Task</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+                        <div class="q-mt-sm q-pt-sm">
+                            <q-input rounded v-model="new_task_name"  outlined style="margin:0;padding:0;" label="Task Name" dense>
+                            </q-input>
+                            <div class="q-mt-sm q-pt-sm">
+                                <div :class="$q.dark.isActive?'text-white':'text-black'" style="border-radius: 12px !important;border: 1px solid #c2c2c2;min-height: 150px !important;" id="addTask"></div>
+                            </q-input>
+                            </div>
+                        </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded :disabled="!(new_task_name)" @click="addTask" outline dense label="Create Task" class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog id="edit_task_editor_id" v-model="edit_task_modal" @show="initializeEditor('#editTask')">
+      <q-card class="detail_cls q-px-none q-pt-sm" style="min-width: 800px">
+        <q-card-section>
+        <div class="row q-px-sm">
+            <div class="col-10">
+                <div class="text-h5">Edit Task</div>
+            </div>
+            <div class="col-2 text-right">
+                <q-icon v-close-popup style="font-size:18px;" name="close" class="text-weight-bold cursor-pointer"></q-icon>
+            </div>
+        </div>
+        </q-card-section>
+
+        <q-separator class="q-mx-none"></q-separator>
+
+        <q-card-section style="font-size: 16px" class="q-pt-none q-mx-sm">
+            <div class="row q-mt-sm q-pt-sm">
+                <div class="col-12">
+                    <q-input rounded v-model="task_edit_item.workEffortName" outlined label="Task Name" dense>
+                    </q-input>
+                </div>
+                <div class="col-6 q-py-lg">
+                    <q-select rounded 
+                        label="Status"
+                        dense
+                        outlined
+                        v-model="status"
+                        use-input
+                        input-debounce="0"
+                        option-value="statusId"
+                        option-label="description"
+                        :options="status_options"
+                        @filter="filterFnStatus"
+                      >
+                        <template v-slot:no-option>
+                          <q-item>
+                            <q-item-section class="text-grey">
+                              No results
+                            </q-item-section>
+                          </q-item>
+                        </template>
+                      </q-select>
+                </div>
+                <div class="col-6 q-py-lg q-pl-sm">
+                    <q-input rounded label="Due Date" outlined dense v-model="edit_due_date">
+                        <template v-slot:append>
+                          <q-icon name="event" class="cursor-pointer">
+                            <q-popup-proxy ref="qDateProxy" transition-show="scale" transition-hide="scale">
+                              <q-date mask="YYYY-MM-DD" v-model="edit_due_date">
+                                <div class="row items-center justify-end">
+                                  <q-btn rounded v-close-popup label="Close" color="primary" flat />
+                                </div>
+                              </q-date>
+                            </q-popup-proxy>
+                          </q-icon>
+                        </template>
+                      </q-input>
+                </div>
+                <div class="col-12">
+                    <div :class="$q.dark.isActive?'text-white':'text-black'" style="border-radius: 12px !important;border: 1px solid #c2c2c2;min-height: 150px !important;" id="editTask"></div>
+                </q-input>
+                </div>
+            </div>
+        </q-card-section>
+
+        <q-card-actions class="q-mx-sm" align="left">
+          <q-btn rounded :disabled="!(task_edit_item.workEffortName && status)" @click="editTask" outline dense label="Update" class="text-capitalize" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="delete_contact" persistent>
+      <q-card style="max-width: 450px" class="q-pa-md">
+        <q-card-section class="row items-center">
+          <q-avatar icon="delete" color="red" text-color="white"></q-avatar>
+          <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to delete this contact?</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn rounded outlined label="Cancel" color="grey" v-close-popup></q-btn>
+          <q-btn rounded outlined label="Delete" color="red" @click="deleteContact"></q-btn>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="remove_contact_from_acc" persistent>
+      <q-card style="max-width: 450px" class="q-pa-md">
+        <q-card-section class="row items-center">
+          <q-avatar icon="delete" color="red" text-color="white"></q-avatar>
+          <span class="q-ml-sm q-mt-md text-medium" style="font-size: 18px;">Are you sure you want to remove this contact from the account?</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn rounded outlined label="Cancel" color="grey" v-close-popup></q-btn>
+          <q-btn rounded outlined label="Delete" color="red" @click="removeContactFromAcc"></q-btn>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="add_new_sales_contact">
+          <q-card class="q-pa-none detail_cls" style="width: 50vw; max-width: 50vw;">
+            <q-card-section>
+              <div class="row q-px-md q-py-sm">
+                <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                    Add to Sales Account
+                </div>
+                <div class="col-1">
+                    <q-btn rounded flat round dense icon="close" class="float-right" v-close-popup></q-btn>
+                </div>
+            </div>
+            </q-card-section>
+            <q-separator></q-separator>
+
+            <q-card-section class="q-ma-md edit_page">
+                <div class="row q-col-gutter-md detail_cls">
+                    <div class="col-12">
+                        <div class="col-12">
+                            <q-select rounded 
+                                dense
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                label="Sales Account"
+                                outlined
+                                v-model="new_sales_contact_account"
+                                use-input
+                                input-debounce="700"
+                                option-value="value"
+                                option-label="label"
+                                :options="account_options"
+                                @filter="filterFnAccount"
+                                >
+                                <template v-slot:no-option>
+                                    <q-item>
+                                      <q-item-section class="text-grey">
+                                        No results
+                                      </q-item-section>
+                                    </q-item>
+                                </template>
+                            </q-select>
+                    </div>
+                    </div>
+                </div>
+            </q-card-section>
+
+            <q-separator></q-separator>
+            <q-card-actions class="q-pa-md" align="left">
+              <q-btn rounded :disable="!(new_sales_contact_account)" @click="addNewSalesAccount()" outline dense label="Add" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn rounded v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+</template>
+<script>
+module.exports = {
+    data: function () {
+        return {
+            tab: 'Notes',
+            related_accounts: [],
+            delete_contact: false,
+            add_new_sales_contact: false,
+            remove_contact_from_acc: false,
+            add_email_modal: false,
+            edit_email_modal: false,
+            email_purpose_options_master: [],
+            email_purpose_options: [],
+            new_sales_contact_account: "",
+            mdl_filter_email_purpose:null,
+            mdl_email:'',
+            new_task_name:'',
+            edit_mdl_email:{},
+            mdl_phone:{},
+            edit_mdl_phone:{},
+            add_phone_modal:false,
+            edit_phone_modal:false,
+            phone_purpose_options_master: [],
+            phone_purpose_options: [],
+            status: null,
+            mdl_filter_phone_purpose:null,
+            add_url_modal:false,
+            edit_url_modal:false,
+            url_purpose_options_master: [],
+            url_purpose_options: [],
+            order_status_options: [],
+            mdl_filter_url_purpose:null,
+            mdl_web_url:'',
+            edit_mdl_web_url:{},
+            add_note_modal: false,
+            add_task_modal:false,
+            edit_task_modal:false,
+            emailAddressList: [],
+            telecomNumberList: [],
+            webAddressList: [],
+            partyNoteList: [],
+            status_options_master: [],
+            account_options: [],
+            status_options: [],
+            item_to_delete: {},
+            note_edit_item: {},
+            edit_due_date: null,
+            task_edit_item: {},
+            is_edit_note: false,
+            task_list: [],
+            current_party: {},
+            pagination: {
+                page: 0,
+                rowsPerPage: 0
+              },
+            status_color_map:{WeInPlanning: '#979391', WeApproved: '#6a97ff', WeInProgress: '#f0b057', WeComplete: '#34d391', WeOnHold: '#e8697d',
+                               WeClosed: '#79c947', WeCancelled: '#e8a19e'},
+            task_columns:[{ name: 'name',align:'left', label: 'Name', field: 'workEffortName' },
+                            { name: 'description',align:'left', label: 'Description', field: 'description' },
+                            { name: 'status',align:'left', label: 'Status', field: 'status' },
+                            { name: 'action',align:'left', label: '', field: '' },
+                          ],
+        }
+    },
+    methods: {
+        filterFnAccount(val, update, abort) {
+            let self = this;
+            if (val.length < 2) {
+                abort()
+                return
+            }
+            if (val === '') {
+                update(() => {
+                    self.account_options = [];
+                })
+                return
+            }
+            self.searchPartyList(val.toLowerCase()).then(function(resp){
+                update(() => {
+                    self.account_options = resp;
+                })
+            });
+        },
+        searchPartyList (search_keyword) {
+            var self = this;
+            var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            allParms["hasAllParms"] = true;
+            allParms["pageIndex"] = 0;
+            allParms["term"] = search_keyword;
+            allParms["roleTypeId"] = "Account";
+            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError
+            });
+        },
+        filterFnStatus (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.status_options = self.status_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.status_options = self.status_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+        getStatusName(id) {
+            if (id) {
+                let status_name = this.status_options_master.find(function(item){
+                    return item.statusId === id;
+                });
+                if (status_name) {
+                    return status_name.description;
+                }
+            }
+        },
+        getStatuses () {
+            var self = this;
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks/getStatuses", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.status_options_master = resp.statusList;
+                    self.status_options = resp.statusList;
+                }
+            });
+        },
+        getPartyDetail () {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getDetail", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.current_party = resp.party;
+                }
+            });
+        },
+        getHtmlForMD(content) {
+            if (content) {
+                try {
+                    let md_conv = new showdown.Converter({metadata: true});
+                    return md_conv.makeHtml(content);
+                }
+                catch(err) {
+                    let md_conv = new showdown.Converter({metadata: true});
+                    return md_conv.makeHtml(content);
+                }
+            }
+        },
+        initializeEditor(elem) {
+            let self = this;
+            InlineEditor
+            .create( document.querySelector( elem ),
+            {
+            })
+            .then( editor => {
+             if (elem === "#addNote"){
+                 window.add_note_editor = editor;
+                 $("#add_note_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
+             }
+             else if (elem === "#editNote"){
+                 window.edit_note_editor = editor;
+                 editor.setData(self.note_edit_item.noteText);
+                 $("#edit_note_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
+             }
+             else if (elem === "#addTask"){
+                 window.add_task_editor = editor;
+                 $("#add_task_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
+             }
+             else if (elem === "#editTask"){
+                 window.edit_task_editor = editor;
+                 editor.setData(self.task_edit_item.description);
+                 $("#edit_task_editor_id").find('.q-dialog__inner').removeAttr('tabindex');
+             }
+         } )
+        },
+        confirmDelete(item) {
+            this.item_to_delete = JSON.parse(JSON.stringify(item));
+            this.delete_contact = true;
+        },
+        confirmRemoveContactFromAcc(item) {
+            this.item_to_delete = JSON.parse(JSON.stringify(item));
+            this.remove_contact_from_acc = true;
+        },
+        removeContactFromAcc() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            allParams["partyId"] = params.partyId;
+            allParams["partyRelationshipId"] = self.item_to_delete.partyRelationshipId;
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/contacts/delete", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.item_to_delete = {};
+                    self.remove_contact_from_acc = false;
+                    self.$q.notify({
+                        message: 'Deleted successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getAllRelatedAccounts();
+                }
+            });
+        },
+        addNewSalesAccount() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            allParams["partyId"] = params.partyId;
+            allParams["accountPartyId"] = self.new_sales_contact_account.value;
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/contacts/add", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.new_sales_contact_account = "";
+                    self.add_new_sales_contact = false;
+                    self.$q.notify({
+                        message: 'Added successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getAllRelatedAccounts();
+                }
+            });
+        },
+        deleteContact() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            allParams["partyId"] = params.partyId;
+            allParams["contactMechPurposeId"] = self.item_to_delete.telecomContactMechPurposeId || self.item_to_delete.emailContactMechPurposeId || self.item_to_delete.webContactMechPurposeId;
+            allParams["contactMechId"] = self.item_to_delete.telecomContactMechId || self.item_to_delete.emailContactMechId || self.item_to_delete.webContactMechId;
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/removeContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.item_to_delete = {};
+                    self.delete_contact = false;
+                    self.$q.notify({
+                        message: 'Deleted successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getPartyContactInfoList();
+                }
+            });
+        },
+        addNote() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            allParams["partyId"] = params.partyId;
+            allParams["noteText"] = window.add_note_editor.getData();
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/createNote", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.new_note = "";
+                    self.add_note_modal = false;
+                    self.$q.notify({
+                        message: 'Note added successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getPartyNoteList();
+                }
+            });
+        },
+        addTask() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+            allParams["partyId"] = params.partyId;
+            allParams["accountPartyId"] = params.partyId;
+            allParams["workEffortName"] = self.new_task_name;
+            allParams["description"] = window.add_task_editor.getData();
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/tasks/create", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.new_note = "";
+                    self.add_task_modal = false;
+                    self.$q.notify({
+                        message: 'Task added successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getTaskList();
+                }
+            });
+        },
+        openEditNote(item) {
+            this.note_edit_item = JSON.parse(JSON.stringify(item));
+            this.is_edit_note = true;
+        },
+        editNote() {
+            var self = this;
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+              get: (searchParams, prop) => searchParams.get(prop),
+            });
+            self.note_edit_item["moquiSessionToken"] = self.$root.moquiSessionToken;
+            self.note_edit_item["noteText"] = window.edit_note_editor.getData();
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/updateNote", headers:{Accept:'application/json'}, data:self.note_edit_item,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.note_edit_item = {};
+                    self.is_edit_note = false;
+                    self.$q.notify({
+                        message: 'Note updated successfully.',
+                        position: 'bottom-left',
+                      });
+                    self.getPartyNoteList();
+                }
+            });
+        },
+        formatDate (dt) {
+            if (dt) {
+                dt = new Date(dt);
+                return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0');
+            }
+        },
+        formatDateTime (dt) {
+            if (dt) {
+                dt = new Date(dt);
+                return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0') +
+                        " " + String(dt.getHours()).padStart(2, '0') + ":" + String(dt.getMinutes()).padStart(2, '0');
+            }
+        },
+        filterFnEmailPurpose (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.email_purpose_options = self.email_purpose_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.email_purpose_options = self.email_purpose_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+          filterFnPhonePurpose (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.phone_purpose_options = self.phone_purpose_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.phone_purpose_options = self.phone_purpose_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+          filterFnUrlPurpose (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.url_purpose_options = self.url_purpose_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.url_purpose_options = self.url_purpose_options_master.filter(v => v.description.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+          getPartyContactInfoList () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ getAll: true, partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getContactInfoList", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.emailAddressList = [];
+                        self.telecomNumberList = [];
+                        self.webAddressList = [];
+                        if (Object.keys(resp).indexOf("emailAddressList") > -1) {
+                            self.emailAddressList = resp.emailAddressList;
+                        }
+                        if (Object.keys(resp).indexOf("telecomNumberList") > -1) {
+                            self.telecomNumberList = resp.telecomNumberList;
+                        }
+                        if (Object.keys(resp).indexOf("webAddressList") > -1) {
+                            self.webAddressList = resp.webAddressList;
+                        }
+                    }
+                });
+            },
+            getPartyNoteList () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getNoteList", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.partyNoteList = resp.partyNoteList;
+                    }
+                });
+            },
+            openEditTask(item) {
+                let self = this;
+                self.task_edit_item = JSON.parse(JSON.stringify(item));
+                self.status = self.status_options_master.find(function(item){
+                    return item.statusId === self.task_edit_item.statusId;
+                });
+                if (self.task_edit_item.estimatedCompletionDate){
+                    self.edit_due_date = self.formatDate(self.task_edit_item.estimatedCompletionDate);
+                }
+                else {
+                    self.edit_due_date = null;
+                }
+                self.edit_task_modal = true;
+            },
+            editTask() {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                self.task_edit_item["moquiSessionToken"] = self.$root.moquiSessionToken;
+                self.task_edit_item["description"] = window.edit_task_editor.getData();
+                if (self.status) {
+                    self.task_edit_item["statusId"] = self.status.statusId;
+                }
+                if (self.edit_due_date) {
+                    self.task_edit_item["estimatedCompletionDate"] = self.edit_due_date
+                }
+                else {
+                    self.task_edit_item["estimatedCompletionDate"] = null;
+                }
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/tasks/update", headers:{Accept:'application/json'}, data:self.task_edit_item,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.task_edit_item = {};
+                        self.edit_task_modal = false;
+                        self.$q.notify({
+                            message: 'Task updated successfully.',
+                            position: 'bottom-left',
+                          });
+                        self.getTaskList();
+                    }
+                });
+            },
+            getTaskList () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ partyId: params.partyId, moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/tasks", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.task_list = resp.allTasks;
+                    }
+                });
+            },
+            getPhoneOptions () {
+                var self = this;
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getPhoneOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.phone_purpose_options_master = JSON.parse(JSON.stringify(resp.phoneOptions));
+                        self.phone_purpose_options = JSON.parse(JSON.stringify(resp.phoneOptions));
+                        self.mdl_filter_phone_purpose = JSON.parse(JSON.stringify(self.phone_purpose_options_master)).find(function(item){
+                           return item.contactMechPurposeId === "PhonePrimary";
+                        });
+                    }
+                });
+            },
+            getWebOptions () {
+                var self = this;
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getWebOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.url_purpose_options_master = JSON.parse(JSON.stringify(resp.webOptions));
+                        self.url_purpose_options = JSON.parse(JSON.stringify(resp.webOptions));
+                        self.mdl_filter_url_purpose = JSON.parse(JSON.stringify(self.url_purpose_options_master)).find(function(item){
+                           return item.contactMechPurposeId === "WebUrlPrimary";
+                        });
+                    }
+                });
+            },
+            getEmailOptions () {
+                var self = this;
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/party/getEmailOptions", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.email_purpose_options_master = JSON.parse(JSON.stringify(resp.emailOptions));
+                        self.email_purpose_options = JSON.parse(JSON.stringify(resp.emailOptions));
+                        self.mdl_filter_email_purpose = JSON.parse(JSON.stringify(self.email_purpose_options_master)).find(function(item){
+                           return item.contactMechPurposeId === "EmailPrimary";
+                        });
+                    }
+                });
+            },
+            openEditPhone(item) {
+                this.edit_mdl_phone = JSON.parse(JSON.stringify(item));
+                this.edit_phone_modal = true;
+            },
+            storePhone () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["telecomContactMechPurposeId"] = self.mdl_filter_phone_purpose.contactMechPurposeId;
+                allParams["countryCode"] = self.mdl_phone.countryCode;
+                allParams["areaCode"] = self.mdl_phone.areaCode;
+                allParams["contactNumber"] = self.mdl_phone.contactNumber;
+                allParams["telecomExtension"] = self.mdl_phone.telecomExtension;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.mdl_phone = {};
+                        self.add_phone_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            editPhone () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["telecomContactMechPurposeId"] = self.edit_mdl_phone.telecomContactMechPurposeId;
+                allParams["countryCode"] = self.edit_mdl_phone.telecomNumber.countryCode;
+                allParams["areaCode"] = self.edit_mdl_phone.telecomNumber.areaCode;
+                allParams["contactNumber"] = self.edit_mdl_phone.telecomNumber.contactNumber;
+                allParams["telecomExtension"] = self.edit_mdl_phone.telecomPartyContactMech.extension;
+                allParams["telecomContactMechId"] = self.edit_mdl_phone.telecomContactMechId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.edit_mdl_phone = {};
+                        self.edit_phone_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            openEditWeb(item) {
+                this.edit_mdl_web_url = JSON.parse(JSON.stringify(item));
+                this.edit_url_modal = true;
+            },
+            storeWeb () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["webContactMechPurposeId"] = self.mdl_filter_url_purpose.contactMechPurposeId;
+                allParams["webAddress"] = self.mdl_web_url;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.mdl_web_url = "";
+                        self.add_url_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            editWeb () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["webContactMechPurposeId"] = self.edit_mdl_web_url.webContactMechPurposeId;
+                allParams["webAddress"] = self.edit_mdl_web_url.webAddress;
+                allParams["webContactMechId"] = self.edit_mdl_web_url.webContactMechId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.mdl_web_url = "";
+                        self.edit_url_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            openEditEmail(item) {
+                this.edit_mdl_email = JSON.parse(JSON.stringify(item));
+                this.edit_email_modal = true;
+            },
+            storeEmail () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["emailContactMechPurposeId"] = self.mdl_filter_email_purpose.contactMechPurposeId;
+                allParams["emailAddress"] = self.mdl_email;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.mdl_email = "";
+                        self.add_email_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            editEmail () {
+                var self = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParams = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                allParams["partyId"] = params.partyId;
+                allParams["emailContactMechPurposeId"] = self.mdl_filter_email_purpose.contactMechPurposeId;
+                allParams["emailAddress"] = self.edit_mdl_email.emailAddress;
+                allParams["emailContactMechId"] = self.edit_mdl_email.emailContactMechId;
+                $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/storeContactInfo", headers:{Accept:'application/json'}, data:allParams,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        self.edit_mdl_email = {};
+                        self.edit_email_modal = false;
+                        self.getPartyContactInfoList();
+                    }
+                });
+            },
+            getAllRelatedAccounts() {
+                var vm = this;
+                const params = new Proxy(new URLSearchParams(window.location.search), {
+                  get: (searchParams, prop) => searchParams.get(prop),
+                });
+                var allParms = $.extend({ partyId: params.partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+                return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/contacts/getRelatedAccounts", headers:{Accept:'application/json'}, data:allParms,
+                    error:moqui.handleAjaxError, success:function(resp) {
+                        vm.related_accounts = resp.accountList;
+                    }
+                });
+            }
+    },
+    created: function () {
+        let self = this;
+        self.getPartyDetail();
+        self.getStatuses();
+        self.getPhoneOptions();
+        self.getWebOptions();
+        self.getEmailOptions();
+        self.getPartyContactInfoList();
+        self.getAllRelatedAccounts();
+        setTimeout( () => {
+            this.getPartyNoteList();
+            this.getTaskList();
+        }, 300 );
+    }
+}
+</script>
+<style>
+    .custom_table_header {
+        height: 38px !important;
+    }
+    .detail_cls .q-field__label {
+        top: 10px !important;
+    }
+    .detail_cls .q-field--float .q-field__label {
+        top: 0px !important;
+    }
+    body {
+        overflow-x: hidden !important;
+    }
+    .max_width_700 {
+        max-width: 700px !important;
+    }
+    .ck-editor {
+        width: 100% !important;
+        margin-bottom: 9px !important;
+    }
+    .ck-editor__editable {
+        min-height: 150px !important;
+    }
+    .ck-balloon-panel_visible {
+        z-index: 10000 !important;
+    }
+    .custom_style {
+        background: #ECF2FF;
+    }
+    .custom_radius {
+        border-radius: 8px;
+    }
+    .custom_height_with_scroll {
+        max-height: 180px;
+        overflow-x: hidden !important;
+        overflow-y: auto;
+    }
+    .custom_height_with_scroll_main {
+        max-height: 80vh;
+        overflow-x: hidden !important;
+        overflow-y: auto;
+    }
+</style>

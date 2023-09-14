@@ -1,0 +1,10 @@
+<address>
+<%if (curShipToInfo?.postalAddress?.toName) {%><strong>${ec.l10n.localize('To')}: ${curShipToInfo.postalAddress.toName}</strong><br><%}%>
+<%if (curShipToInfo?.postalAddress?.attnName) {%><strong>${ec.l10n.localize('Attn')}: ${curShipToInfo.postalAddress.attnName}</strong><br><%}%>
+<%if (curShipToInfo?.postalAddress?.address1) {%>${curShipToInfo.postalAddress.address1}<%if (curShipToInfo.postalAddress.unitNumber) {%> #${curShipToInfo.postalAddress.unitNumber}<%}%><br><%}%>
+<%if (curShipToInfo?.postalAddress?.address2) {%>${curShipToInfo.postalAddress.address2}<br><%}%>
+<%if (curShipToInfo?.postalAddress) {%>${curShipToInfo.postalAddress.city ?: ''}<%if (curShipToInfo.postalAddressStateGeo?.geoCodeAlpha2) {%>, ${curShipToInfo.postalAddressStateGeo.geoCodeAlpha2} <%} else if (curShipToInfo.postalAddressStateGeo?.geoName) {%> ${curShipToInfo.postalAddressStateGeo.geoName} <%}%>${curShipToInfo.postalAddress.postalCode ?: ''}<%if (curShipToInfo.postalAddress.postalCodeExt) {%>-${curShipToInfo.postalAddress.postalCodeExt}<%}%><%if (curShipToInfo.postalAddressCountryGeo?.geoCodeAlpha3) {%> ${curShipToInfo.postalAddressCountryGeo.geoCodeAlpha3}<%}%><br><%}%>
+<%if (curShipToInfo?.telecomNumber) {%><abbr title="${ec.l10n.localize('Phone')}">T:</abbr> <%if (curShipToInfo.telecomNumber.countryCode) {%>${curShipToInfo.telecomNumber.countryCode}-<%}%><%if (curShipToInfo.telecomNumber.areaCode) {%>${curShipToInfo.telecomNumber.areaCode}-<%}%>${curShipToInfo.telecomNumber.contactNumber ?: ''}<%if (curShipToInfo.telecomPartyContactMech?.extension) {%> x${curShipToInfo.telecomPartyContactMech.extension}<%}%><br><%}%>
+<%if (curShipToInfo?.emailAddress) {%><a href="mailto:${curShipToInfo.emailAddress}">${curShipToInfo.emailAddress}</a><%}%>
+<%if (curShipToInfo?.webAddress) {%><a href="${curShipToInfo.webAddress}" target="_blank">${curShipToInfo.webAddress}</a><%}%>
+</address>

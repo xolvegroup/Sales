@@ -1,0 +1,695 @@
+<template>
+    <div>
+    <q-dialog v-model="add_new_sales_contact">
+          <q-card class="q-pa-none detail_cls" style="width: 50vw; max-width: 50vw;">
+            <q-card-section>
+              <div class="row q-px-md q-py-sm">
+                <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                    New Sales Contact
+                </div>
+                <div class="col-1">
+                    <q-btn flat rounded dense icon="close" class="float-right" v-close-popup></q-btn>
+                </div>
+            </div>
+            </q-card-section>
+            <q-separator></q-separator>
+
+            <q-card-section class="q-ma-md edit_page">
+                <div class="row q-col-gutter-md detail_cls">
+                    <div class="col-12">
+                        <div class="col-12">
+                            <q-select rounded 
+                                dense
+                                :class="!$q.dark.isActive?'bg-white':''"
+                                label="Sales Account"
+                                outlined
+                                v-model="new_sales_contact_account"
+                                use-input
+                                input-debounce="700"
+                                option-value="value"
+                                option-label="label"
+                                :options="account_options"
+                                @filter="filterFnAccount"
+                                >
+                                <template v-slot:no-option>
+                                    <q-item>
+                                      <q-item-section class="text-grey">
+                                        No results
+                                      </q-item-section>
+                                    </q-item>
+                                </template>
+                            </q-select>
+                    </div>
+                    </div>
+                    <div class="col-12">
+                        <q-input rounded v-model="new_sales_contact_fname" outlined label="First Name" style="margin:0;padding:0;" dense>
+                                        </q-input>
+                    </div>
+                    <div class="col-12">
+                        <q-input rounded v-model="new_sales_contact_lname" outlined label="Last Name" style="margin:0;padding:0;" dense>
+                                    </q-input>
+                    </div>
+                </div>
+            </q-card-section>
+            
+
+            <q-separator></q-separator>
+            <q-card-actions class="q-pa-md" align="left">
+              <q-btn rounded :disable="!(new_sales_contact_account && new_sales_contact_fname && new_sales_contact_lname)" @click="addNewSalesAccount()" outline dense label="Create" class="text-capitalize q-mb-md" color="primary"></q-btn>
+              <q-btn rounded v-close-popup outline dense label="Cancel" class="text-capitalize q-mb-md" color="black"></q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+    <q-drawer
+            side="right"
+            v-model="open_saved_finds_drawer"
+            bordered
+            overlay
+            :width="550"
+            :breakpoint="550"
+            class="right_options_popup"
+            :content-class="!$q.dark.isActive?'bg-grey-3':'bg-black'"
+          >
+          <div class="q-pa-sm q-px-md">
+                <div class="row">
+                    <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                        Saved Finds
+                    </div>
+                    <div class="col-1">
+                        <q-btn rounded flat round dense icon="close" @click="open_saved_finds_drawer=false"></q-btn>
+                    </div>
+                </div>
+                <div class="row q-mt-md q-col-gutter-md detail_cls">
+                    <div class="col-12 q-pb-lg" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-workEffortId' && mdl_filter_order_by !== null)">
+                           <div class="row">
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_sales_person">
+                                    <span class="text-subtitle2">User : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_sales_person.label }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_account">
+                                    <span class="text-subtitle2">Sales Account : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_account }}</span>
+                                </div>
+                                <div class="col-6 q-pb-sm" v-if="mdl_filter_order_by">
+                                    <span class="text-subtitle2">Order By : </span><span class="text-subtitle2 text-green-8">{{ mdl_filter_order_by.label }}</span>
+                                </div>
+                           </div>
+                           <div class="row q-mt-sm">
+                                <div class="col-8 q-pr-lg">
+                                    <q-input rounded v-model="save_new_find" outlined label="Description" style="margin:0;padding:0;" dense>
+                                    </q-input>
+                                </div>
+                                <div class="col-4" style="padding-top:2px;">
+                                    <q-btn rounded @click="storeSavedFinds()" class="text-blue q-px-sm q-ml-sm text-capitalize" outline dense icon="search" label="Save New Find"></q-btn>
+                                </div>
+                           </div>
+                    </div>
+                    <div class="col-12 q-pb-lg text-subtitle2" v-else>
+                        No find parameters (or default), choose some in Find Options to save a new find or update existing
+                    </div>
+                </div>
+                <div class="row q-py-sm q-my-lg" v-for="item in saved_find_list">
+                    <div class="col-8 q-pr-lg">
+                        <q-input rounded :value="item.description" outlined style="margin:0;padding:0;" dense>
+                        </q-input>
+                    </div>
+                    <div class="col-4" style="padding-top:2px;">
+                        <q-btn rounded @click="searchSavedFind(item)" style="width: 70px" class="text-blue q-px-sm q-ml-sm text-capitalize" outline dense icon="search" label="Find"></q-btn>
+                    </div>
+                </div>
+          </div>
+    </q-drawer>
+    <q-drawer
+            side="right"
+            v-model="open_find_options_drawer"
+            bordered
+            overlay
+            :width="400"
+            :breakpoint="400"
+            class="right_options_popup"
+            :content-class="!$q.dark.isActive?'bg-grey-3':'bg-black'"
+          >
+          <div class="q-pa-sm q-px-md">
+                <div class="row">
+                    <div class="col-11 q-pt-sm text-h5 text-weight-bold">
+                        Find Options
+                    </div>
+                    <div class="col-1">
+                        <q-btn flat rounded dense icon="close" @click="open_find_options_drawer=false"></q-btn>
+                    </div>
+                </div>
+                <div class="row q-mt-md q-col-gutter-md detail_cls">
+                    <!--<div class="col-12">
+                                    <q-select rounded 
+                                        dense
+                                        :input-class="!$q.dark.isActive?'bg-white':''"
+                                        label="Sales Account"
+                                        outlined
+                                        v-model="mdl_filter_account"
+                                        use-input
+                                        input-debounce="700"
+                                        option-value="value"
+                                        option-label="label"
+                                        :options="account_options"
+                                        @filter="filterFnAccount"
+                                        >
+                                        <template v-slot:no-option>
+                                            <q-item>
+                                              <q-item-section class="text-grey">
+                                                No results
+                                              </q-item-section>
+                                            </q-item>
+                                        </template>
+                                    </q-select>
+                                    <q-input rounded v-model="mdl_filter_account" outlined label="Sales Account" style="margin:0;padding:0;" dense>
+                                    </q-input>
+                    </div>-->
+                    <div class="col-12">
+                        <q-select rounded 
+                            label="Order By"
+                            dense
+                            :input-class="!$q.dark.isActive?'bg-white':''"
+                            outlined
+                            v-model="mdl_filter_order_by"
+                            use-input
+                            input-debounce="0"
+                            option-value="value"
+                            option-label="label"
+                            :options="orderby_options"
+                            @filter="filterFnOrderBy"
+                          >
+                            <template v-slot:no-option>
+                              <q-item>
+                                <q-item-section class="text-grey">
+                                  No results
+                                </q-item-section>
+                              </q-item>
+                            </template>
+                          </q-select>
+                    </div>
+                    <div class="col-12">
+                        <q-btn rounded @click="findOptions()" style="width: 140px" class="text-blue q-px-sm q-ml-sm" outline dense icon="search" label="Find"></q-btn>
+                        <q-btn rounded @click="resetFind()" style="width: 140px" class="q-px-sm q-ml-sm" outline dense icon="search" label="Clear"></q-btn>
+                    </div>
+                </div>
+                <div class="q-mt-md">
+
+                </div>
+          </div>
+    </q-drawer>
+          <div>
+        <q-item class="q-pa-none">
+              <q-item-section>
+                <q-btn rounded
+                style="width: 175px;"
+            class="custom_btn_dropdown"
+            dense
+            @click="add_new_sales_contact=true"
+                  split
+                  outline rounded
+                  color=""
+                  no-caps
+                  icon="add"
+                  label="New Sales Contact"
+                >
+                </q-btn>
+              </q-item-section>
+              <q-item-section style="display: block;" class="detail_cls">
+
+              <q-select rounded 
+                  v-if="saved_find_list.length>0"
+                  label="Select Find"
+                  dense
+                  rounded
+                  outlined
+                  v-model="mdl_select_find"
+                  option-value="formListFindId"
+                  option-label="description"
+                  :options="select_find_options"
+                  style="margin:0;margin-left:3px;padding:0;width: 160px"
+                  class="text-capitalize float-right"
+                  @input="searchSelectFind"
+                >
+                  <template v-slot:no-option>
+                    <q-item>
+                      <q-item-section class="text-grey">
+                        No results
+                      </q-item-section>
+                    </q-item>
+                  </template>
+                </q-select>
+
+              <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Saved Finds" icon="save" @click="open_saved_finds_drawer=true"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" class="text-capitalize float-right" outline dense label="Find Options" icon="search" @click="open_find_options_drawer=true"></q-btn>
+              <q-btn rounded style="width: 130px;margin-top:6px;" v-if="Object.keys(filter_params).length > 1 || (filter_params['orderByField'] != '-workEffortId' && mdl_filter_order_by !== null)" @click="resetFind()" class="text-capitalize float-right text-red" outline dense icon="close" label="Clear"></q-btn>
+              </q-item-section>
+            </q-item>
+                    <q-card flat class="main_list">
+                      <q-card-section class="q-px-xs">
+                        <q-table
+                        bordered
+                        flat
+                        @request="onPageChange"
+                        :wrap-cells="true"
+                              :data="account_list"
+                              :filter="filter"
+                              table-header-class="custom_table_header"
+                              :columns="table_columns"
+                              row-key="notificationMessageId"
+                              separator="cell"
+                              dense
+                              :pagination.sync="pagination"
+                              :card-class="!$q.dark.isActive?'custom_style custom_radius':'custom_radius'"
+                            >
+                                <template v-slot:body-cell-combinedname="props">
+                                  <q-td :props="props">
+                                    <a class="text-weight-medium" :href="'ViewContact?partyId=' + props.row.partyId">{{props.row.combinedName}}</a>
+                                  </q-td>
+                                </template>
+                                <template v-slot:body-cell-email="props">
+                                  <q-td :props="props">
+                                      <span>
+                                        <span v-if="props.row.contactMechs" v-for="item,index in props.row.contactMechs">
+                                            {{item.infoString}}<span v-if="index !== (props.row.contactMechs.length-1)">, </span>
+                                        </span>
+                                      </span>
+                                  </q-td>
+                                </template>
+                                <template v-slot:body-cell-accountlist="props">
+                                  <q-td :props="props">
+                                    <span v-for="item,index in props.row.account_list">
+                                        <a :href="'ViewAccount?partyId=' + item.toPartyId">{{item.account_name}}</a><span v-if="index !== (props.row.account_list.length-1)">, </span>
+                                    </span>
+                                  </q-td>
+                                </template>
+                            </q-table>
+                      </q-card-section>
+                    </q-card>
+              </div>
+    </div>
+</template>
+<script>
+module.exports = {
+    data: function () {
+        return {
+            account_list: [],
+            new_sales_contact_account: "",
+            new_sales_contact_fname: "",
+            new_sales_contact_lname: "",
+            add_new_sales_contact: false,
+            account_options: [],
+            pagination: {
+                page: 1,
+                rowsPerPage: 15,
+                rowsNumber: 0,
+                sortBy: '',
+                descending: true,
+              },
+            filter_params: {},
+            filter: "",
+            table_columns: [
+               {
+                 name: 'combinedname',
+                 field: 'combinedName',
+                 required: true,
+                 label: 'Party Name',
+                 align: 'left',
+                 sortable: true,
+                 style: 'min-width: 40%'
+               },
+               { name: 'email', align: 'left', label: 'Email Address',style: 'min-width: 30%', field: '', sortable: false },
+               { name: 'accountlist', align: 'left', label: 'Sales Account',style: 'min-width: 30%', field: '', sortable: false },
+            ],
+            column_to_field_mapping: {},
+            open_find_options_drawer: false,
+            mdl_filter_sales_person:null,
+            mdl_filter_account:null,
+            sales_person_options_master: [],
+            sales_person_options: [],
+            mdl_filter_order_by:null,
+            orderby_options_master: [{"label":"Party Name (Asc)","value":"combinedname"},
+                                     {"label":"Party Name (Desc)","value":"-combinedname"}],
+            orderby_options: [{"label":"Party Name (Asc)","value":"combinedname"},
+                                     {"label":"Party Name (Desc)","value":"-combinedname"}],
+            open_saved_finds_drawer: false,
+            saved_find_list: [],
+            save_new_find: '',
+            select_find_options:[],
+            mdl_select_find: null
+        }
+    },
+    methods: {
+        filterFnAccount(val, update, abort) {
+            let self = this;
+            if (val.length < 2) {
+                abort()
+                return
+            }
+            if (val === '') {
+                update(() => {
+                    self.account_options = [];
+                })
+                return
+            }
+            self.searchPartyList(val.toLowerCase()).then(function(resp){
+                update(() => {
+                    self.account_options = resp;
+                })
+            });
+        },
+        onPageChange (props) {
+            let self = this;
+            const page = props.pagination.page;
+            const rowsNumber = props.pagination.rowsNumber;
+            const rowsPerPage = props.pagination.rowsPerPage;
+            const sortBy = props.pagination.sortBy;
+            const descending = props.pagination.descending;
+            if (sortBy) {
+                if (descending) {
+                    self.filter_params["orderByField"] = "-" + (self.column_to_field_mapping[sortBy] || sortBy);
+                }
+                else {
+                    self.filter_params["orderByField"] = (self.column_to_field_mapping[sortBy] || sortBy);
+                }
+            }
+            else {
+                self.filter_params["orderByField"] = "";
+            }
+            self.filter_params["orderByField"] = self.filter_params["orderByField"].replace("combinedname", "combinedName")
+            const startRow = (page - 1) * rowsPerPage;
+            const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage;
+            if (self.filter_params) {
+                var allParams = JSON.parse(JSON.stringify(self.filter_params));
+                if (Object.keys(self.filter_params).indexOf("roleTypeId") === -1) {
+                    allParams["roleTypeId"] = "Contact";
+                }
+                allParams["pageIndex"] = page-1;
+                allParams["pageSize"] = fetchCount;
+                allParams["moquiSessionToken"] = self.$root.moquiSessionToken;
+            }
+            else {
+                var allParams = $.extend({pageIndex: page-1, pageSize: fetchCount ,moquiSessionToken:self.$root.moquiSessionToken }, {});
+                allParams["roleTypeId"] = "Contact";
+            }
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/contacts", headers:{Accept:'application/json'}, data:allParams,
+                error:moqui.handleAjaxError, success:async function(resp) {
+                    self.pagination.rowsNumber = resp.documentListCount;
+                    self.account_list = await Promise.all(resp.documentList.map(async function(item){
+                        if (item.contactMechs) {
+                            item.contactMechs = item.contactMechs.filter(function(item){
+                                return item.contactMechPurposeId.toLowerCase().includes('email');
+                            })
+                        }
+                        await self.getAllRelatedAccounts(item.partyId).then(function(resp){
+                                item["account_list"] = resp.accountList;
+                              }, Promise.resolve([]))
+                        return item;
+                    }));
+                    self.pagination.page = resp.documentListPageIndex+1;
+                    self.pagination.rowsPerPage = resp.documentListPageSize;
+                    self.pagination.sortBy = sortBy;
+                    self.pagination.descending = descending;
+                }
+            });
+        },
+        addNewSalesAccount() {
+            let self = this;
+              var allParams = $.extend({moquiSessionToken:self.$root.moquiSessionToken }, {});
+              allParams["accountPartyId"] = self.new_sales_contact_account.value;
+              allParams["firstName"] = self.new_sales_contact_fname;
+              allParams["lastName"] = self.new_sales_contact_lname;
+              $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/contacts/create", headers:{Accept:'application/json'}, data:allParams,
+                  error:moqui.handleAjaxError, success:function(resp) {
+                      self.new_sales_contact_account = "";
+                      self.new_sales_contact_fname = "";
+                      self.new_sales_contact_lname = "";
+                      self.add_new_sales_contact = false;
+                      setTimeout( () => {
+                        self.onPageChange({
+                          pagination: self.pagination,
+                        });
+                      }, 900 );
+                      self.$q.notify({
+                        message: 'New contact created successfully.',
+                        position: 'bottom-left',
+                      });
+                  }
+              });
+        },
+        formatDate (dt) {
+            if (dt) {
+                dt = new Date(dt);
+                return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2, '0') + "-" + String(dt.getDate()).padStart(2, '0');
+            }
+        },
+          filterFnOrderBy (val, update) {
+            let self = this;
+              if (val === '') {
+                update(() => {
+                  this.orderby_options = self.orderby_options_master
+                })
+                return
+              }
+              update(() => {
+              const needle = val.toLowerCase()
+              this.orderby_options = self.orderby_options_master.filter(v => v.label.toLowerCase().indexOf(needle) > -1)
+            })
+          },
+        findOptions() {
+            let self = this;
+            self.filter_params = {};
+            if (self.mdl_filter_sales_person) {
+                self.filter_params["partyId"] = self.mdl_filter_sales_person.value;
+            }
+            if (self.mdl_filter_account) {
+                self.filter_params["organizationName"] = self.mdl_filter_account;
+            }
+            if (self.mdl_filter_order_by) {
+                if (self.mdl_filter_order_by.value.startsWith("-")) {
+                    self.pagination.sortBy = self.mdl_filter_order_by.value.slice(1);
+                    self.pagination.descending = true;
+                }
+                else {
+                    self.pagination.sortBy = self.mdl_filter_order_by.value;
+                    self.pagination.descending = false;
+                }
+            }
+            self.pagination.page = 1;
+            self.onPageChange({
+              pagination: self.pagination,
+            });
+        },
+        resetFind() {
+            let self = this;
+            self.mdl_filter_sales_person = null;
+            self.mdl_filter_account = null;
+            self.mdl_filter_order_by = null;
+            self.filter_params = {};
+            self.mdl_select_find = null;
+            self.pagination.sortBy = "";
+            self.pagination.descending = true;
+            self.pagination.page = 1;
+            self.onPageChange({
+              pagination: self.pagination,
+            });
+        },
+        timeSince(date) {
+
+              var seconds = Math.floor((new Date() - date) / 1000);
+
+              var interval = seconds / 31536000;
+
+              if (interval > 1) {
+                return Math.floor(interval) + " year(s) ago";
+              }
+              interval = seconds / 2592000;
+              if (interval > 1) {
+                return Math.floor(interval) + " month(s) ago";
+              }
+              interval = seconds / 86400;
+              if (interval > 1) {
+                return Math.floor(interval) + " day(s) ago";
+              }
+              interval = seconds / 3600;
+              if (interval > 1) {
+                return Math.floor(interval) + " hour(s) ago";
+              }
+              interval = seconds / 60;
+              if (interval > 1) {
+                return Math.floor(interval) + " minute(s) ago";
+              }
+              return Math.floor(seconds) + " second(s) ago";
+        },
+        getSavedFinds () {
+            var self = this;
+            var allParms = $.extend({ formLocation: "component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList",
+                    moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/finds", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    self.saved_find_list = resp.savedFindList;
+                    self.select_find_options = resp.savedFindList;
+                }
+            });
+        },
+        searchPartyList (search_keyword) {
+            var self = this;
+            var allParms = $.extend({ moquiSessionToken:self.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            allParms["hasAllParms"] = true;
+            allParms["pageIndex"] = 0;
+            allParms["term"] = search_keyword;
+            allParms["roleTypeId"] = "Account";
+            return $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/party/searchPartyList", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError
+            });
+        },
+        searchSavedFind(selected_item) {
+            let self = this;
+            self.mdl_filter_sales_person = null;
+            self.mdl_filter_account = null;
+            self.mdl_filter_order_by = null;
+            self.filter_params = {};
+
+            self.mdl_select_find = selected_item;
+
+            if(selected_item.fieldList)
+            {
+                selected_item.fieldList.map(function(item){
+                    if(item.fieldOperator == 'equals')
+                    {
+                        if(item.fieldName=='organizationName')
+                        {
+                            self.mdl_filter_account = item.fieldValue;
+                            self.filter_params[item.fieldName] = item.fieldValue;
+                        }
+                    }
+                    return item;
+                });
+            }
+            if (Object.keys(selected_item).indexOf("orderByField") > -1) {
+                let order_by_field = selected_item.orderByField.split(",")[0];
+                if (order_by_field.startsWith("-")) {
+                    self.pagination.sortBy = order_by_field.slice(1);
+                    self.pagination.descending = true;
+                }
+                else {
+                    self.pagination.sortBy = order_by_field;
+                    self.pagination.descending = false;
+                }
+            }
+            Object.keys(self.column_to_field_mapping).forEach(function(item){
+                if (self.pagination.sortBy == self.column_to_field_mapping[item]){
+                    self.pagination.sortBy = item;
+                }
+            })
+            if (self.pagination.descending) {
+                self.mdl_filter_order_by = self.orderby_options.find(function(item){
+                    return item.value === "-" + self.pagination.sortBy;
+                });
+            }
+            else {
+                self.mdl_filter_order_by = self.orderby_options.find(function(item){
+                    return item.value === self.pagination.sortBy;
+                });
+            }
+            self.pagination.page = 1;
+            self.onPageChange({
+              pagination: self.pagination,
+            });
+        },
+        searchSelectFind(obj) {
+            this.searchSavedFind(obj);
+        },
+        storeSavedFinds () {
+            var vm = this;
+            let order_by_name = "";
+            if (vm.pagination.descending) {
+                order_by_name = "-" + (vm.column_to_field_mapping[vm.pagination.sortBy] || vm.pagination.sortBy);
+            }
+            else {
+                order_by_name = (vm.column_to_field_mapping[vm.pagination.sortBy] || vm.pagination.sortBy);
+            }
+
+            var allParms = $.extend({ description: vm.save_new_find, orderByField: order_by_name,
+             formLocation: 'component://Sales/screen/Sales/Contact/FindContact.xml.form_list$ContactList' ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/add", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+                    if (vm.mdl_filter_sales_person) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "partyId", vm.mdl_filter_sales_person.value);
+                    }
+                    if (vm.mdl_filter_account) {
+                        vm.storeSavedFindsFields(resp.formListFindId, "organizationName", vm.mdl_filter_account);
+                    }
+                    setTimeout( () => {
+                        vm.getSavedFinds();
+                    }, 900 );
+                    vm.save_new_find = '';
+                    vm.$q.notify({
+                        message: 'Saved successfully.',
+                        position: 'bottom-left',
+                      });
+                }
+            });
+        },
+        storeSavedFindsFields (formListFindId, fieldName, fieldValue) {
+            var vm = this;
+
+            var allParms = $.extend({ formListFindId: formListFindId, fieldName: fieldName, fieldValue: fieldValue,
+             fieldOperator: "equals" ,moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            $.ajax({ type:'POST', dataType:'json', url: "/rest/s1/sales/finds/addFields", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError, success:function(resp) {
+
+                }
+            });
+        },
+        async getAllRelatedAccounts(partyId) {
+            var vm = this;
+            var allParms = $.extend({ partyId: partyId, moquiSessionToken:vm.$root.moquiSessionToken, treeNodeId:'#' }, {});
+            return $.ajax({ type:'GET', dataType:'json', url: "/rest/s1/sales/contacts/getRelatedAccounts", headers:{Accept:'application/json'}, data:allParms,
+                error:moqui.handleAjaxError
+            });
+        }
+    },
+    created: function () {
+        this.onPageChange({
+          pagination: this.pagination,
+        });
+        this.getSavedFinds();
+        //this.storeSavedFinds();
+    }
+}
+</script>
+<style>
+    .custom_table_header {
+        height: 38px !important;
+    }
+    .detail_cls .q-field__label {
+        top: 10px !important;
+    }
+    .detail_cls .q-field--float .q-field__label {
+        top: 0px !important;
+    }
+    body {
+        overflow-x: hidden !important;
+    }
+    .max_width_700 {
+        max-width: 700px !important;
+    }
+    .custom_style {
+        background: #ECF2FF;
+    }
+    .custom_radius {
+        border-radius: 8px;
+    }
+    .right_options_popup .q-field__label {
+        background: transparent !important;
+    }
+    .right_options_popup .q-field__input {
+        background: transparent !important;
+    }
+    .right_options_popup .q-field--float .q-field__label {
+        background: grey !important;
+        color: white !important;
+        border-radius: 8px !important;
+    }
+    .main_list .q-card__section {
+        padding: 1px !important
+    }
+</style>

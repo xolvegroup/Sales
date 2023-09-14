@@ -12,7 +12,8 @@ You should have received a copy of the CC0 Public Domain Dedication
 along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
-<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
 
     <service verb="update" noun="ShipToParty">
         <in-parameters>
@@ -118,6 +119,199 @@ along with this software (see the LICENSE.md file). If not, see
                 <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
                 <field-map field-name="contactMechId" from="billToPostalContactMechId"/>
             </service-call>
+        </actions>
+    </service>
+    <service verb="find" noun="Orders">
+        <in-parameters>
+            <parameter name="customerPartyId"/>
+            <parameter name="pageOffset" default-value="" type="Integer"/>
+            <parameter name="pageLimit" default-value="" type="Integer"/>
+            <parameter name="orderByField" default-value="-orderId"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderList" type="List"/>
+            <parameter name="count" type="Integer"/>
+        </out-parameters>
+        <actions>
+            <entity-find-count entity-name="mantle.order.OrderPartFindView" count-field="count" distinct="true">
+                <!--                <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>-->
+                <!--                <econdition field-name="otherPartyId" from="otherPartyId" ignore-if-empty="true"/>-->
+                <!--                <econdition field-name="agreementDate" operator="greater-equals" from="fromDate" ignore-if-empty="true"/>-->
+                <!--                <econdition field-name="agreementDate" operator="less-equals" from="thruDate" ignore-if-empty="true"/>-->
+                <!--                <search-form-inputs>-->
+                <!--                    <default-parameters partStatusId="OrderOpen,OrderProposed,OrderRequested,OrderPlaced,OrderApproved,OrderHold" partStatusId_op="in"/>-->
+                <!--                </search-form-inputs>-->
+                <select-field field-name="orderId,orderPartSeqId,orderId,statusId,customerPartyId"/>
+            </entity-find-count>
+            <entity-find offset="pageOffset" limit="pageLimit" entity-name="mantle.order.OrderPartFindView"
+                         list="orderListMain">
+                <!--                <search-form-inputs>-->
+                <!--                    <default-parameters partStatusId="OrderOpen,OrderProposed,OrderRequested,OrderPlaced,OrderApproved,OrderHold" partStatusId_op="in"/>-->
+                <!--                </search-form-inputs>-->
+                <econdition field-name="customerPartyId" from="customerPartyId" ignore-if-empty="true"/>
+                <order-by field-name="${orderByField}"/>
+                <select-field field-name="orderId,orderPartSeqId,orderId,statusId,customerPartyId"/>
+            </entity-find>
+            <set field="orderList" from="[]"/>
+            <if condition="orderListMain">
+                <iterate list="orderListMain" entry="oi">
+                    <set field="orderItem" from="new HashMap()"/>
+                    <script>
+                        orderItem.putAll(oi)
+                        orderList.add(orderItem)
+                    </script>
+                    <entity-find-one entity-name="moqui.basic.StatusItem" value-field="status">
+                        <field-map field-name="statusId" from="oi.statusId"/>
+                        <field-map field-name="statusTypeId" value="OrderHeader"/>
+                    </entity-find-one>
+                    <if condition="status">
+                        <script>
+                            orderItem.put("status",status.description)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="find" noun="StoreOptions">
+        <out-parameters>
+            <parameter name="storeOptions" type="list"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.product.store.ProductStore" list="storeOptions">
+                <order-by field-name="storeName"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="ShippingDetails">
+        <in-parameters>
+            <parameter name="orderId" />
+            <parameter name="orderPartSeqId" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="shipOptsOut" type="list"/>
+            <parameter name="orderHeader" type="Map"/>
+            <parameter name="formattedGrandTotal" type="String"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.order.OrderHeader" value-field="orderHeader"/>
+            <set field="formattedGrandTotal" from="ec.l10n.formatCurrency(orderHeader.grandTotal ?: 0, orderHeader?.currencyUomId)"/>
+            <service-call name="mantle.product.StoreServices.get#StoreShippingOptions" out-map="shipOptsOut"
+                      in-map="[productStoreId:orderHeader.productStoreId, orderId:orderId, orderPartSeqId:orderPartSeqId,
+                            postalContactMechId:postalContactMechId, getRates:true]"/>
+        </actions>
+    </service>
+    <service verb="find" noun="CurBillToContactMech">
+        <in-parameters>
+            <parameter name="orderId" />
+            <parameter name="orderPartSeqId" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderPartContactMech" type="Map"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.order.OrderPartContactMech" value-field="orderPartContactMech">
+                <field-map field-name="orderId" from="orderId"/>
+                <field-map field-name="orderPartSeqId" from="orderPartSeqId"/>
+                <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+            </entity-find-one>
+        </actions>
+    </service>
+    <service verb="find" noun="PaymentTerms">
+        <out-parameters>
+            <parameter name="termList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.account.invoice.SettlementTermAndEnumMember" list="termList">
+                <econdition field-name="enumGroupEnumId" value="EngPaymentTermType"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="GeoCountries">
+        <in-parameters>
+            <parameter name="geoName" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="geoList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.Geo" list="geoList">
+            <econdition field-name="geoTypeEnumId" value="GEOT_COUNTRY"/>
+            <order-by field-name="geoName"/></entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="AssetClasses">
+        <out-parameters>
+            <parameter name="assetClassList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.Enumeration" list="assetClassList">
+                <econdition field-name="parentEnumId" value="AsClsInventory"/>
+                <order-by field-name="sequenceNum,description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="PaymentMethods">
+        <in-parameters>
+            <parameter name="customerBillToPartyId" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="paymentOptions" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.account.method.PaymentMethodDetail" list="paymentOptions">
+                <econdition field-name="ownerPartyId" from="customerBillToPartyId"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="ProductPrice">
+        <in-parameters>
+            <parameter name="productId" required="true"/><parameter name="quantity"/>
+            <parameter name="priceUomId"/><parameter name="pricePurposeEnumId"/>
+            <parameter name="productStoreId"/><parameter name="vendorPartyId"/><parameter name="customerPartyId"/>
+            <!-- use these to get store, vendor, customer, uom from OrderHeader/Part -->
+            <parameter name="orderId"/><parameter name="orderPartSeqId"/>
+            <parameter name="priceFormat"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="productPrice"/>
+        </out-parameters>
+        <actions>
+            <set field="productPrice" from="null" />
+            <if condition="productId"><then>
+                <if condition="!priceFormat"><set field="priceFormat" value="#,##0.000"/></if>
+                <service-call name="mantle.product.PriceServices.get#OrderProductPrice" in-map="context" out-map="priceOut"/>
+                <if condition="priceOut.price &gt; 0.0"><then>
+                    <set field="productPrice" from="ec.l10n.format(priceOut.price, priceFormat)" />
+                </then></if>
+            </then></if>
+        </actions>
+        <default-response type="none"/>
+    </service>
+    <service verb="find" noun="FormattedNumbers">
+        <in-parameters>
+            <parameter name="numberToFormat"/>
+            <parameter name="uomID"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="formattedGrandTotal" type="String"/>
+        </out-parameters>
+        <actions>
+            <set field="formattedGrandTotal" from="ec.l10n.formatCurrency(numberToFormat ?: 0, uomID)"/>
+        </actions>
+    </service>
+    <service verb="find" noun="ItemDetail">
+        <in-parameters>
+            <parameter name="itemTypeEnumId"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="itemType" type="String"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.basic.Enumeration" value-field="itemType">
+                <field-map field-name="enumId" from="itemTypeEnumId"/>
+            </entity-find-one>
         </actions>
     </service>
 </services>

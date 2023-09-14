@@ -1,8 +1,20 @@
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd" menu-image="fa fa-flash" menu-image-type="icon">
 
-    <subscreens default-item="Account"/>
+    <subscreens default-item="Account">
+        <subscreens-item name="ViewAccount" menu-title="View Account" menu-index="101" location="component://Sales/screen/Sales/ViewAccount.xml" menu-include="false"/>
+        <subscreens-item name="ViewContact" menu-title="View Contact" menu-index="101" location="component://Sales/screen/Sales/ViewContact.xml" menu-include="false"/>
+        <subscreens-item name="ViewOpportunity" menu-title="View Opportunity" menu-index="101" location="component://Sales/screen/Sales/ViewOpportunity.xml" menu-include="false"/>
+        <subscreens-item name="ViewAgreement" menu-title="View Agreement" menu-index="101" location="component://Sales/screen/Sales/ViewAgreement.xml" menu-include="false"/>
+        <subscreens-item name="ViewOrder" menu-title="View Order" menu-index="101" location="component://Sales/screen/Sales/ViewAgreement.xml" menu-include="false"/>
+    </subscreens>
     <widgets>
         <subscreens-panel id="SalesPanel" type="popup"/>
+        <render-mode><text type="html,vuet,qvt,qvue"><![CDATA[
+        <script type=text/javascript src="${sri.buildUrl('Scripts/ckeditor.js').url}" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/2.1.0/showdown.min.js" integrity="sha512-LhccdVNGe2QMEfI3x4DVV3ckMRe36TfydKss6mJpdHjNFiV07dFpS2xzeZedptKZrwxfICJpez09iNioiSZ3hA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.1/turndown.min.js" integrity="sha512-7f2yNDjY95XObwgNriZ38R/29bcPSuGWkM3NotiI6JeKe/GdBXkjzuYAVnM+yQEtwLbvDYn20fZy8QJ79aSEew==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/3.2.0/diff.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        ]]></text></render-mode>
     </widgets>
 </screen>

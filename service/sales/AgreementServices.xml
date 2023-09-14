@@ -23,31 +23,57 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="thruDate"/>
             <parameter name="description"/>
             <parameter name="currencyUomId"/>
+            <parameter name="organizationPartyId"/>
             <parameter name="otherPartyId"/> <!-- This is the customer -->
             <parameter name="agreementTypeEnumId" default-value="AgrSales"/>
         </in-parameters>
         <out-parameters><parameter name="agreementId"/></out-parameters>
         <actions>
-            <service-call name="create#mantle.party.agreement.Agreement"/>
+            <service-call name="create#mantle.party.agreement.Agreement" out-map="context" in-map="context" />
         </actions>
     </service>
     <service verb="find" noun="Agreement">
         <in-parameters>
             <parameter name="agreementId" required="true"/>
         </in-parameters>
-        <out-parameters><parameter name="agreement"/></out-parameters>
+        <out-parameters>
+            <parameter name="agreement"/>
+            <parameter name="agreementContact" type="list"/>
+        </out-parameters>
         <actions>
             <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
+            <entity-find entity-name="mantle.party.agreement.AgreementContactMech" list="agreementContact" >
+                <econdition field-name="agreementId" from="agreementId"/>
+            </entity-find>
         </actions>
     </service>
     <service verb="find" noun="Agreements">
         <in-parameters>
             <parameter name="partyId"/>
+            <parameter name="otherPartyId"/>
+            <parameter name="fromDate"/>
+            <parameter name="thruDate"/>
+            <parameter name="pageOffset" default-value="" type="Integer"/>
+            <parameter name="pageLimit" default-value="" type="Integer"/>
+            <parameter name="orderByField" default-value="-agreementId"/>
         </in-parameters>
-        <out-parameters><parameter name="agreements"/></out-parameters>
+        <out-parameters>
+            <parameter name="agreements"/>
+            <parameter name="count" type="Integer"/>
+        </out-parameters>
         <actions>
-            <entity-find entity-name="mantle.party.agreement.Agreement" list="agreements">
+            <entity-find-count entity-name="mantle.party.agreement.Agreement" count-field="count" distinct="true">
                 <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>
+                <econdition field-name="otherPartyId" from="otherPartyId" ignore-if-empty="true"/>
+                <econdition field-name="agreementDate" operator="greater-equals" from="fromDate" ignore-if-empty="true"/>
+                <econdition field-name="agreementDate" operator="less-equals" from="thruDate" ignore-if-empty="true"/>
+            </entity-find-count>
+            <entity-find offset="pageOffset" limit="pageLimit" entity-name="mantle.party.agreement.Agreement" list="agreements">
+                <econdition field-name="otherPartyId" from="partyId" ignore-if-empty="true"/>
+                <econdition field-name="otherPartyId" from="otherPartyId" ignore-if-empty="true"/>
+                <econdition field-name="agreementDate" operator="greater-equals" from="fromDate" ignore-if-empty="true"/>
+                <econdition field-name="agreementDate" operator="less-equals" from="thruDate" ignore-if-empty="true"/>
+                <order-by field-name="${orderByField}"/>
             </entity-find>
         </actions>
     </service>
@@ -102,6 +128,79 @@ along with this software (see the LICENSE.md file). If not, see
             </if>
         </actions>
     </service>
+    <!-- TODO: Combine update#BillToContactMech and updateShipToContactMech and parameterize ship to vs. bill to -->
+    <service verb="update" noun="BillToContactMech">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="billToPostalContactMechId"/>
+            <parameter name="action" default-value="add"/>
+        </in-parameters>
+        <actions>
+            <!-- Clear existing setting from AgreementContactMech -->
+            <service-call name="delete#mantle.party.agreement.AgreementContactMech">
+                <field-map field-name="agreementId" from="agreementId"/>
+                <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+                <field-map field-name="contactMechId" value="*"/>
+            </service-call>
+            <if condition="action != 'delete'">
+                <service-call name="create#mantle.party.agreement.AgreementContactMech">
+                    <field-map field-name="agreementId" from="agreementId"/>
+                    <field-map field-name="contactMechPurposeId" value="PostalBilling"/>
+                    <field-map field-name="contactMechId" from="billToPostalContactMechId"/>
+                </service-call>
+            </if>
+        </actions>
+    </service>
+    <service verb="update" noun="ShipToContactMech">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="shipToPostalContactMechId"/>
+            <parameter name="action" default-value="add"/>
+        </in-parameters>
+        <actions>
+            <!-- Clear existing setting from AgreementContactMech -->
+            <service-call name="delete#mantle.party.agreement.AgreementContactMech">
+                <field-map field-name="agreementId" from="agreementId"/>
+                <field-map field-name="contactMechPurposeId" value="PostalShippingDest"/>
+                <field-map field-name="contactMechId" value="*"/>
+            </service-call>
+            <if condition="action != 'delete'">
+                <service-call name="create#mantle.party.agreement.AgreementContactMech">
+                    <field-map field-name="agreementId" from="agreementId"/>
+                    <field-map field-name="contactMechPurposeId" value="PostalShippingDest"/>
+                    <field-map field-name="contactMechId" from="shipToPostalContactMechId"/>
+                </service-call>
+            </if>
+        </actions>
+    </service>
+    <service verb="update" noun="PaymentMethod">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+            <parameter name="paymentMethodId" required="true"/>
+        </in-parameters>
+        <actions>
+            <service-call name="update#mantle.party.agreement.Agreement" out-map="context" in-map="context"/>
+        </actions>
+    </service>
+    <service verb="find" noun="PaymentMethod">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="methodInfo" type="Map"/><!-- This parameter name is required to use the display template in xml screen. -->
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
+            <service-call name="sales.AgreementServices.find#AgreementParties" in-map="[agreementId:agreementId]" out-map="context"/>
+            <service-call name="mantle.account.PaymentMethodServices.get#PartyPaymentMethodInfoList"
+                          in-map="[partyId:billToParty.partyId]" out-map="ppmiOut"/>
+            <iterate list="ppmiOut.methodInfoList" entry="mi">
+                <if condition="mi.paymentMethodId == agreement.paymentMethodId">
+                    <set field="methodInfo" from="mi"/>
+                </if>
+            </iterate>
+        </actions>
+    </service>
     <service verb="find" noun="AgreementItems">
         <in-parameters>
             <parameter name="agreementId" required="true"/>
@@ -110,10 +209,52 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="agreementItemList" type="List"/>
         </out-parameters>
         <actions>
-            <entity-find entity-name="mantle.party.agreement.AgreementItemAndProductPrice" list="agreementItemList">
+            <entity-find entity-name="mantle.party.agreement.AgreementItemAndProductPrice" list="agreementItemListMain">
                 <econdition field-name="agreementId"/>
-                <econdition field-name="productId" operator="not-equals" value="XOLVE_CLOUD"/> <!-- Exclude subscriptions. Need to make this more generic. -->
+                <econdition field-name="agreementItemTypeEnumId" value="AitPricing"/> <!-- Exclude subscriptions -->
+                <order-by field-name="agreementItemSeqId"/>
             </entity-find>
+            <set field="agreementItemList" from="[]"/>
+            <if condition="agreementItemListMain">
+                <iterate list="agreementItemListMain" entry="ai">
+                    <set field="agItem" from="new HashMap()"/>
+                    <script>
+                        agItem.putAll(ai)
+                        agreementItemList.add(agItem)
+                    </script>
+                    <set field="formattedLineAmount" from="ec.l10n.formatCurrency(ai.lineAmount ?: 0, ai?.priceUomId)"/>
+                    <script>
+                        agItem.put("formattedLineAmount",formattedLineAmount)
+                    </script>
+                    <entity-find-one entity-name="mantle.product.Product" value-field="product">
+                        <field-map field-name="productId" from="ai.productId"/>
+                    </entity-find-one>
+                    <if condition="product">
+                        <script>
+                            agItem.put("product",product.productName)
+                        </script>
+                    </if>
+                    <entity-find-one entity-name="moqui.basic.Enumeration" value-field="itemType">
+                        <field-map field-name="enumId" from="ai.agreementItemTypeEnumId"/>
+                    </entity-find-one>
+                    <if condition="itemType">
+                        <script>
+                            agItem.put("itemType",itemType.description)
+                        </script>
+                    </if>
+                    <entity-find entity-name="mantle.product.ProductPrice" list="productPrice">
+                        <econdition field-name="productId" from="ai.productId"/>
+                        <econdition field-name="priceTypeEnumId" value="PptList"/>
+                        <date-filter/>
+                    </entity-find>
+                    <if condition="productPrice">
+                        <set field="listPrice" from="ec.l10n.formatCurrency(productPrice[0]['price'] ?: 0, productPrice[0]['priceUomId'])"/>
+                        <script>
+                            agItem.put("listPrice",listPrice)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
         </actions>
     </service>
     <service verb="find" noun="AgreementParties">
@@ -125,12 +266,15 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="billToParty"/>
         </out-parameters>
         <actions>
-            <entity-find entity-name="mantle.party.agreement.AgreementPartyDetail" list="agreementPartyList"/>
+            <entity-find entity-name="mantle.party.agreement.AgreementPartyDetail" list="agreementPartyList">
+                <econdition field-name="agreementId" from="agreementId"/>
+            </entity-find>
             <entity-find-one entity-name="mantle.party.agreement.AgreementPartyDetail" value-field="billToParty">
                 <field-map field-name="agreementId"/>
                 <field-map field-name="roleTypeId" value="CustomerBillTo"/>
             </entity-find-one>
             <if condition="!billToParty">
+                <!-- Customer on the Agreement and bill to party are the same -->
                 <entity-find-one entity-name="mantle.party.agreement.Agreement" value-field="agreement"/>
                 <entity-find-one entity-name="mantle.party.PartyDetail" value-field="billToParty">
                     <field-map field-name="partyId" from="agreement.otherPartyId"/>
@@ -147,6 +291,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="thruDate"/>
             <parameter name="quantity"/>
             <parameter name="unitAmount"/>
+            <parameter name="priceUomId"/>
         </in-parameters>
         <actions>
             <set field="price" from="unitAmount"/>
@@ -167,6 +312,7 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="thruDate"/>
             <parameter name="quantity"/>
             <parameter name="unitAmount"/>
+            <parameter name="priceUomId"/>
         </in-parameters>
         <actions>
             <service-call name="update#mantle.party.agreement.AgreementItem" out-map="context" in-map="context"/>
@@ -183,6 +329,129 @@ along with this software (see the LICENSE.md file). If not, see
         <actions>
             <entity-find entity-name="mantle.party.agreement.AgreementItemAndSubscription" list="agreementSubscriptionList">
                 <econdition field-name="agreementId"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="OrganizationOptions">
+        <out-parameters>
+            <parameter name="orgOptions" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyDetailAndRole" list="orgOptions">
+            <econdition field-name="partyId" from="activeOrgId" ignore="!activeOrgId"/>
+            <econdition field-name="roleTypeId" value="OrgInternal"/>
+            <econdition field-name="disabled" value="N" or-null="true"/>
+            <order-by field-name="organizationName"/></entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="RoleOptions">
+        <out-parameters>
+            <parameter name="roleList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.RoleGroupMemberAndType" list="roleList" cache="true">
+            <econdition field-name="roleGroupEnumId" value="RgpAgreement"/>
+            <order-by field-name="description"/></entity-find>
+        </actions>
+    </service>
+    <service verb="search" noun="ProductList">
+        <in-parameters>
+            <parameter name="term"/>
+            <parameter name="productFeatureIds"/>
+            <parameter name="productTypeEnumId"/>
+            <parameter name="productClassEnumId"/>
+            <parameter name="assetTypeEnumId"/>
+            <parameter name="assetClassEnumId"/>
+            <parameter name="indexName"/>
+            <parameter name="documentType"/>
+            <parameter name="pageIndex"/>
+        </in-parameters>
+        <actions>
+            <set field="indexName" from="indexName ?: searchIndexName ?: 'mantle'"/>
+            <set field="documentType" from="documentType ?: searchProductDocType ?: 'MantleProduct'"/>
+            <!-- <log message="====== getProductList indexName=${indexName}, documentType=${documentType}, term=${term}"/> -->
+
+            <set field="outList" from="[]"/>
+
+            <entity-find-one entity-name="mantle.product.Product" value-field="product">
+                <field-map field-name="productId" from="term"/></entity-find-one>
+            <if condition="product != null"><then>
+                <script>outList.add([value:product.productId, label:ec.resource.expand("ProductNameTemplate", "", product)])</script>
+            </then><else>
+                <entity-find-one entity-name="mantle.product.Product" value-field="pseudoProduct">
+                    <field-map field-name="pseudoId" from="term"/></entity-find-one>
+                <if condition="pseudoProduct != null">
+                    <script>outList.add([value:pseudoProduct.productId, label:ec.resource.expand("ProductNameTemplate", "", pseudoProduct)])</script></if>
+            </else></if>
+
+            <!-- if we have activeOrgId or filterOrgIds see if user has active org or user org filters -->
+            <set field="activeOrgId" from="ec.user.context?.activeOrgId"/>
+            <set field="filterOrgIds" from="ec.user.context?.filterOrgIds"/>
+            <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.product.Product')"/>
+            <if condition="findFilters"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
+            <!-- <log level="warn" message="Doing product search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
+
+            <script><![CDATA[
+                StringBuilder termSb = new StringBuilder('(')
+                termSb.append(elasticQueryAutoWildcard(term, false)).append(')')
+                if (productFeatureIds) {
+                    List productFeatureIdList = productFeatureIds.split(',')
+                    // NOTE: using features.productFeatureId instead of plain productFeatureId as newer ElasticSearch doesn't search in nested fields
+                    termSb.append(' AND features.productFeatureId:')
+                    if (productFeatureIdList.size() > 1) termSb.append('(')
+                    for (int i = 0; i < productFeatureIdList.size(); i++) {
+                        termSb.append(productFeatureIdList.get(i))
+                        if (i < (productFeatureIdList.size() - 1)) termSb.append(' OR ')
+                    }
+                    if (productFeatureIdList.size() > 1) termSb.append(')')
+                }
+                if (productTypeEnumId) termSb.append(' AND productTypeEnumId:').append(productTypeEnumId)
+                if (productClassEnumId) termSb.append(' AND productClassEnumId:').append(productClassEnumId)
+                if (assetTypeEnumId) termSb.append(' AND assetTypeEnumId:').append(assetTypeEnumId)
+                if (assetClassEnumId) termSb.append(' AND assetClassEnumId:').append(assetClassEnumId)
+
+                if ('MANTLE_USER_ORG'.equals(entityFilterSetId)) {
+                    termSb.append(' AND ownerPartyId:(' + filterOrgIds.join(' OR ') + ')')
+                } else if ('MANTLE_ACTIVE_ORG'.equals(entityFilterSetId) && activeOrgId) {
+                    termSb.append(' AND ownerPartyId:(' + activeOrgId + ' OR _NA_)')
+                }
+            ]]></script>
+            <!-- <log level="warn" message="Doing product search with queryString [${termSb.toString()}], indexName:${indexName}, documentType:${documentType}"/> -->
+            <!--
+                NOTE: can't order by pseudoId now that it is a 'text' type in ES instead of 'keyword', commenting as a temporary workaround, error message suggests fix:
+                "Fielddata is disabled on text fields by default. Set fielddata=true on [pseudoId] in order to load fielddata in memory by uninverting the inverted index. Note that this can however use significant memory. Alternatively use a keyword field instead."
+
+                A better approach would be to use a text field + a keyword field as suggested here: https://www.elastic.co/guide/en/elasticsearch/reference/current/fielddata.html
+                Which should be primary and secondary, ie pseudoId + pseudoId.keyword (field specific search easier)
+                    OR pseudoId + pseudoId.text (order by easier, search by field tougher but search on all fields doesn't matter)?
+
+                Without this seems to come back in reasonable order anyway, maybe not bother with explicit order by?
+
+                <set field="orderByFields" from="term ? null : ['pseudoId']"/>
+            -->
+            <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context" ignore-error="true"
+                    in-map="[queryString:termSb.toString(), indexName:indexName, documentType:documentType,
+                        orderByFields:orderByFields, pageIndex:pageIndex, pageSize:(pageSize?:20)]"/>
+            <!-- <log level="warn" message="Got product search results: ${documentList}"/> -->
+            <script>
+                for (document in documentList) outList.add([value:document._id, label:ec.resource.expand("ProductNameTemplate", "", [productName:document.name,productId:document._id,pseudoId:document.pseudoId])])
+                if (pageIndex) ec.web.sendJsonResponse([options:outList, pageSize:documentListPageSize, count:documentListCount])
+                else ec.web.sendJsonResponse(outList)
+            </script>
+            <!-- <log level="warn" message="Got product search outList: ${outList}"/> -->
+        </actions>
+    </service>
+    <service verb="find" noun="AgreementTerms">
+        <in-parameters>
+            <parameter name="agreementId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="agreementTermList" type="list"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.agreement.AgreementTerm" list="agreementTermList">
+                <econdition field-name="agreementId"/>
+                <order-by field-name="termTypeEnumId,settlementTermId"/>
             </entity-find>
         </actions>
     </service>

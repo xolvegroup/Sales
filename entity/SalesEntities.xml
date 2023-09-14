@@ -24,5 +24,19 @@ along with this software (see the LICENSE.md file). If not, see
         <relationship type="one" related="mantle.sales.opportunity.SalesOpportunity"/>
         <relationship type="one" related="moqui.security.UserAccount"/>
     </entity>
-
+    <!-- To support ContactMechs for Agreements -->
+    <entity entity-name="AgreementContactMech" package="mantle.party.agreement" cache="never">
+        <field name="agreementId" type="id" is-pk="true"/>
+        <field name="contactMechPurposeId" type="id" is-pk="true"/>
+        <field name="contactMechId" type="id" is-pk="true"/>
+        <relationship type="one" related="mantle.party.agreement.Agreement"/>
+        <relationship type="one" related="mantle.party.contact.ContactMechPurpose" short-alias="purpose"/>
+        <relationship type="one" related="mantle.party.contact.ContactMech" short-alias="contactMech"/>
+        <relationship type="one-nofk" related="mantle.party.contact.TelecomNumber" short-alias="telecomNumber"/>
+        <relationship type="one-nofk" related="mantle.party.contact.PostalAddress" short-alias="postalAddress"/>
+    </entity>
+    <extend-entity entity-name="Agreement" package="mantle.party.agreement">
+        <field name="paymentMethodId" type="id"/>
+        <relationship type="one" related="mantle.account.method.PaymentMethod"/>
+    </extend-entity>
 </entities>

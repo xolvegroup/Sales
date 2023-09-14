@@ -45,15 +45,303 @@ along with this software (see the LICENSE.md file). If not, see
     </resource>
     <resource name="blogPage" require-authentication="anonymous-view">
         <method type="get"><service name="org.moqui.impl.WikiServices.get#PublishedWikiPageText"/></method>
-            <id name="wikiSpaceId">
+        <id name="wikiSpaceId">
+            <method type="get">
+                <service name="moqui.impl.WikiServices.get#PublishedWikiPageText"/>
+            </method>
+            <id name="pagePath">
                 <method type="get">
                     <service name="moqui.impl.WikiServices.get#PublishedWikiPageText"/>
                 </method>
-                <id name="pagePath">
-                    <method type="get">
-                        <service name="moqui.impl.WikiServices.get#PublishedWikiPageText"/>
-                    </method>
-                </id>
+            </id>
         </id>
+    </resource>
+    <resource name="account" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.search#Party"/></method>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesServices.create#Opportunity"/></method>
+        </resource>
+        <resource name="getAllSalesPerson" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#AllSalesPerson"/></method>
+        </resource>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.sales.AccountServices.create#Account"/></method>
+        </resource>
+        <resource name="getSalesOpportunity" require-authentication="anonymous-view">
+            <method type="post"><service name="sales.SalesServices.find#SalesOpportunity"/></method>
+        </resource>
+        <resource name="getContactList" require-authentication="anonymous-view">
+            <method type="post"><service name="sales.SalesServices.find#ContactList"/></method>
+        </resource>
+        <resource name="getSalesOrders" require-authentication="anonymous-view">
+            <method type="post"><service name="sales.SalesServices.find#SalesOrders"/></method>
+        </resource>
+        <resource name="getOrderStatuses" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#OrderStatuses"/></method>
+        </resource>
+    </resource>
+    <resource name="finds" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.find#SavedFinds"/></method>
+        <resource name="add" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesServices.create#SavedFinds"/></method>
+        </resource>
+        <resource name="addFields" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesServices.create#SavedFindsFields"/></method>
+        </resource>
+    </resource>
+    <resource name="party" require-authentication="anonymous-view">
+        <resource name="getContactInfoList" require-authentication="anonymous-view">
+            <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfoList"/></method>
+        </resource>
+        <resource name="getDetail" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#PartyDetail"/></method>
+        </resource>
+        <resource name="getNoteList" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#PartyNoteList"/></method>
+        </resource>
+        <resource name="storeContactInfo" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.party.ContactServices.store#PartyContactInfo"/></method>
+        </resource>
+        <resource name="removeContactInfo" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.party.ContactServices.delete#PartyContactMech"/></method>
+        </resource>
+        <resource name="createNote" require-authentication="anonymous-all">
+            <method type="post"><service name="create#mantle.party.PartyNote"/></method>
+        </resource>
+        <resource name="updateNote" require-authentication="anonymous-all">
+            <method type="post"><service name="update#mantle.party.PartyNote"/></method>
+        </resource>
+        <resource name="getPhoneOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#PhoneOptions"/></method>
+        </resource>
+        <resource name="getWebOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#WebOptions"/></method>
+        </resource>
+        <resource name="getEmailOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#EmailOptions"/></method>
+        </resource>
+        <resource name="searchPartyList" require-authentication="anonymous-view">
+            <method type="post"><service name="sales.SalesServices.search#PartyList"/></method>
+        </resource>
+    </resource>
+    <resource name="tasks" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.find#AllTask"/></method>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesServices.create#Task"/></method>
+        </resource>
+        <resource name="update" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.work.TaskServices.update#Task"/></method>
+        </resource>
+        <resource name="getStatuses" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#Statuses"/></method>
+        </resource>
+    </resource>
+    <resource name="contacts" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.search#Party"/></method>
+        <resource name="getRelatedAccounts" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#AllRelatedAccounts"/></method>
+        </resource>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.sales.AccountServices.create#Contact"/></method>
+        </resource>
+        <resource name="delete" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.sales.AccountServices.delete#Contact"/></method>
+        </resource>
+        <resource name="add" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.sales.AccountServices.add#Contact"/></method>
+        </resource>
+    </resource>
+    <resource name="opportunity" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesServices.search#Opportunity"/></method>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesServices.create#Opportunity"/></method>
+        </resource>
+        <resource name="update" require-authentication="anonymous-all">
+            <method type="post"><service name="update#mantle.sales.opportunity.SalesOpportunity"/></method>
+        </resource>
+        <resource name="createNote" require-authentication="anonymous-all">
+            <method type="post"><service name="create#mantle.sales.opportunity.SalesOpportunityNote"/></method>
+        </resource>
+        <resource name="updateNote" require-authentication="anonymous-all">
+            <method type="post"><service name="update#mantle.sales.opportunity.SalesOpportunityNote"/></method>
+        </resource>
+        <resource name="getNotes" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#OpportunityNoteList"/></method>
+        </resource>
+        <resource name="getSingleOpportunity" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#SingleSalesOpportunity"/></method>
+        </resource>
+        <resource name="getTasks" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#OpportunityTasks"/></method>
+        </resource>
+        <resource name="getUOM" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#UOM"/></method>
+        </resource>
+        <resource name="getContacts" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#OpportunityContacts"/></method>
+        </resource>
+        <resource name="getContactOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#OppContactOptions"/></method>
+        </resource>
+        <resource name="removeContact" require-authentication="anonymous-all">
+            <method type="post"><service name="delete#mantle.sales.opportunity.SalesOpportunityParty"/></method>
+        </resource>
+        <resource name="addParty" require-authentication="anonymous-all">
+            <method type="post"><service name="create#mantle.sales.opportunity.SalesOpportunityParty"/></method>
+        </resource>
+        <resource name="getStageOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#StageOptions"/></method>
+        </resource>
+        <resource name="getSalesTeamOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesServices.find#SalesPersonOptions"/></method>
+        </resource>
+    </resource>
+
+    <resource name="agreement" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.AgreementServices.find#Agreements"/></method>
+        <resource name="getSingle" require-authentication="anonymous-all">
+            <method type="get"><service name="sales.AgreementServices.find#Agreement"/></method>
+        </resource>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.create#Agreement"/></method>
+        </resource>
+        <resource name="updateAgreement" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#Agreement"/></method>
+        </resource>
+        <resource name="updateAgreementItem" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#AgreementItem"/></method>
+        </resource>
+        <resource name="deleteAgreementItem" require-authentication="anonymous-all">
+            <method type="post"><service name="delete#mantle.party.agreement.AgreementItem"/></method>
+        </resource>
+        <resource name="removeAgreementParty" require-authentication="anonymous-all">
+            <method type="post"><service name="delete#mantle.party.agreement.AgreementParty"/></method>
+        </resource>
+        <resource name="addAgreementParty" require-authentication="anonymous-all">
+            <method type="post"><service name="create#mantle.party.agreement.AgreementParty"/></method>
+        </resource>
+        <resource name="addAgreementItem" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.create#AgreementItem"/></method>
+        </resource>
+        <resource name="getOrganizationOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#OrganizationOptions"/></method>
+        </resource>
+        <resource name="getAgreementItems" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#AgreementItems"/></method>
+        </resource>
+        <resource name="getAgreementParties" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#AgreementParties"/></method>
+        </resource>
+        <resource name="getRoleOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#RoleOptions"/></method>
+        </resource>
+        <resource name="getProductList" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.search#ProductList"/></method>
+        </resource>
+        <resource name="updateBillToParty" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#BillToParty"/></method>
+        </resource>
+        <resource name="findAgreementSubscriptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#AgreementSubscriptions"/></method>
+        </resource>
+        <resource name="getPartyContactInfo" require-authentication="anonymous-view">
+            <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfoList"/></method>
+        </resource>
+        <resource name="getAgreementTerms" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#AgreementTerms"/></method>
+        </resource>
+        <resource name="updateBillToContactMech" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#BillToContactMech"/></method>
+        </resource>
+        <resource name="updateShipToContactMech" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#ShipToContactMech"/></method>
+        </resource>
+        <resource name="getPaymentMethod" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.find#PaymentMethod"/></method>
+        </resource>
+        <resource name="updatePaymentMethod" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.AgreementServices.update#PaymentMethod"/></method>
+        </resource>
+    </resource>
+    <resource name="orders" require-authentication="anonymous-view">
+        <method type="get"><service name="sales.SalesOrderServices.find#Orders"/></method>
+        <resource name="getStoreOptions" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#StoreOptions"/></method>
+        </resource>
+        <resource name="create" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.create#Order"/></method>
+        </resource>
+        <resource name="getSingle" require-authentication="anonymous-view">
+            <method type="get"><service name="mantle.order.OrderInfoServices.get#OrderDisplayInfo"/></method>
+        </resource>
+        <resource name="getShippingDetails" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#ShippingDetails"/></method>
+        </resource>
+        <resource name="updateBillToContactMech" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesOrderServices.update#BillToContactMech"/></method>
+        </resource>
+        <resource name="getCurBillToContactMech" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#CurBillToContactMech"/></method>
+        </resource>
+        <resource name="getPartyContactInfoList" require-authentication="anonymous-view">
+            <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfoList"/></method>
+        </resource>
+        <resource name="getCurShipToInfo" require-authentication="anonymous-view">
+            <method type="get"><service name="mantle.party.ContactServices.get#PartyContactInfo"/></method>
+        </resource>
+        <resource name="getPaymentTerms" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#PaymentTerms"/></method>
+        </resource>
+        <resource name="updateShipToParty" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesOrderServices.update#ShipToParty"/></method>
+        </resource>
+        <resource name="updateOrderPart" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.update#OrderPart"/></method>
+        </resource>
+        <resource name="getGeoCountries" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#GeoCountries"/></method>
+        </resource>
+        <resource name="getGeoRegionsForDropDown" require-authentication="anonymous-all">
+            <method type="post"><service name="org.moqui.impl.BasicServices.get#GeoRegionsForDropDown"/></method>
+        </resource>
+        <resource name="placeOrder" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.place#Order"/></method>
+        </resource>
+        <resource name="setOrderBillingShippingInfo" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.set#OrderBillingShippingInfo"/></method>
+        </resource>
+        <resource name="getAssetClasses" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#AssetClasses"/></method>
+        </resource>
+        <resource name="getProductList" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.AgreementServices.search#ProductList"/></method>
+        </resource>
+        <resource name="getProductPrice" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#ProductPrice"/></method>
+        </resource>
+        <resource name="addProductItem" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.add#OrderProductQuantity"/></method>
+        </resource>
+        <resource name="updateBillToParty" require-authentication="anonymous-all">
+            <method type="post"><service name="sales.SalesOrderServices.update#BillToParty"/></method>
+        </resource>
+        <resource name="deleteItem" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.delete#OrderItem"/></method>
+        </resource>
+        <resource name="updateItem" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.update#OrderItem"/></method>
+        </resource>
+        <resource name="getPaymentMethods" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#PaymentMethods"/></method>
+        </resource>
+        <resource name="addOrderPartPayment" require-authentication="anonymous-all">
+            <method type="post"><service name="mantle.order.OrderServices.add#OrderPartPayment"/></method>
+        </resource>
+        <resource name="getFormattedNumbers" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#FormattedNumbers"/></method>
+        </resource>
+        <resource name="getItemDetail" require-authentication="anonymous-view">
+            <method type="get"><service name="sales.SalesOrderServices.find#ItemDetail"/></method>
+        </resource>
     </resource>
 </resource>

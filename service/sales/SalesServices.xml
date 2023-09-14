@@ -339,6 +339,10 @@ along with this software (see the LICENSE.md file). If not, see
             <parameter name="accountPartyId"/>
             <parameter name="name"/>
             <parameter name="partyId"/>
+            <parameter name="orderByField"/>
+            <parameter name="pageIndex" type="Integer" default="0"/>
+            <parameter name="pageSize" type="Integer" default="20"/>
+            <parameter name="pageNoLimit" type="Boolean" default="false"/>
         </in-parameters>
         <out-parameters>
             <parameter name="queryString"/>
@@ -383,7 +387,9 @@ along with this software (see the LICENSE.md file). If not, see
             ]]></script>
             <if condition="!queryString"><set field="queryString" value="*:*"/></if>
                 <!--<service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context" in-map="context"/>-->
-                <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
+            <set field="orderByFields" from="orderByField ? [orderByField.replace('combinedName', 'combinedName.keyword').replace('username', 'userAccounts.username.keyword')] : null"/>
+
+            <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
                               in-map="[indexName:indexName, documentType:documentType, queryString:queryString,orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
                              pageIndex:pageIndex, pageSize:pageSize, pageNoLimit:pageNoLimit]"/>
                 <!-- The following call is taken from PartyServices search#Party.
@@ -393,6 +399,560 @@ along with this software (see the LICENSE.md file). If not, see
                              orderByFields:orderByFields, highlightFields:highlightFields, nestedQueryMap:nestedQueryMap,
                              pageIndex:pageIndex, pageSize:pageSize, pageNoLimit:pageNoLimit]"/>
                 -->
+            <if condition="documentList">
+                <iterate list="documentList" entry="doc">
+                        <script>
+                            doc.put("formatted_estimated_amount",ec.l10n.formatCurrency(doc.estimatedAmount ?: 0, doc?.currencyUomId))
+                        </script>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="find" noun="PartyDetail">
+        <in-parameters>
+            <parameter name="partyId" required="true" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="party"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.party.PartyDetail" value-field="party">
+                <field-map field-name="partyId" from="partyId"/>
+            </entity-find-one>
+        </actions>
+    </service>
+    <service verb="find" noun="AllSalesPerson">
+        <in-parameters>
+            <parameter name="partyIdList" type="List" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="spList"/>
+        </out-parameters>
+        <actions>
+            <set field="partyIdSet" from="new HashSet()"/>
+            <script>partyIdSet.addAll(partyIdList)</script>
+            <entity-find entity-name="mantle.party.PartyDetail" list="spList">
+                <econdition field-name="partyId" operator="in" from="partyIdList"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="SavedFinds">
+        <in-parameters>
+            <parameter name="formLocation" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="savedFindList"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.screen.form.FormListFindUserView" list="sfList">
+                <econdition field-name="userId" from="ec.user.userId"/>
+                <econdition field-name="formLocation" from="formLocation"/>
+            </entity-find>
+            <set field="savedFindList" from="[]"/>
+            <if condition="sfList">
+                <iterate list="sfList" entry="sf">
+                    <set field="saved_find" from="new HashMap()"/>
+                    <script>
+                        saved_find.putAll(sf)
+                        savedFindList.add(saved_find)
+                    </script>
+                    <entity-find entity-name="moqui.screen.form.FormListFindField" list="fieldList">
+                        <econdition field-name="formListFindId" from="sf.formListFindId"/>
+                    </entity-find>
+                    <if condition="fieldList">
+                        <script>
+                            saved_find.put("fieldList",fieldList)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="create" noun="SavedFinds">
+        <in-parameters>
+            <parameter name="description" required="true"/>
+            <parameter name="formLocation" required="true"/>
+            <parameter name="orderByField" />
+            <parameter name="fieldName" />
+            <parameter name="fieldValue" />
+            <parameter name="fieldOperator" />
+            <parameter name="fieldFrom" />
+            <parameter name="fieldThru" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="formListFindId"/>
+        </out-parameters>
+        <actions>
+            <service-call name="create#moqui.screen.form.FormListFind"
+                         out-map="context" in-map="[description:description, formLocation:formLocation, orderByField:orderByField]"/>
+            <service-call name="create#moqui.screen.form.FormListFindUser"
+                          in-map="[formListFindId:context.formListFindId, userId:ec.user.userId]"/>
+        </actions>
+    </service>
+    <service verb="create" noun="SavedFindsFields">
+        <in-parameters>
+            <parameter name="formListFindId" required="true"/>
+            <parameter name="fieldName" />
+            <parameter name="fieldValue" />
+            <parameter name="fieldOperator" />
+            <parameter name="fieldFrom" />
+            <parameter name="fieldThru" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="formListFindId"/>
+        </out-parameters>
+        <actions>
+            <service-call name="create#moqui.screen.form.FormListFindField"
+                         out-map="context" in-map="[formListFindId:formListFindId, fieldName:fieldName, fieldValue:fieldValue,
+                         fieldOperator:fieldOperator, fieldFrom:fieldFrom, fieldThru:fieldThru]"/>
+        </actions>
+    </service>
+    <service verb="find" noun="PartyNoteList">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="partyNoteList"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyNote" list="tmpPartyNoteList">
+                <econdition field-name="partyId"/>
+                <order-by field-name="-noteDate"/>
+            </entity-find>
+            <set field="partyNoteList" from="[]"/>
+            <if condition="tmpPartyNoteList">
+                <iterate list="tmpPartyNoteList" entry="note">
+                    <set field="note_item" from="new HashMap()"/>
+                    <script>
+                        note_item.putAll(note)
+                        partyNoteList.add(note_item)
+                    </script>
+                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="partyDetail">
+                        <field-map field-name="partyId" from="note.userId"/>
+                    </entity-find-one>
+                    <if condition="partyDetail">
+                        <set field="assignedUserFirstName" from="partyDetail.firstName"/>
+                        <set field="assignedUserLastName" from="partyDetail.lastName"/>
+                        <script>
+                            note_item.put("added_by",assignedUserFirstName + ' ' + assignedUserLastName)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="find" noun="OpportunityNoteList">
+        <in-parameters>
+            <parameter name="salesOpportunityId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="opportunityNoteList"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityNote" list="tmpOpportunityNoteList">
+                <econdition field-name="salesOpportunityId"/>
+                <order-by field-name="-noteDate"/>
+            </entity-find>
+            <set field="opportunityNoteList" from="[]"/>
+            <if condition="tmpOpportunityNoteList">
+                <iterate list="tmpOpportunityNoteList" entry="note">
+                    <set field="note_item" from="new HashMap()"/>
+                    <script>
+                        note_item.putAll(note)
+                        opportunityNoteList.add(note_item)
+                    </script>
+<!--                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="partyDetail">-->
+<!--                        <field-map field-name="partyId" from="note.userId"/>-->
+<!--                    </entity-find-one>-->
+<!--                    <if condition="partyDetail">-->
+<!--                        <set field="assignedUserFirstName" from="partyDetail.firstName"/>-->
+<!--                        <set field="assignedUserLastName" from="partyDetail.lastName"/>-->
+<!--                        <script>-->
+<!--                            note_item.put("added_by",assignedUserFirstName + ' ' + assignedUserLastName)-->
+<!--                        </script>-->
+<!--                    </if>-->
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="find" noun="PhoneOptions">
+        <out-parameters>
+            <parameter name="phoneOptions"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.contact.ContactMechPurpose" list="phoneOptions">
+                <econdition field-name="contactMechTypeEnumId" value="CmtTelecomNumber"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="WebOptions">
+        <out-parameters>
+            <parameter name="webOptions"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.contact.ContactMechPurpose" list="webOptions">
+                <econdition field-name="contactMechTypeEnumId" value="CmtWebAddress"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="EmailOptions">
+        <out-parameters>
+            <parameter name="emailOptions"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.contact.ContactMechPurpose" list="emailOptions">
+                <econdition field-name="contactMechTypeEnumId" value="CmtEmailAddress"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="AllTask">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="allTasks"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="WorkEffortAndParty" list="allTasks">
+                <econdition field-name="partyId"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="Statuses">
+        <out-parameters>
+            <parameter name="statusList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.StatusItem" list="statusList">
+                <econdition field-name="statusTypeId" value="WorkEffort"/>
+                <select-field field-name="statusId,description"/>
+                <order-by field-name="sequenceNum"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="SalesOpportunity">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="oppyList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.sales.opportunity.SalesOpportunity" list="oppyList">
+                <econdition field-name="accountPartyId" from="partyId"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="SalesOrders">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.order.OrderHeaderAndPart" list="orderList">
+                <econdition field-name="customerPartyId" from="partyId"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="OrderStatuses">
+        <out-parameters>
+            <parameter name="statusList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.StatusItem" list="statusList">
+                <econdition field-name="statusTypeId" value="OrderHeader"/>
+                <select-field field-name="statusId,description"/>
+                <order-by field-name="sequenceNum"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="AllRelatedAccounts">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="accountList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyRelationship" list="accountListTmp">
+                <date-filter/>
+                <econdition field-name="fromPartyId" from="partyId"/>
+                <econdition field-name="fromRoleTypeId" value="Contact"/>
+                <select-field field-name="toPartyId,partyRelationshipId"/>
+            </entity-find>
+            <set field="accountList" from="[]"/>
+            <if condition="accountListTmp">
+                <iterate list="accountListTmp" entry="acct">
+                    <set field="item" from="new HashMap()"/>
+                    <script>
+                        item.putAll(acct)
+                        accountList.add(item)
+                    </script>
+                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="account_details">
+                        <field-map field-name="partyId" from="acct.toPartyId"/>
+                    </entity-find-one>
+                    <script>
+                        item.put("account_name",account_details.organizationName)
+                    </script>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="search" noun="PartyList">
+        <in-parameters>
+            <parameter name="term"/>
+            <parameter name="roleTypeId"/>
+            <parameter name="indexName"/>
+            <parameter name="documentType"/>
+            <parameter name="partyTypeEnumId"/>
+            <parameter name="includeDisabled"/> <!-- 'true' includes disabled -->
+            <parameter name="restrictActiveOrg"/> <!-- !'true' restricts to active org (only if present) -->
+            <parameter name="pageIndex"/>
+        </in-parameters>
+        <actions>
+            <if condition="!term &amp;&amp; !pageIndex"><script>ec.web.sendJsonResponse([])</script><return/></if>
+            <set field="term" from="term ?: '*'"/>
+
+            <set field="indexName" from="indexName ?: searchIndexName ?: 'mantle'"/>
+            <set field="documentType" from="documentType ?: searchPartyDocType ?: 'MantleParty'"/>
+            <!-- <log message="====== searchPartyList indexName=${indexName}, documentType=${documentType}, term=${term}"/> -->
+
+            <entity-find-one entity-name="mantle.party.PartyDetail" value-field="partyDetail">
+                <field-map field-name="partyId" from="term"/></entity-find-one>
+
+            <if condition="partyDetail != null"><then>
+                <script>
+                    def outList = [[value:partyDetail.partyId, label:ec.resource.expand("PartyNameTemplate", "", partyDetail)]]
+                    ec.web.sendJsonResponse(outList)
+                </script>
+            </then><else>
+                <!-- if we have activeOrgId or filterOrgIds see if user has active org or user org filters -->
+                <set field="activeOrgId" from="ec.user.context?.activeOrgId"/>
+                <set field="filterOrgIds" from="ec.user.context?.filterOrgIds"/>
+                <set field="findFilters" from="ec.artifactExecution.getFindFiltersForUser('mantle.party.Party')"/>
+                <if condition="findFilters"><set field="entityFilterSetId" from="findFilters[0].entityFilterSetId"/></if>
+                <!-- <log level="warn" message="Doing party search with activeOrgId ${activeOrgId} filterOrgIds ${filterOrgIds} entityFilterSetId ${entityFilterSetId}"/> -->
+
+                <script><![CDATA[
+                    StringBuilder termSb = new StringBuilder('(')
+                    termSb.append(elasticQueryAutoWildcard(term, false)).append(')')
+
+                    if (roleTypeId) termSb.append(' AND roles.roleTypeId:(').append(roleTypeId.replaceAll(/,/, ' OR ')).append(')')
+                    if (partyTypeEnumId) termSb.append(' AND (partyTypeEnumId:' + partyTypeEnumId + ')')
+                    if (!'true'.equals(includeDisabled)) termSb.append(' AND (NOT disabled:Y)')
+                    if (activeOrgId && 'true'.equals(restrictActiveOrg)) termSb.append(' AND (partyId:' + activeOrgId + ')')
+
+                    if ('MANTLE_USER_ORG'.equals(entityFilterSetId)) {
+                        termSb.append(' AND ownerPartyId:(' + (filterOrgIds ? filterOrgIds.join(' OR ') + ' OR ' : '') + '_NA_)')
+                    } else if ('MANTLE_ACTIVE_ORG'.equals(entityFilterSetId) && activeOrgId) {
+                        termSb.append(' AND ownerPartyId:(' + activeOrgId + ' OR _NA_)')
+                    }
+                ]]></script>
+                <!-- <log level="warn" message="Doing party search with queryString [${termSb.toString()}], indexName:${indexName}, documentType:${documentType}"/> -->
+                <service-call name="org.moqui.search.SearchServices.search#DataDocuments" out-map="context"
+                        in-map="[queryString:termSb.toString(), indexName:indexName, documentType:documentType]"/>
+                <!-- <log level="warn" message="Got party search results: ${documentList}"/> -->
+                <script>
+                    def outList = []
+                    for (document in documentList) outList.add([value:document._id, label:ec.resource.expand("PartyNameTemplate", "", document)])
+                    ec.web.sendJsonResponse(outList)
+                </script>
+                <!-- <log level="warn" message="Got party search outList: ${outList}"/> -->
+            </else></if>
+        </actions>
+    </service>
+    <service verb="find" noun="ContactList">
+        <in-parameters>
+            <parameter name="partyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="contactList" type="List"/>
+            <parameter name="relationshipCount" type="Integer"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyRelationship" list="tmpContactList">
+                <econdition field-name="toPartyId" from="partyId"/>
+                <econdition field-name="fromRoleTypeId" value="Contact"/>
+                <date-filter/>
+            </entity-find>
+            <entity-find-count entity-name="mantle.party.PartyRelationship" count-field="relationshipCount">
+                <econdition field-name="toPartyId" from="partyId"/><date-filter/>
+                <econdition field-name="fromRoleTypeId" value="Contact"/>
+            </entity-find-count>
+            <set field="contactList" from="[]"/>
+            <if condition="tmpContactList">
+                <iterate list="tmpContactList" entry="ct">
+                    <set field="cnt" from="new HashMap()"/>
+                    <script>
+                        cnt.putAll(ct)
+                        contactList.add(cnt)
+                    </script>
+                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="contact_obj">
+                        <field-map field-name="partyId" from="ct.fromPartyId"/>
+                    </entity-find-one>
+                    <if condition="contact_obj">
+                        <set field="first_name" from="contact_obj.firstName"/>
+                        <set field="last_name" from="contact_obj.lastName"/>
+                        <script>
+                            cnt.put("contact_person",first_name + ' ' + last_name)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="find" noun="UOM">
+        <out-parameters>
+            <parameter name="statusList" type="List"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.Uom" list="statusList">
+                <econdition field-name="uomTypeEnumId" value="UT_CURRENCY_MEASURE"/>
+                <order-by field-name="description"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="OpportunityTasks">
+        <in-parameters>
+            <parameter name="salesOpportunityId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="weList"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="SalesOpportunityWorkEffort" list="tmpWeList">
+                <econdition field-name="salesOpportunityId"/>
+            </entity-find>
+            <set field="weList" from="[]"/>
+            <if condition="tmpWeList">
+                <iterate list="tmpWeList" entry="we">
+                    <set field="item" from="new HashMap()"/>
+                    <script>
+                        item.putAll(we)
+                        weList.add(item)
+                    </script>
+                    <entity-find-one entity-name="WorkEffort" value-field="we_obj">
+                        <field-map field-name="workEffortId" from="we.workEffortId"/>
+                    </entity-find-one>
+                    <if condition="we_obj">
+                        <set field="workEffortName" from="we_obj.workEffortName"/>
+                        <set field="statusId" from="we_obj.statusId"/>
+                        <set field="description" from="we_obj.description"/>
+                        <set field="estimatedCompletionDate" from="we_obj.estimatedCompletionDate"/>
+                        <script>
+                            item.put("workEffortName",workEffortName)
+                            item.put("statusId",statusId)
+                            item.put("description",description)
+                            item.put("estimatedCompletionDate",estimatedCompletionDate)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="find" noun="SingleSalesOpportunity">
+        <in-parameters>
+            <parameter name="salesOpportunityId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="opportunity" />
+            <parameter name="stage" />
+            <parameter name="formatted_estimated_amount" />
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="mantle.sales.opportunity.SalesOpportunity" value-field="opportunity">
+                <select-field field-name="lastUpdatedStamp,opportunityName,description,opportunityStageId,estimatedCloseDate,accountPartyId,currencyUomId,estimatedAmount,salesOpportunityId" />
+                <field-map field-name="salesOpportunityId" from="salesOpportunityId"/>
+            </entity-find-one>
+            <set field="formatted_estimated_amount" from="ec.l10n.formatCurrency(opportunity.estimatedAmount ?: 0, opportunity?.currencyUomId)"/>
+            <entity-find-one entity-name="mantle.sales.opportunity.SalesOpportunityStage" value-field="stage">
+                <field-map field-name="opportunityStageId" from="opportunity.opportunityStageId"/>
+            </entity-find-one>
+        </actions>
+    </service>
+    <service verb="find" noun="OpportunityContacts">
+        <in-parameters>
+            <parameter name="salesOpportunityId" required="true"/>
+            <parameter name="roleTypeId"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="contactList" />
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityParty" list="tmpContactList">
+                <econdition field-name="salesOpportunityId" from="salesOpportunityId"/>
+                <econdition field-name="roleTypeId" from="roleTypeId"/>
+            </entity-find>
+            <set field="contactList" from="[]"/>
+            <if condition="tmpContactList">
+                <iterate list="tmpContactList" entry="ct">
+                    <set field="cnt" from="new HashMap()"/>
+                    <script>
+                        cnt.putAll(ct)
+                        contactList.add(cnt)
+                    </script>
+                    <entity-find-one entity-name="mantle.party.PartyDetail" value-field="contact_obj">
+                        <field-map field-name="partyId" from="ct.partyId"/>
+                    </entity-find-one>
+                    <if condition="contact_obj">
+                        <set field="first_name" from="contact_obj.firstName"/>
+                        <set field="last_name" from="contact_obj.lastName"/>
+                        <script>
+                            cnt.put("contact_person",first_name + ' ' + last_name)
+                        </script>
+                    </if>
+                </iterate>
+            </if>
+        </actions>
+    </service>
+    <service verb="find" noun="OppContactOptions">
+        <in-parameters>
+            <parameter name="accountPartyId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="contactList" />
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyFromAndRelationship" list="contactList">
+                <econdition field-name="toPartyId" from="accountPartyId"/>
+                <econdition field-name="fromRoleTypeId" value="Contact"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="StageOptions">
+        <out-parameters>
+            <parameter name="stageList" />
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityStage" list="stageList">
+                <order-by field-name="sequenceNum"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="SalesTeam">
+        <out-parameters>
+            <parameter name="stageList" />
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.sales.opportunity.SalesOpportunityParty" list="salesTeamList">
+                <econdition field-name="salesOpportunityId" from="salesOpportunityId"/>
+                <econdition field-name="roleTypeId" value="SalesRepresentative"/>
+            </entity-find>
+        </actions>
+    </service>
+    <service verb="find" noun="SalesPersonOptions">
+        <out-parameters>
+            <parameter name="personOptions" />
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="mantle.party.PartyDetailAndRole" list="personOptions">
+                <econdition field-name="roleTypeId" value="SalesRepresentative"/>
+            </entity-find>
         </actions>
     </service>
 </services>
