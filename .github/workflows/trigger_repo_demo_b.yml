@@ -1,0 +1,18 @@
+name: trigger CI in moquidemo repository 
+on:
+  push:
+    branches:
+       - "develop"
+jobs:
+   trigger-test:
+      runs-on:  ubuntu-latest
+        
+
+
+      steps:
+        - name: trigger the automated test in another repository 
+          uses: peter-evans/repository-dispatch@v2
+          with:
+            token:  ${{ secrets.REPO_B_TOKEN }}
+            repository:  xolvegroup/moquidemo
+            event-type:  my-event-sales
