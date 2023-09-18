@@ -14,5 +14,5 @@ jobs:
           uses: peter-evans/repository-dispatch@v2
           with:
             token:  ${{ secrets.REPO_B_TOKEN }}
-            repository:  xolvegroup/moquidemo
+            repository:  xolvegroup/moquiprod
             event-type:  my-event-sales
