@@ -6,7 +6,6 @@
         <screen location="component://webroot/screen/webroot/apps.xml">
             <subscreens-item name="Sales" menu-title="Sales" menu-index="01" location="component://Sales/screen/Sales.xml"/>
             <subscreens-item name="SalesAdmin" menu-title="Sales Admin" menu-index="02" location="component://Sales/screen/SalesAdmin.xml"/>
-            <subscreens-item name="SubscriptionManagement" menu-title="Subscription Management" menu-index="03" location="component://Sales/screen/SubscriptionManagement.xml"/>
         </screen>
     </screen-facade>
 </moqui-conf>

@@ -1,8 +1,0 @@
-<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd" menu-image="fa fa-flash" menu-image-type="icon">
-
-    <subscreens default-item="Agreement"/>
-    <widgets>
-        <subscreens-panel id="SubscriptionManagementPanel" type="popup"/>
-    </widgets>
-</screen>
