@@ -13,24 +13,20 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
-        default-menu-title="View Contact">
-    <!-- Use this for quasar version
+        default-menu-title="View Account" default-menu-index="10" menu-image="/ssstatic/images/Customer.png">
+    <!-- Use this to switch to quasar version
     <widgets>
         <render-mode>
-            <text type="vue,qvue" location="component://Sales/screen/Sales/Contact/ViewContact.qvue"/>
-        </render-mode>
+            <text type="vue,qvue" location="component://Sales/screen/Sales/Account/ViewAccount.qvue"/>
+            </render-mode>
     </widgets>
     -->
     <parameter name="partyId" required="true"/>
     <transition name="removeContactInfo"><service-call name="mantle.party.ContactServices.delete#PartyContactMech"/>
         <default-response url="."/></transition>
-    <transition name="viewAccount"><default-response url="../../Account/ViewAccount"/></transition>
-    <transition name="addContact"><service-call name="mantle.sales.AccountServices.add#Contact"/>
-        <default-response url="."/></transition>
-    <transition name="removeContact"><service-call name="mantle.sales.AccountServices.delete#Contact"/>
-        <default-response url="."/></transition>
-    <transition-include name="searchPartyList" location="component://SimpleScreens/template/party/PartyForms.xml"/>
-
+    <transition name="viewContact"><default-response url="../../Contact/ViewContact"/></transition>
+    <transition name="viewOpportunity"><default-response url="../../Opportunity/ViewOpportunity"/></transition>
+    <transition name="viewOrder"><default-response url="../../Order/ViewOrder"/></transition>
     <subscreens default-item="Note">
         <subscreens-item menu-include="false" name="UpdateContactInfo" location="component://SimpleScreens/screen/SimpleScreens/Party/EditParty/UpdateContactInfo.xml"/>
     </subscreens>
@@ -49,15 +45,15 @@ along with this software (see the LICENSE.md file). If not, see
                                       in-map="[partyId:partyId, getAll:true]"/>
                     </actions>
                     <widgets>
-                        <container-box type="default"><box-header title="${party.firstName} ${party.lastName}"/>
+                        <container-box type="default"><box-header title="${party.organizationName?:''}${party.firstName?:''}${party.lastName ? ' ' + party.lastName : ''}"/>
                             <box-body>
                                 <!-- Display primary website and phone -->
                                 <section-iterate name="WebInfoSection" list="contactOut.webAddressList" entry="contactInfo">
-                                    <widgets><container-row><row-col lg="7">
+                                    <widgets><container-row><row-col lg="8">
                                         <!--<link url="${contactInfo.webAddress}" text="${contactInfo.webAddress}" link-type="anchor"/> -->
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
-                                    </row-col><row-col lg="5">
-                                        <dynamic-dialog id="UpdateWebInfo" button-text="Update" transition="UpdateContactInfo"
+                                    </row-col><row-col lg="4">
+                                        <dynamic-dialog id="UpdateWebInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, webContactMechId:contactInfo.webContactMechId,
                                         webContactMechPurposeId:contactInfo.webContactMechPurposeId]"/>
                                         <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove Web URL?"
@@ -66,10 +62,10 @@ along with this software (see the LICENSE.md file). If not, see
                                     </row-col></container-row></widgets>
                                 </section-iterate>
                                 <section-iterate name="EmailInfoSection" list="contactOut.emailAddressList" entry="contactInfo"><widgets>
-                                    <container-row><row-col lg="7">
+                                    <container-row><row-col lg="8">
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
-                                        </row-col><row-col lg="5">
-                                        <dynamic-dialog id="UpdateEmailInfo" button-text="Update" transition="UpdateContactInfo"
+                                    </row-col><row-col lg="4">
+                                        <dynamic-dialog id="UpdateEmailInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, emailContactMechId:contactInfo.emailContactMechId,
                                         emailContactMechPurposeId:contactInfo.emailContactMechPurposeId]"/>
                                         <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove email address?"
@@ -78,10 +74,10 @@ along with this software (see the LICENSE.md file). If not, see
                                     </row-col></container-row>
                                 </widgets></section-iterate>
                                 <section-iterate name="PhoneInfoSection" list="contactOut.telecomNumberList" entry="contactInfo">
-                                    <widgets><container-row><row-col lg="7">
+                                    <widgets><container-row><row-col lg="8">
                                         <render-mode><text type="html,vuet,qvt" location="component://SimpleScreens/template/party/ContactInfo.html.gstring"/></render-mode>
-                                    </row-col><row-col lg="5">
-                                        <dynamic-dialog id="UpdatePhoneInfo" button-text="Update" transition="UpdateContactInfo"
+                                    </row-col><row-col lg="4">
+                                        <dynamic-dialog id="UpdatePhoneInfo" button-text="" transition="UpdateContactInfo"
                                                         parameter-map="[partyId:partyId, telecomContactMechId:contactInfo.telecomContactMechId,
                                         telecomContactMechPurposeId:contactInfo.telecomContactMechPurposeId]"/>
                                         <link url="removeContactInfo" text=" " icon="fa fa-trash" confirmation="Remove phone number?"
@@ -101,44 +97,76 @@ along with this software (see the LICENSE.md file). If not, see
                         </container-box>
                     </widgets>
                 </section>
-            </row-col>
+            </row-col>-
             <row-col lg="6">
                 <subscreens-panel id="CenterPanel" type="tab"/>
             </row-col>
             <row-col lg="3">
-                <section name="AccountSection">
+                <section name="ContactSection">
                     <actions>
-                        <entity-find entity-name="mantle.party.PartyRelationship" list="accountList">
-                            <econdition field-name="fromPartyId" from="partyId"/>
-                            <econdition field-name="toRoleTypeId" value="Account"/>
+                        <entity-find entity-name="mantle.party.PartyRelationship" list="contactList">
+                            <econdition field-name="toPartyId" from="partyId"/>
+                            <econdition field-name="fromRoleTypeId" value="Contact"/>
                             <date-filter/>
                         </entity-find>
+                        <entity-find-count entity-name="mantle.party.PartyRelationship" count-field="relationshipCount">
+                            <econdition field-name="toPartyId" from="partyId"/><date-filter/>
+                            <econdition field-name="fromRoleTypeId" value="Contact"/></entity-find-count>
                     </actions>
 
                     <widgets>
-                        <container-box type="default"><box-header title="Sales Accounts"/><box-toolbar>
-                            <container-dialog id="AddSalesAccountDialog" button-text="Add to Sales Account">
-                                <form-single name="AddSalesAccount" transition="addContact">
-                                    <field name="partyId"><default-field><hidden/></default-field></field>
-                                    <field name="accountPartyId"><default-field title="Sales Account"><drop-down>
-                                        <dynamic-options transition="searchPartyList" server-search="true" min-length="0" parameter-map="[roleTypeId:'Account']"/>
-                                    </drop-down></default-field></field>
-                                    <field name="submitButton"><default-field title="Add"><submit/></default-field></field>
-                                </form-single>
-                            </container-dialog>
-                        </box-toolbar>
+                        <container-box type="default"><box-header title="Contacts"/>
                             <box-body>
-                                <form-list name="AccountList" list="accountList" skip-header="true">
-                                    <field name="toPartyId">
-                                        <default-field title="Account Name">
-                                            <link url="viewAccount" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:toPartyId]"/>
-                                            <!-- <display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/> -->
+                                <label text="Contacts related to this Sales Account: ${relationshipCount}"/>
+                                <form-list name="ContactList" list="contactList" skip-header="true">
+                                    <field name="fromPartyId">
+                                        <default-field title="Contact Name">
+                                            <link url="viewContact" entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate" link-type="anchor" parameter-map="[partyId:fromPartyId]"/>
+                                            <!--<display-entity entity-name="mantle.party.PartyDetail" text="PartyNameOnlyTemplate"/>-->
                                         </default-field>
                                     </field>
-                                    <field name="removeButton" align="right"><default-field title="">
-                                        <link url="removeContact" icon="fa fa-trash" parameter-map="[partyRelationshipId:partyRelationshipId]"
-                                              confirmation="Are you sure you want to remove this contact from the account?"/>
+                                </form-list>
+                            </box-body>
+                        </container-box>
+                    </widgets>
+                </section>
+                <section name="OpportunitySection">
+                    <actions>
+                        <entity-find entity-name="mantle.sales.opportunity.SalesOpportunity" list="oppyList">
+                            <econdition field-name="accountPartyId" from="partyId"/>
+                        </entity-find>
+                    </actions>
+                    <widgets>
+                        <container-box>
+                            <box-header title="Sales Opportunities"/>
+                            <box-body>
+                                <form-list name="OppyList" list="oppyList" skip-header="true">
+                                    <field name="opportunityName"><default-field>
+                                        <link url="viewOpportunity" text="${opportunityName}" link-type="anchor"/>
                                     </default-field></field>
+                                    <field name="description"><default-field><display/></default-field></field>
+                                </form-list>
+                            </box-body>
+                        </container-box>
+                    </widgets>
+                </section>
+                <section name="OrderSection">
+                    <actions>
+                        <entity-find entity-name="mantle.order.OrderHeaderAndPart" list="orderList">
+                            <econdition field-name="customerPartyId" from="partyId"/>
+                        </entity-find>
+                    </actions>
+                    <widgets>
+                        <container-box>
+                            <box-header title="Sales Orders"/>
+                            <box-body height="100">
+                                <form-list name="OrderList" list="orderList" skip-header="true">
+                                    <field name="orderId"><default-field>
+                                        <link url="viewOrder" text="${orderId}" link-type="anchor"/>
+                                    </default-field></field>
+                                    <field name="placedDate"><default-field><display format="yyyy-MM-dd"/></default-field></field>
+                                    <field name="statusId"><default-field><display-entity entity-name="moqui.basic.StatusItem"/></default-field></field>
+                                    <field name="grandTotal" align="right"><default-field><display currency-unit-field="currencyUomId"/></default-field></field>
                                 </form-list>
                             </box-body>
                         </container-box>

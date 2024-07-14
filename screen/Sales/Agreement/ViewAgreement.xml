@@ -14,6 +14,14 @@ along with this software (see the LICENSE.md file). If not, see
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd" default-menu-title="Agreement" default-menu-include="false">
+    <!-- Use this for quasar version
+        <widgets>
+        <render-mode>
+            <text type="vue,qvue" location="component://Sales/screen/Sales/Agreement/ViewAgreement.qvue"/>
+            </render-mode>
+    </widgets>
+    -->
+
     <parameter name="agreementId" required="true"/>
     <transition name="updateAgreement"><service-call name="sales.AgreementServices.update#Agreement"/><default-response url="."/></transition>
     <transition name="addAgreementParty"><service-call name="create#mantle.party.agreement.AgreementParty"/><default-response url="."/></transition>

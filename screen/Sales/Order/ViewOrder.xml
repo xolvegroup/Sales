@@ -15,6 +15,13 @@ along with this software (see the LICENSE.md file). If not, see
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
         require-authentication="true" default-menu-title="View Order (alpha)" default-menu-include="false">
+    <!-- Use this for quasar version
+    <widgets>
+        <render-mode>
+            <text type="vue,qvue" location="component://Sales/screen/Sales/Order/ViewOrder.qvue"/>
+        </render-mode>
+    </widgets>
+    -->
 
     <parameter name="orderId" required="true"/>
 

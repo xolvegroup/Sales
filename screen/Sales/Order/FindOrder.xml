@@ -13,8 +13,7 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns=""
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
-        require-authentication="true" default-menu-title="Find Order (alpha)">
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd" default-menu-title="Find Order">
     <transition name="viewAccount"><default-response url="../../Account/ViewAccount"/></transition>
     <transition name="viewOrder"><default-response url="../ViewOrder"/></transition>
     <transition name="createOrder"><service-call name="mantle.order.OrderServices.create#Order"/>

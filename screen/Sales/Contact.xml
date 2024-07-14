@@ -13,11 +13,15 @@ along with this software (see the LICENSE.md file). If not, see
 <http://creativecommons.org/publicdomain/zero/1.0/>.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-3.xsd"
-        default-menu-title="Contacts" default-menu-index="20" menu-image="/ssstatic/images/Customer.png" render-modes="vue,qvue" server-static="vue,qvue">
+        default-menu-title="Contacts" default-menu-index="20" menu-image="/ssstatic/images/Customer.png">
+    <subscreens default-item="FindContact"/>
 
     <widgets>
+        <subscreens-panel id="contact-panel" type="popup"/>
+        <!--
         <render-mode>
             <text type="vue,qvue" location="component://Sales/screen/Sales/Contact/FindContact.qvue"/>
             </render-mode>
+        -->
     </widgets>
 </screen>
